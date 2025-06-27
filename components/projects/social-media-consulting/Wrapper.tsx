@@ -239,7 +239,8 @@ export const ContentWrapper: React.FC<ContentWrapperProps> = ({
       // Lightweight monitoring for static content (no heavy images)
       const contentElements = container.querySelectorAll('[data-content-loaded]');
       contentElements.forEach(element => {
-        if (!element.offsetParent) {
+        const htmlElement = element as HTMLElement;
+        if (!htmlElement.offsetParent) {
           console.warn('Static content element became inaccessible');
         }
       });
