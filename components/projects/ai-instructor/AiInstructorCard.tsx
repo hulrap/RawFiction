@@ -1,18 +1,20 @@
-import React from 'react';
+import { memo } from 'react';
 import { EmbeddedWebsiteFrame } from '../../shared/EmbeddedWebsiteFrame';
-import { ProjectProps } from '../../shared/types';
 
-export const AiInstructorCard: React.FC<ProjectProps> = ({ isActive = true }) => {
-  return (
-    <div className="h-full w-full flex flex-col">
-      <div className="flex-1">
-        <EmbeddedWebsiteFrame
-          url="https://ai-instructor.me"
-          title="AI Instructor"
-          isActive={isActive}
-          allowScrolling={true}
-        />
+interface AiInstructorCardProps {
+  id: string;
+  className?: string;
+  style?: React.CSSProperties;
+}
+
+export const AiInstructorCard: React.FC<AiInstructorCardProps> = memo(
+  ({ id, className, style }) => {
+    return (
+      <div id={id} className={`h-full w-full ${className}`} style={style}>
+        <EmbeddedWebsiteFrame url="https://www.ai-instructor.me/" title="AI Instructor" />
       </div>
-    </div>
-  );
-}; 
+    );
+  }
+);
+
+AiInstructorCard.displayName = 'AiInstructorCard';

@@ -45,8 +45,8 @@ export const SmoothTypewriter: React.FC<SmoothTypewriterProps> = ({
     }
     // Then scroll this component into view if needed
     if (containerRef.current) {
-      containerRef.current.scrollIntoView({ 
-        behavior: 'smooth', 
+      containerRef.current.scrollIntoView({
+        behavior: 'smooth',
         block: 'nearest',
         inline: 'nearest'
       });
@@ -69,7 +69,7 @@ export const SmoothTypewriter: React.FC<SmoothTypewriterProps> = ({
 
   const startTyping = useCallback(() => {
     if (isTyping || linesRef.current.length === 0) return;
-    
+
     setIsTyping(true);
     currentLineIndexRef.current = 0;
     currentCharIndexRef.current = 0;
@@ -77,7 +77,7 @@ export const SmoothTypewriter: React.FC<SmoothTypewriterProps> = ({
     const typeNextCharacter = () => {
       const currentLineIndex = currentLineIndexRef.current;
       const currentCharIndex = currentCharIndexRef.current;
-      
+
       // Check if we've completed all lines
       if (currentLineIndex >= linesRef.current.length) {
         setIsTyping(false);
@@ -109,41 +109,41 @@ export const SmoothTypewriter: React.FC<SmoothTypewriterProps> = ({
       // Type next character in current line
       if (currentCharIndex < currentLine.text.length) {
         const newText = currentLine.text.slice(0, currentCharIndex + 1);
-        
+
         setLines(prev => {
-          const newLines = prev.map((line, index) => 
-            index === currentLineIndex 
+          const newLines = prev.map((line, index) =>
+            index === currentLineIndex
               ? { ...line, currentText: newText }
               : line
           );
           linesRef.current = newLines;
           return newLines;
         });
-        
+
         currentCharIndexRef.current++;
-        
+
         // Auto-scroll to follow typing progress
         setTimeout(scrollToBottom, 38);
-        
+
         timeoutRef.current = setTimeout(typeNextCharacter, speed);
       } else {
         // Current line is complete
         setLines(prev => {
-          const newLines = prev.map((line, index) => 
-            index === currentLineIndex 
+          const newLines = prev.map((line, index) =>
+            index === currentLineIndex
               ? { ...line, isComplete: true }
               : line
           );
           linesRef.current = newLines;
           return newLines;
         });
-        
+
         currentLineIndexRef.current++;
         currentCharIndexRef.current = 0;
-        
+
         // Auto-scroll when line completes
         setTimeout(scrollToBottom, 75);
-        
+
         timeoutRef.current = setTimeout(typeNextCharacter, 150); // Longer pause after line completion for processing
       }
     };
@@ -218,11 +218,11 @@ export const SmoothTypewriter: React.FC<SmoothTypewriterProps> = ({
         const shouldShow = index <= currentLineIndex || line.isComplete;
         const displayText = line.isComplete ? line.text : line.currentText;
         const showCursor = index === currentLineIndex && !line.isComplete && isTyping;
-        
+
         if (!shouldShow) return null;
-        
+
         return (
-          <div 
+          <div
             key={index}
             className={`bg-white/10 text-white/90 font-mono text-sm leading-relaxed px-4 py-2 rounded-2xl cursor-pointer hover:bg-white/15 transition-colors min-h-[2.5rem] flex items-start w-full ${className}`}
             onClick={handleClick}
@@ -236,4 +236,4 @@ export const SmoothTypewriter: React.FC<SmoothTypewriterProps> = ({
       })}
     </div>
   );
-}; 
+};

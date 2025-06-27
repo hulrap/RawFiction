@@ -4,16 +4,16 @@ export const Background: React.FC = () => {
   return (
     <div className="fixed inset-0 -z-10 overflow-hidden">
       {/* Main Background Image */}
-      <div 
+      <div
         className="absolute inset-0 bg-cover bg-center bg-fixed"
         style={{
           backgroundImage: 'url(/images/background.png)',
           filter: 'grayscale(100%) contrast(140%) brightness(0.3)'
         }}
       />
-      
+
       {/* Anthracite Gradient Overlay */}
-      <div 
+      <div
         className="absolute inset-0"
         style={{
           background: `linear-gradient(135deg, 
@@ -26,9 +26,9 @@ export const Background: React.FC = () => {
           opacity: 0.95
         }}
       />
-      
+
       {/* Technical Grid Pattern */}
-      <div 
+      <div
         className="absolute inset-0"
         style={{
           backgroundImage: `
@@ -40,9 +40,9 @@ export const Background: React.FC = () => {
           backgroundSize: '50px 50px, 50px 50px, 200px 200px, 200px 200px'
         }}
       />
-      
+
       {/* Fine Technical Grid Overlay */}
-      <div 
+      <div
         className="absolute inset-0"
         style={{
           backgroundImage: `
@@ -54,7 +54,7 @@ export const Background: React.FC = () => {
       />
 
       {/* Metallic Shine Overlay */}
-      <div 
+      <div
         className="absolute inset-0 pointer-events-none"
         style={{
           background: `
@@ -66,8 +66,8 @@ export const Background: React.FC = () => {
       />
 
       {/* Vignette Effect */}
-      <div 
-        className="absolute inset-0 pointer-events-none" 
+      <div
+        className="absolute inset-0 pointer-events-none"
         style={{
           background: 'radial-gradient(circle at center, transparent 0%, var(--brand-bg) 100%)',
           opacity: 0.6
@@ -75,4 +75,4 @@ export const Background: React.FC = () => {
       />
     </div>
   );
-}; 
+};

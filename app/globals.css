@@ -55,32 +55,129 @@
 /* === PORTFOLIO CAROUSEL 3D === */
 @layer components {
   .carousel-container {
-    perspective: 2000px;
+    perspective: 2500px;
+    perspective-origin: 50% 50%;
     transform-style: preserve-3d;
     width: 100vw;
     height: 100vh;
     overflow: hidden;
+    position: fixed;
+    top: 0;
+    left: 0;
   }
   
   .carousel-wrapper {
-    position: relative;
-    width: 100%;
-    height: 100%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
     transform-style: preserve-3d;
-    transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    transform-origin: 0 0;
+    transform: none;
   }
   
   .portfolio-card {
     position: absolute;
-    width: 100vw;
-    height: 100vh;
+    top: 50%;
+    left: 50%;
+    width: 70vw;
+    height: calc(70vw * 9 / 16);
+    max-width: 1000px;
+    max-height: calc(1000px * 9 / 16);
+    min-width: 500px;
+    min-height: calc(500px * 9 / 16);
+    transform-origin: center center;
+    transform-style: preserve-3d;
+    transition: all 0.9s cubic-bezier(0.23, 1, 0.32, 1);
+    backface-visibility: hidden;
+    aspect-ratio: 16 / 9;
+  }
+  
+  .space-card {
     background: linear-gradient(135deg, var(--brand-anthracite-dark) 0%, var(--brand-anthracite) 50%, var(--brand-anthracite-light) 100%);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid var(--brand-glass);
-    transform-style: preserve-3d;
-    backface-visibility: hidden;
+    border-radius: 1rem;
     overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  }
+  
+  .card-content-container {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    border-radius: inherit;
+    position: relative;
+    will-change: transform;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    z-index: 2;
+  }
+  
+  /* Performance optimizations */
+  .lazy-container {
+    contain: layout style paint;
+    content-visibility: auto;
+    contain-intrinsic-size: 1000px calc(1000px * 9 / 16);
+    aspect-ratio: 16 / 9;
+  }
+  
+  .performance-optimized {
+    transform: translateZ(0);
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+    transition: all 0.9s cubic-bezier(0.23, 1, 0.32, 1), filter 0.3s ease;
+  }
+  
+  .performance-optimized:hover {
+    filter: brightness(1.1);
+  }
+  
+  .performance-optimized[style*="cursor: pointer"]:hover {
+    filter: brightness(1.2) saturate(1.1);
+    transform: translateZ(10px);
+  }
+  
+  .performance-optimized[style*="cursor: pointer"]:active {
+    filter: brightness(1.4) saturate(1.2);
+    transform: translateZ(5px) scale(0.98);
+    transition: all 0.1s ease;
+  }
+  
+  .open-tab-button {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 2.5rem;
+    height: 2.5rem;
+    background: var(--brand-glass);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--brand-glass-light);
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--brand-accent);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 1000;
+    opacity: 0.8;
+  }
+  
+  .open-tab-button:hover {
+    background: var(--brand-glass-light);
+    border-color: var(--brand-accent);
+    opacity: 1;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(192, 192, 192, 0.2);
+  }
+  
+  .open-tab-button svg {
+    width: 1rem;
+    height: 1rem;
   }
   
   .glass-overlay {
@@ -93,6 +190,7 @@
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     pointer-events: none;
+    z-index: 1;
   }
   
   .metallic-accent {
@@ -356,20 +454,48 @@
     border-radius: 0.5rem;
     background: var(--brand-anthracite-dark);
     overflow: hidden;
+    object-fit: contain;
   }
   
   .website-container {
     position: relative;
     width: 100%;
-    height: calc(100vh - 8rem);
+    height: 100%;
     background: var(--brand-glass);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border: 1px solid var(--brand-glass-light);
     border-radius: 1rem;
     overflow: hidden;
-    margin: 2rem;
     padding: 0;
+    aspect-ratio: 16 / 9;
+  }
+  
+  .website-loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: var(--brand-accent);
+    font-size: 1.125rem;
+    z-index: 10;
+  }
+  
+  /* Ensure embedded content scales properly */
+  .website-content {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  
+  .website-frame {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: white;
+    border-radius: inherit;
   }
   
   .website-loading {
@@ -452,7 +578,7 @@
 /* === RESPONSIVE === */
 @media (max-width: 768px) {
   .carousel-container {
-    perspective: 1200px;
+    perspective: 600px;
   }
   
   .nav-controls {

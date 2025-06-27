@@ -1,65 +1,81 @@
-import React, { useState } from 'react';
-import { WebsiteEmbedProps } from './types';
+import React, { useState, useRef } from 'react';
 
-export const EmbeddedWebsiteFrame: React.FC<WebsiteEmbedProps> = ({
+interface EmbeddedWebsiteFrameProps {
+  url: string;
+  title?: string;
+  className?: string;
+  onLoad?: () => void;
+  onError?: (error: string) => void;
+}
+
+export const EmbeddedWebsiteFrame: React.FC<EmbeddedWebsiteFrameProps> = ({
   url,
-  title,
-  isActive,
-  allowScrolling = true
+  title = 'Embedded Website',
+  className = '',
+  onLoad,
+  onError,
 }) => {
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
   const handleLoad = () => {
-    setIsLoading(false);
+    setIsLoaded(true);
+    setHasError(false);
+    onLoad?.();
   };
 
   const handleError = () => {
-    setIsLoading(false);
     setHasError(true);
+    onError?.('The browser blocked this iframe from loading.');
   };
 
+  // The fallback UI when an iframe fails to load
+  const ErrorFallback = () => (
+    <div className={`flex items-center justify-center bg-black/50 ${className}`}>
+      <div className="text-center p-8 bg-gray-900/80 rounded-lg shadow-xl">
+        <div className="text-red-500 mb-4 text-4xl">🚫</div>
+        <div className="text-sm text-gray-200 mb-2">Website Blocked</div>
+        <div className="text-xs text-gray-400 mb-4">
+          This content could not be embedded due to security policies.
+        </div>
+        <a
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-sm text-cyan-400 hover:text-cyan-300"
+        >
+          Open in New Tab
+        </a>
+      </div>
+    </div>
+  );
+
   return (
-    <div className="website-container">
-      {isLoading && (
-        <div className="website-loading">
-          <div className="animate-shimmer-glass">
-            Loading {title}...
-          </div>
+    <div className={`relative w-full h-full ${className}`}>
+      {!isLoaded && !hasError && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-400"></div>
         </div>
       )}
-      
+
       {hasError ? (
-        <div className="flex items-center justify-center h-full">
-          <div className="card-glass p-8 text-center">
-            <h3 className="heading-card mb-4">Unable to load website</h3>
-            <p className="text-sm opacity-75 mb-4">
-              The website {title} could not be embedded directly.
-            </p>
-            <a
-              href={url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-primary"
-            >
-              Visit {title} →
-            </a>
-          </div>
-        </div>
+        <ErrorFallback />
       ) : (
         <iframe
+          ref={iframeRef}
           src={url}
-          className={`embedded-website ${allowScrolling ? 'content-area' : ''}`}
           title={title}
+          className="w-full h-full border-0"
           onLoad={handleLoad}
           onError={handleError}
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
+          sandbox="allow-scripts allow-same-origin"
           style={{
-            display: isLoading ? 'none' : 'block'
+            visibility: isLoaded ? 'visible' : 'hidden',
+            transition: 'visibility 0.3s ease-in-out',
           }}
         />
       )}
     </div>
   );
-}; 
+};

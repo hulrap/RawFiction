@@ -4,3 +4,5 @@
 .env.production
 .next/
 node_modules
+.husky
+.vscode

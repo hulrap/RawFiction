@@ -138,4 +138,4 @@ export const REAL_EYES_EVENTS: EventData[] = [
       'https://images.unsplash.com/photo-1535223289827-42f1e9919769?w=800&q=80'
     ]
   }
-]; 
+];

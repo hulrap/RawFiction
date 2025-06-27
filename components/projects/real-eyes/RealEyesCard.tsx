@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { TabContainer } from '../../shared/TabContainer';
-import { ProjectProps, TabItem, EventData, REAL_EYES_EVENTS } from '../../shared/types';
+import type { ProjectProps, TabItem, EventData } from '../../shared/types';
+import { REAL_EYES_EVENTS } from '../../shared/types';
 
-export const RealEyesCard: React.FC<ProjectProps> = ({ isActive = true }) => {
+export const RealEyesCard: React.FC<ProjectProps> = ({ isActive: _isActive = true }) => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const EventDisplay: React.FC<{ event: EventData }> = ({ event }) => (
@@ -14,13 +15,11 @@ export const RealEyesCard: React.FC<ProjectProps> = ({ isActive = true }) => {
             {new Date(event.date).toLocaleDateString('en-US', {
               year: 'numeric',
               month: 'long',
-              day: 'numeric'
+              day: 'numeric',
             })}
           </div>
         )}
-        <p className="text-lg opacity-90 max-w-2xl mx-auto leading-relaxed">
-          {event.description}
-        </p>
+        <p className="text-lg opacity-90 max-w-2xl mx-auto leading-relaxed">{event.description}</p>
       </div>
 
       {event.images && event.images.length > 0 && (
@@ -81,25 +80,25 @@ export const RealEyesCard: React.FC<ProjectProps> = ({ isActive = true }) => {
           <div className="text-center">
             <h1 className="heading-main mb-6">Real Eyes</h1>
             <p className="text-xl opacity-90 max-w-2xl mx-auto leading-relaxed">
-              Real Eyes is a transformative event series that explores the intersection 
-              of technology, consciousness, and human experience through immersive experiences.
+              Real Eyes is a transformative event series that explores the intersection of
+              technology, consciousness, and human experience through immersive experiences.
             </p>
           </div>
-          
+
           <div className="grid md:grid-cols-2 gap-8 mt-12">
             <div className="card-glass p-6">
               <h3 className="heading-card mb-4">Our Mission</h3>
               <p className="text-sm opacity-75 leading-relaxed">
-                To create spaces where people can explore new perspectives on reality, 
-                technology, and human potential through carefully curated experiences.
+                To create spaces where people can explore new perspectives on reality, technology,
+                and human potential through carefully curated experiences.
               </p>
             </div>
-            
+
             <div className="card-glass p-6">
               <h3 className="heading-card mb-4">Event Series</h3>
               <p className="text-sm opacity-75 leading-relaxed">
-                Seven unique events, each exploring a different aspect of human 
-                consciousness and technological integration.
+                Seven unique events, each exploring a different aspect of human consciousness and
+                technological integration.
               </p>
             </div>
           </div>
@@ -107,8 +106,8 @@ export const RealEyesCard: React.FC<ProjectProps> = ({ isActive = true }) => {
           <div className="card-anthracite p-8 text-center">
             <h3 className="heading-card mb-4">7 Events</h3>
             <p className="text-sm opacity-75 mb-6">
-              Each event offers a unique journey into the realms of consciousness, 
-              technology, and human experience.
+              Each event offers a unique journey into the realms of consciousness, technology, and
+              human experience.
             </p>
             <div className="grid grid-cols-7 gap-2">
               {REAL_EYES_EVENTS.map((event: EventData, index: number) => (
@@ -122,21 +121,21 @@ export const RealEyesCard: React.FC<ProjectProps> = ({ isActive = true }) => {
             </div>
           </div>
         </div>
-      )
+      ),
     },
     ...REAL_EYES_EVENTS.map((event: EventData, index: number) => ({
       id: event.id,
       title: `Event ${index + 1}`,
-      content: <EventDisplay event={event} />
-    }))
+      content: <EventDisplay event={event} />,
+    })),
   ];
 
   return (
     <div className="h-full w-full p-8 overflow-hidden">
       <TabContainer tabs={tabs} defaultTab="overview" className="h-full" />
-      
+
       {selectedImage && (
-        <div 
+        <div
           className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
           onClick={() => setSelectedImage(null)}
         >
@@ -146,10 +145,7 @@ export const RealEyesCard: React.FC<ProjectProps> = ({ isActive = true }) => {
               alt="Event Image"
               className="w-full h-auto max-h-96 object-contain mb-4"
             />
-            <button
-              className="btn-primary"
-              onClick={() => setSelectedImage(null)}
-            >
+            <button className="btn-primary" onClick={() => setSelectedImage(null)}>
               Close
             </button>
           </div>
@@ -157,4 +153,4 @@ export const RealEyesCard: React.FC<ProjectProps> = ({ isActive = true }) => {
       )}
     </div>
   );
-}; 
+};

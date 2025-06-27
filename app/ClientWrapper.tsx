@@ -1,22 +1,30 @@
 'use client';
 
-import React, { useState } from 'react';
-import { PortfolioCarousel } from '@/components/PortfolioCarousel';
-import { Background } from '@/components/Background';
-import { LoadingScreen } from '@/components/LoadingScreen';
+import { useState } from 'react';
+import { SimpleLoadingScreen } from '@/components/shared/SimpleLoadingScreen';
+import { Suspense, lazy } from 'react';
 
-const ClientWrapper: React.FC = () => {
+// Lazy load the main carousel for better performance
+const PortfolioCarousel = lazy(() =>
+  import('@/components/PortfolioCarousel').then(module => ({ default: module.PortfolioCarousel }))
+);
+
+export default function ClientWrapper() {
   const [isLoading, setIsLoading] = useState(true);
+
+  const handleLoadingComplete = () => {
+    setIsLoading(false);
+  };
 
   return (
     <>
-      {isLoading && <LoadingScreen onComplete={() => setIsLoading(false)} />}
-      <Background />
-      <main className={`relative min-h-screen text-[var(--brand-fg)] overflow-hidden transition-opacity duration-500 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
-        <PortfolioCarousel isReady={!isLoading} />
-      </main>
+      {isLoading ? (
+        <SimpleLoadingScreen onComplete={handleLoadingComplete} />
+      ) : (
+        <Suspense fallback={<SimpleLoadingScreen onComplete={() => {}} />}>
+          <PortfolioCarousel />
+        </Suspense>
+      )}
     </>
   );
-};
-
-export default ClientWrapper; 
+}

@@ -4,7 +4,23 @@
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
+
+    // STRICT TYPE CHECKING - Enterprise grade
     "strict": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noUncheckedIndexedAccess": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
+
+    // MODULE RESOLUTION
     "noEmit": true,
     "esModuleInterop": true,
     "module": "esnext",
@@ -13,6 +29,12 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
+
+    // ADDITIONAL CHECKS
+    "forceConsistentCasingInFileNames": true,
+    "verbatimModuleSyntax": true,
+
+    // NEXT.JS SPECIFIC
     "plugins": [
       { "name": "next" }
     ],
@@ -30,5 +52,10 @@
     "components",
     "pages"
   ],
-  "exclude": ["node_modules"]
-} 
+  "exclude": [
+    "node_modules",
+    ".next",
+    "out",
+    "build"
+  ]
+}
