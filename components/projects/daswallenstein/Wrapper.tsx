@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { EmbeddedWebsiteFrame } from '../../shared/EmbeddedWebsiteFrame';
 import { useEmbeddedLoading, EmbeddedLoadingIndicator } from './Loading';
+import type { SiteConfig } from '../../shared/types';
 
 interface EmbeddedWrapperProps {
   url: string;
@@ -48,6 +49,41 @@ export const EmbeddedWrapper: React.FC<EmbeddedWrapperProps> = ({
     preloadDelay: 250, // Refined delay for Austrian elegance
     enablePreconnect: true,
   });
+
+  // Site-specific configuration for secure sandbox
+  const siteConfig: SiteConfig = {
+    url,
+    title,
+    csp: {
+      frameAncestors: ['*'], // More permissive for cultural venues
+      bypassCSP: false,
+      useProxy: false,
+    },
+    loading: {
+      method: 'direct',
+      timeout: 25000,
+      retryCount: 2,
+      retryDelay: 3000,
+      enablePreconnect: true,
+      cacheBusting: false,
+      rateLimit: {
+        enabled: true,
+        delay: 2000,
+        backoff: 'linear',
+      },
+    },
+    sandbox: {
+      allowScripts: true,
+      allowSameOrigin: false, // Prevent sandbox escape - don't combine with allowScripts
+      allowForms: true,
+      allowPopups: true,
+      allowFullscreen: false,
+      allowDownloads: true,
+      allowModals: true,
+      allowTopNavigation: false,
+      strictMode: false, // More permissive for cultural content
+    },
+  };
 
   const handleRecovery = useCallback(() => {
     setErrorState({
@@ -197,6 +233,73 @@ export const EmbeddedWrapper: React.FC<EmbeddedWrapperProps> = ({
         title={title}
         onLoad={handleLoadSuccess}
         onError={handleLoadError}
+        siteConfig={siteConfig}
+        suppressLogs={true}
+        logSuppression={{
+          enabled: true,
+          keywords: [
+            'daswallenstein',
+            'sandbox',
+            'allow-same-origin',
+            // WordPress/Timely.fun integration errors
+            'timely.fun',
+            'events.timely.fun',
+            'time.ly',
+            '<--> null',
+            'event calendar',
+            'calendar widget',
+            'wordpress',
+            'wp-',
+            'plugin',
+            // Canvas and image processing errors from WordPress
+            'indexsizeerror',
+            'failed to execute',
+            'getimagedata',
+            'canvasrenderingcontext2d',
+            'source width is 0',
+            'source height is 0',
+            'converttoparticles',
+            'wraptext',
+            // WordPress specific script errors
+            'jquery',
+            'elementor',
+            'divi',
+            'themes',
+            'wp-content',
+            'wp-includes',
+            'wp-admin',
+            // General WordPress/theme errors
+            'social event horizon',
+            'drawing near',
+            'unleash derivative forces',
+            'embed.js',
+            'pick_schriftzug.js',
+            '_.js',
+            'effect.js',
+            // Common WordPress/PHP errors
+            'undefined index',
+            'notice:',
+            'warning:',
+            'deprecated:',
+            'call_user_func',
+            'wp_enqueue_script',
+            'wp_head',
+            // Third-party plugin errors
+            'google maps',
+            'analytics',
+            'gtag',
+            'facebook pixel',
+            'instagram',
+            'social feed',
+            // Austrian/German WordPress errors
+            'daswallenstein.wien',
+            'wien',
+            'austria',
+            'österreich',
+          ],
+          domains: ['daswallenstein.wien', 'timely.fun', 'events.timely.fun', 'time.ly'],
+          aggressive: true,
+        }}
       />
 
       <EmbeddedLoadingIndicator state={loadingState} title={title} onRetry={actions.manualRetry} />

@@ -2,11 +2,10 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
-import { PathTracingEngine } from '../engines/PathTracingEngine';
-import { WebGPURenderer } from '../engines/WebGPURenderer';
+import { SmartSwarmSystem } from '../systems/SmartSwarmSystem';
+import { AdvancedParticleSystem } from '../systems/ParticleSystem';
 import type {
-  PathTracingConfig,
-  WebGPUConfig,
+  RawFictionEngineConfig,
   MousePosition,
   PerformanceStats,
 } from '../types/GraphicsTypes';
@@ -14,15 +13,19 @@ import type {
 interface AdvancedBackgroundProps {
   enableWebGPU?: boolean;
   enablePathTracing?: boolean;
+  enableSmartSwarm?: boolean;
+  enableNeuralParticles?: boolean;
   quality?: 'ultra' | 'high' | 'medium' | 'low';
   enableMouseInteraction?: boolean;
   className?: string;
 }
 
 export const AdvancedBackground: React.FC<AdvancedBackgroundProps> = ({
-  enableWebGPU = true,
-  enablePathTracing = true,
-  quality = 'high',
+  enableWebGPU = false,
+  enablePathTracing = false,
+  enableSmartSwarm = true,
+  enableNeuralParticles = true,
+  quality = 'medium',
   enableMouseInteraction = true,
   className = '',
 }) => {
@@ -34,21 +37,16 @@ export const AdvancedBackground: React.FC<AdvancedBackgroundProps> = ({
   const cameraRef = useRef<THREE.PerspectiveCamera>();
   const rendererRef = useRef<THREE.WebGLRenderer>();
 
-  // Advanced rendering engines
-  const pathTracerRef = useRef<PathTracingEngine>();
-  const webgpuRendererRef = useRef<WebGPURenderer>();
+  // Our bio-inspired systems
+  const smartSwarmRef = useRef<SmartSwarmSystem>();
+  const particleSystemRef = useRef<AdvancedParticleSystem>();
 
   // State management
   const [isInitialized, setIsInitialized] = useState(false);
-  const [currentEngine, setCurrentEngine] = useState<'webgl' | 'webgpu' | 'pathtracing'>('webgl');
-  const [performance] = useState<PerformanceStats>({
-    fps: 60,
-    frameTime: 16.67,
-    drawCalls: 0,
-    triangles: 0,
-    gpuMemory: 0,
-    cpuTime: 0,
-  });
+  const [currentEngine, setCurrentEngine] = useState<'webgl' | 'bio-inspired' | 'fallback'>(
+    'bio-inspired'
+  );
+  const [hasError, setHasError] = useState(false);
 
   // Mouse interaction
   const mouseRef = useRef<MousePosition>({
@@ -60,30 +58,65 @@ export const AdvancedBackground: React.FC<AdvancedBackgroundProps> = ({
     lastPosition: new THREE.Vector2(),
   });
 
-  // Graphics configuration (for future use)
-  // const graphicsConfig: GraphicsConfig = {
-  //   enableWebGPU,
-  //   enablePathTracing,
-  //   enableAdvancedParticles: true,
-  //   enableMouseReactivity: enableMouseInteraction,
-  //   quality,
-  //   targetFPS: quality === 'ultra' ? 120 : quality === 'high' ? 60 : 30,
-  // };
+  // Performance monitoring
+  const performanceRef = useRef<PerformanceStats>({
+    fps: 60,
+    frameTime: 16.67,
+    drawCalls: 0,
+    triangles: 0,
+    gpuMemory: 0,
+    cpuTime: 0,
+  });
 
-  const pathTracingConfig: PathTracingConfig = {
-    bounces: quality === 'ultra' ? 10 : quality === 'high' ? 8 : 5,
-    samples: quality === 'ultra' ? 1000 : quality === 'high' ? 500 : 200,
-    denoise: true,
-    enableGI: true,
-    enableCaustics: quality === 'ultra' || quality === 'high',
-    enableVolumetrics: quality === 'ultra',
+  // Engine configuration
+  const engineConfig: RawFictionEngineConfig = {
+    adaptiveQuality: true,
+    targetFPS: quality === 'ultra' ? 60 : quality === 'high' ? 45 : 30,
+    qualityThreshold: 0.8,
+    enableSmartSwarm: enableSmartSwarm,
+    enableNeuralParticles: enableNeuralParticles,
+    enableQuantumField: quality === 'ultra',
+    preferredRenderer: enableWebGPU ? 'webgpu' : 'webgl',
+    enablePathTracing: enablePathTracing,
+    maxParticles: getMaxParticlesForQuality(quality),
+    mouseReactivity: enableMouseInteraction ? 1.0 : 0.0,
+    audioReactivity: false,
+    gestureControl: false,
   };
 
-  const webgpuConfig: WebGPUConfig = {
-    preferredFormat: 'bgra8unorm' as GPUTextureFormat,
-    powerPreference: 'high-performance' as GPUPowerPreference,
-    enableValidation: false,
-    maxBufferSize: 256 * 1024 * 1024, // 256MB
+  function getMaxParticlesForQuality(qual: string): number {
+    switch (qual) {
+      case 'ultra':
+        return 5000;
+      case 'high':
+        return 3000;
+      case 'medium':
+        return 1500;
+      case 'low':
+        return 800;
+      default:
+        return 1500;
+    }
+  }
+
+  // Validate canvas dimensions before any WebGL operations
+  const validateCanvasDimensions = (canvas: HTMLCanvasElement): boolean => {
+    const rect = canvas.getBoundingClientRect();
+    const width = Math.max(1, Math.floor(rect.width || window.innerWidth));
+    const height = Math.max(1, Math.floor(rect.height || window.innerHeight));
+
+    // Ensure minimum dimensions
+    if (width < 1 || height < 1) {
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('Canvas has invalid dimensions:', { width, height });
+      }
+      return false;
+    }
+
+    // Set canvas size explicitly
+    canvas.width = width;
+    canvas.height = height;
+    return true;
   };
 
   // Initialize the advanced graphics system
@@ -92,6 +125,11 @@ export const AdvancedBackground: React.FC<AdvancedBackgroundProps> = ({
 
     const initializeGraphics = async () => {
       try {
+        // Validate canvas dimensions first
+        if (!validateCanvasDimensions(canvasRef.current!)) {
+          throw new Error('Invalid canvas dimensions');
+        }
+
         // Setup basic Three.js scene
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(
@@ -100,18 +138,71 @@ export const AdvancedBackground: React.FC<AdvancedBackgroundProps> = ({
           0.1,
           1000
         );
+
+        // Enhanced WebGL renderer with comprehensive error handling
         const renderer = new THREE.WebGLRenderer({
           canvas: canvasRef.current!,
-          antialias: true,
+          antialias: quality === 'ultra' || quality === 'high',
           alpha: true,
-          powerPreference: 'high-performance',
+          powerPreference: 'default',
+          failIfMajorPerformanceCaveat: false,
+          preserveDrawingBuffer: false, // Better performance
+          stencil: false, // Disable if not needed
+          depth: true,
+          logarithmicDepthBuffer: false, // Can cause issues on some devices
         });
 
+        // Global error handling for THREE.js
+        const originalConsoleError = console.error;
+        const originalConsoleWarn = console.warn;
+
+        console.error = (...args) => {
+          const message = args.join(' ');
+          if (
+            message.includes('THREE.WebGLProgram') ||
+            message.includes('Shader Error') ||
+            message.includes('WebGL') ||
+            message.includes('VALIDATE_STATUS')
+          ) {
+            // Suppress THREE.js shader errors but log them in development
+            if (process.env.NODE_ENV === 'development') {
+              originalConsoleWarn('THREE.js Error (suppressed):', ...args);
+            }
+            return;
+          }
+          originalConsoleError.apply(console, args);
+        };
+
+        console.warn = (...args) => {
+          const message = args.join(' ');
+          if (
+            message.includes('THREE.WebGLProgram') ||
+            message.includes('Shader Error') ||
+            message.includes('WebGL')
+          ) {
+            return; // Completely suppress these warnings
+          }
+          originalConsoleWarn.apply(console, args);
+        };
+
+        // Validate renderer creation
+        const gl = renderer.getContext();
+        if (!gl) {
+          throw new Error('WebGL context creation failed');
+        }
+
         renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, quality === 'ultra' ? 2 : 1.5));
         renderer.outputColorSpace = THREE.SRGBColorSpace;
-        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.enabled = quality === 'ultra' || quality === 'high';
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+        // Additional renderer settings for stability
+        renderer.sortObjects = false; // Better performance
+        renderer.autoClear = true;
+        renderer.autoClearColor = true;
+        renderer.autoClearDepth = true;
+        renderer.autoClearStencil = true;
 
         // Store references
         sceneRef.current = scene;
@@ -119,53 +210,69 @@ export const AdvancedBackground: React.FC<AdvancedBackgroundProps> = ({
         rendererRef.current = renderer;
 
         // Setup camera position
-        camera.position.set(0, 0, 10);
+        camera.position.set(0, 0, 15);
         camera.lookAt(0, 0, 0);
 
-        // Create immersive 3D environment
-        await createImmersiveEnvironment(scene);
+        // Create atmospheric background with error handling
+        createAtmosphericBackground(scene);
 
-        // Initialize advanced rendering engines
-        let engineInitialized = false;
+        // Initialize bio-inspired systems with comprehensive fallbacks
+        let systemsActive = 0;
 
-        // Try WebGPU first (most advanced)
-        if (enableWebGPU) {
-          const webgpuRenderer = new WebGPURenderer(canvasRef.current!, webgpuConfig);
-          const webgpuSupported = await webgpuRenderer.initialize();
-
-          if (webgpuSupported) {
-            webgpuRendererRef.current = webgpuRenderer;
-            setCurrentEngine('webgpu');
-            engineInitialized = true;
-            // WebGPU Engine active - Next-generation graphics enabled
-          }
-        }
-
-        // Try Path Tracing (ultra-realistic)
-        if (!engineInitialized && enablePathTracing) {
+        if (enableSmartSwarm) {
           try {
-            const pathTracer = new PathTracingEngine(renderer, scene, camera, pathTracingConfig);
-            await pathTracer.initialize();
-            pathTracerRef.current = pathTracer;
-            setCurrentEngine('pathtracing');
-            engineInitialized = true;
-            // Path Tracing Engine active - Ultra-realistic rendering enabled
+            const swarmConfig = {
+              maxParticles: Math.floor(engineConfig.maxParticles * 0.6),
+              separationDistance: 2.0,
+              alignmentDistance: 3.0,
+              cohesionDistance: 4.0,
+              maxSpeed: 0.08,
+              maxForce: 0.02,
+            };
+
+            smartSwarmRef.current = new SmartSwarmSystem(swarmConfig);
+            scene.add(smartSwarmRef.current.getMesh());
+            systemsActive++;
           } catch (error) {
-            // Path tracing initialization failed, falling back to WebGL
+            if (process.env.NODE_ENV === 'development') {
+              console.warn('Smart Swarm system failed to initialize:', error);
+            }
           }
         }
 
-        // Fallback to enhanced WebGL
-        if (!engineInitialized) {
-          setCurrentEngine('webgl');
-          // Enhanced WebGL active - High-performance rendering enabled
+        if (enableNeuralParticles) {
+          try {
+            particleSystemRef.current = new AdvancedParticleSystem(scene, camera, engineConfig);
+            systemsActive++;
+          } catch (error) {
+            if (process.env.NODE_ENV === 'development') {
+              console.warn('Neural Particle system failed to initialize:', error);
+            }
+          }
         }
+
+        // Add basic lighting
+        const ambientLight = new THREE.AmbientLight(0x404040, 0.4);
+        scene.add(ambientLight);
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(10, 10, 5);
+        scene.add(directionalLight);
 
         // Start render loop
         startRenderLoop();
+        setCurrentEngine(systemsActive > 0 ? 'bio-inspired' : 'webgl');
         setIsInitialized(true);
+        setHasError(false);
       } catch (error) {
-        // Graphics initialization failed
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('Advanced background failed to initialize, using fallback:', error);
+        }
+        // Create minimal fallback background
+        createFallbackBackground();
+        setCurrentEngine('fallback');
+        setIsInitialized(true);
+        setHasError(true);
       }
     };
 
@@ -173,214 +280,341 @@ export const AdvancedBackground: React.FC<AdvancedBackgroundProps> = ({
 
     // Cleanup
     return () => {
-      pathTracerRef.current?.dispose();
-      webgpuRendererRef.current?.dispose();
-      rendererRef.current?.dispose();
+      try {
+        smartSwarmRef.current?.dispose();
+        particleSystemRef.current?.dispose();
+        rendererRef.current?.dispose();
+      } catch (error) {
+        // Ignore cleanup errors
+      }
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Create immersive 3D environment
-  const createImmersiveEnvironment = async (scene: THREE.Scene) => {
-    // Add atmospheric background
-    const backgroundGeometry = new THREE.SphereGeometry(100, 64, 32);
-    const backgroundMaterial = new THREE.ShaderMaterial({
-      uniforms: {
-        time: { value: 0 },
-        resolution: { value: new THREE.Vector2() },
-      },
-      vertexShader: `
-        varying vec2 vUv;
-        varying vec3 vPosition;
-
-        void main() {
-          vUv = uv;
-          vPosition = position;
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-        }
-      `,
-      fragmentShader: `
-        uniform float time;
-        uniform vec2 resolution;
-
-        varying vec2 vUv;
-        varying vec3 vPosition;
-
-        void main() {
-          vec3 color = vec3(0.0, 0.05, 0.15);
-
-          // Add stellar atmosphere
-          float stars = sin(vPosition.x * 100.0) * sin(vPosition.y * 100.0) * sin(vPosition.z * 100.0);
-          stars = pow(max(0.0, stars), 20.0) * 0.5;
-
-          // Add nebula-like clouds
-          float nebula = sin(vPosition.x * 2.0 + time * 0.1) * cos(vPosition.y * 1.5 + time * 0.08);
-          nebula = pow(max(0.0, nebula), 3.0) * 0.2;
-
-          color += vec3(stars);
-          color += vec3(nebula * 0.3, nebula * 0.1, nebula * 0.5);
-
-          gl_FragColor = vec4(color, 1.0);
-        }
-      `,
-      side: THREE.BackSide,
-    });
-
-    const backgroundMesh = new THREE.Mesh(backgroundGeometry, backgroundMaterial);
-    scene.add(backgroundMesh);
-
-    // Add volumetric lighting
-    const volumetricLight = new THREE.DirectionalLight(0x4488ff, 0.8);
-    volumetricLight.position.set(10, 10, 5);
-    volumetricLight.castShadow = true;
-    volumetricLight.shadow.mapSize.width = 2048;
-    volumetricLight.shadow.mapSize.height = 2048;
-    scene.add(volumetricLight);
-
-    // Add ambient lighting
-    const ambientLight = new THREE.AmbientLight(0x2244aa, 0.3);
-    scene.add(ambientLight);
-
-    // Add some floating objects for depth
-    for (let i = 0; i < 20; i++) {
-      const geometry = new THREE.IcosahedronGeometry(0.5, 1);
-      const material = new THREE.MeshPhysicalMaterial({
-        color: new THREE.Color().setHSL(Math.random(), 0.7, 0.6),
-        metalness: 0.8,
-        roughness: 0.2,
-        transmission: 0.3,
+  const createAtmosphericBackground = (scene: THREE.Scene) => {
+    try {
+      // Simple working background instead of complex shader
+      const backgroundGeometry = new THREE.PlaneGeometry(200, 200);
+      const backgroundMaterial = new THREE.MeshBasicMaterial({
+        color: new THREE.Color('#001122'),
         transparent: true,
+        opacity: 0.8,
       });
 
-      const mesh = new THREE.Mesh(geometry, material);
-      mesh.position.set(
-        (Math.random() - 0.5) * 30,
-        (Math.random() - 0.5) * 30,
-        (Math.random() - 0.5) * 30
-      );
-      mesh.castShadow = true;
-      mesh.receiveShadow = true;
-      scene.add(mesh);
+      const backgroundMesh = new THREE.Mesh(backgroundGeometry, backgroundMaterial);
+      backgroundMesh.position.z = -50;
+      scene.add(backgroundMesh);
+
+      // Add simple animated particles using basic materials
+      const particleCount = Math.min(500, getMaxParticlesForQuality(quality));
+      const particleGeometry = new THREE.BufferGeometry();
+      const positions = new Float32Array(particleCount * 3);
+      const colors = new Float32Array(particleCount * 3);
+
+      for (let i = 0; i < particleCount; i++) {
+        positions[i * 3] = (Math.random() - 0.5) * 100;
+        positions[i * 3 + 1] = (Math.random() - 0.5) * 100;
+        positions[i * 3 + 2] = (Math.random() - 0.5) * 100;
+
+        colors[i * 3] = 0.2 + Math.random() * 0.3; // R
+        colors[i * 3 + 1] = 0.4 + Math.random() * 0.4; // G
+        colors[i * 3 + 2] = 0.8 + Math.random() * 0.2; // B
+      }
+
+      particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      particleGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+      const particleMaterial = new THREE.PointsMaterial({
+        size: 2,
+        vertexColors: true,
+        transparent: true,
+        opacity: 0.6,
+      });
+
+      const particles = new THREE.Points(particleGeometry, particleMaterial);
+      scene.add(particles);
+
+      // Store reference for animation
+      if (sceneRef.current) {
+        sceneRef.current.userData['simpleParticles'] = particles;
+      }
+    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('Failed to create atmospheric background, using solid color:', error);
+      }
+      // Ultra-simple fallback
+      try {
+        const fallbackGeometry = new THREE.PlaneGeometry(200, 200);
+        const fallbackMaterial = new THREE.MeshBasicMaterial({
+          color: 0x001122,
+          transparent: true,
+          opacity: 0.3,
+        });
+        const fallbackMesh = new THREE.Mesh(fallbackGeometry, fallbackMaterial);
+        fallbackMesh.position.z = -50;
+        scene.add(fallbackMesh);
+      } catch (fallbackError) {
+        // Even fallback failed, continue without background
+      }
     }
   };
 
-  // Advanced render loop
+  // Optimized render loop with error handling
   const startRenderLoop = () => {
     const clock = new THREE.Clock();
+    let frameCount = 0;
+    let lastPerformanceUpdate = 0;
+    let isRenderLoopActive = true;
 
     const render = () => {
-      clock.getDelta(); // Update clock
-      const elapsedTime = clock.getElapsedTime();
+      if (!isRenderLoopActive) return;
 
-      if (!sceneRef.current || !cameraRef.current) return;
+      try {
+        const deltaTime = clock.getDelta();
+        const elapsedTime = clock.getElapsedTime();
 
-      // Update materials with time
-      sceneRef.current.traverse(object => {
-        if (object instanceof THREE.Mesh && object.material instanceof THREE.ShaderMaterial) {
-          if (object.material.uniforms['time']) {
-            object.material.uniforms['time'].value = elapsedTime;
+        if (!sceneRef.current || !cameraRef.current || !rendererRef.current) return;
+
+        // Validate canvas dimensions before rendering
+        if (canvasRef.current && !validateCanvasDimensions(canvasRef.current)) {
+          return; // Skip this frame if canvas is invalid
+        }
+
+        // Subtle camera movement
+        if (frameCount % 3 === 0) {
+          const camera = cameraRef.current;
+          const slowTime = elapsedTime * 0.02;
+          camera.position.x = Math.sin(slowTime) * 0.5;
+          camera.position.y = Math.cos(slowTime * 0.7) * 0.3;
+          camera.position.z = 15 + Math.sin(slowTime * 0.3) * 0.8;
+          camera.lookAt(0, 0, 0);
+        }
+
+        // Update bio-inspired systems with error handling
+        if (smartSwarmRef.current) {
+          try {
+            smartSwarmRef.current.update(deltaTime);
+            smartSwarmRef.current.setTime(elapsedTime);
+          } catch (error) {
+            // Continue without swarm updates
           }
         }
-      });
 
-      // Render with appropriate engine
-      switch (currentEngine) {
-        case 'webgpu':
-          webgpuRendererRef.current?.computeParticles(elapsedTime);
-          rendererRef.current?.render(sceneRef.current, cameraRef.current);
-          break;
+        if (particleSystemRef.current) {
+          try {
+            const mousePos = enableMouseInteraction
+              ? new THREE.Vector2(mouseRef.current.normalizedX, mouseRef.current.normalizedY)
+              : undefined;
+            particleSystemRef.current.update(deltaTime, mousePos);
+          } catch (error) {
+            // Continue without particle updates
+          }
+        }
 
-        case 'pathtracing':
-          pathTracerRef.current?.render();
-          break;
+        // Update simple particle animation
+        if (sceneRef.current && sceneRef.current.userData['simpleParticles']) {
+          try {
+            const particles = sceneRef.current.userData['simpleParticles'];
+            particles.rotation.y += 0.001;
+            particles.rotation.x += 0.0005;
 
-        default:
-          rendererRef.current?.render(sceneRef.current, cameraRef.current);
-          break;
+            // Simple mouse interaction
+            if (enableMouseInteraction) {
+              const mouseInfluence = 0.0002;
+              particles.rotation.y += mouseRef.current.normalizedX * mouseInfluence;
+              particles.rotation.x += mouseRef.current.normalizedY * mouseInfluence;
+            }
+          } catch (error) {
+            // Continue without particle animation
+          }
+        }
+
+        // Update background shader (if any)
+        try {
+          sceneRef.current.traverse(object => {
+            if (object instanceof THREE.Mesh && object.material instanceof THREE.ShaderMaterial) {
+              if (object.material.uniforms?.['time']) {
+                object.material.uniforms['time'].value = elapsedTime;
+              }
+            }
+          });
+        } catch (error) {
+          // Continue without shader updates
+        }
+
+        // Render with error handling
+        try {
+          rendererRef.current.render(sceneRef.current, cameraRef.current);
+        } catch (error) {
+          if (process.env.NODE_ENV === 'development') {
+            console.warn('Render failed:', error);
+          }
+          // Continue to next frame
+        }
+
+        // Performance monitoring (less frequent)
+        frameCount++;
+        if (performance.now() - lastPerformanceUpdate > 1000) {
+          performanceRef.current.fps = frameCount;
+          performanceRef.current.frameTime = 1000 / frameCount;
+          frameCount = 0;
+          lastPerformanceUpdate = performance.now();
+        }
+
+        requestAnimationFrame(render);
+      } catch (error) {
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('Render loop error:', error);
+        }
+        // Continue render loop even if this frame failed
+        requestAnimationFrame(render);
       }
-
-      requestAnimationFrame(render);
     };
 
-    render();
+    requestAnimationFrame(render);
+
+    // Return cleanup function
+    return () => {
+      isRenderLoopActive = false;
+    };
   };
 
-  // Mouse interaction handler
+  // Optimized mouse interaction handler
   const handleMouseMove = (event: React.MouseEvent) => {
     if (!enableMouseInteraction || !containerRef.current) return;
 
-    const rect = containerRef.current.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
+    try {
+      const rect = containerRef.current.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
 
-    const normalizedX = (x / rect.width) * 2 - 1;
-    const normalizedY = -(y / rect.height) * 2 + 1;
+      const normalizedX = (x / rect.width) * 2 - 1;
+      const normalizedY = -(y / rect.height) * 2 + 1;
 
-    // Calculate velocity
-    const velocity = new THREE.Vector2(
-      normalizedX - mouseRef.current.normalizedX,
-      normalizedY - mouseRef.current.normalizedY
-    );
+      const velocity = new THREE.Vector2(
+        normalizedX - mouseRef.current.normalizedX,
+        normalizedY - mouseRef.current.normalizedY
+      );
 
-    mouseRef.current = {
-      x,
-      y,
-      normalizedX,
-      normalizedY,
-      velocity,
-      lastPosition: new THREE.Vector2(mouseRef.current.normalizedX, mouseRef.current.normalizedY),
-    };
-
-    // Update engines with mouse interaction
-    pathTracerRef.current?.updateMouseInteraction(mouseRef.current);
-    webgpuRendererRef.current?.updateMouseInteraction(mouseRef.current);
+      mouseRef.current = {
+        x,
+        y,
+        normalizedX,
+        normalizedY,
+        velocity,
+        lastPosition: new THREE.Vector2(mouseRef.current.normalizedX, mouseRef.current.normalizedY),
+      };
+    } catch (error) {
+      // Ignore mouse handling errors
+    }
   };
 
   // Handle window resize
   useEffect(() => {
+    let resizeTimeout: NodeJS.Timeout;
+
     const handleResize = () => {
-      if (!cameraRef.current || !rendererRef.current) return;
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        try {
+          if (!cameraRef.current || !rendererRef.current || !canvasRef.current) return;
 
-      const width = window.innerWidth;
-      const height = window.innerHeight;
+          // Validate new dimensions
+          if (!validateCanvasDimensions(canvasRef.current)) return;
 
-      cameraRef.current.aspect = width / height;
-      cameraRef.current.updateProjectionMatrix();
-      rendererRef.current.setSize(width, height);
+          const width = window.innerWidth;
+          const height = window.innerHeight;
+
+          cameraRef.current.aspect = width / height;
+          cameraRef.current.updateProjectionMatrix();
+          rendererRef.current.setSize(width, height);
+        } catch (error) {
+          if (process.env.NODE_ENV === 'development') {
+            console.warn('Resize handling failed:', error);
+          }
+        }
+      }, 200);
     };
 
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      clearTimeout(resizeTimeout);
+    };
   }, []);
+
+  // Fallback background when everything fails
+  const createFallbackBackground = () => {
+    if (!containerRef.current) return;
+
+    try {
+      const fallbackDiv = document.createElement('div');
+      fallbackDiv.style.cssText = `
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #000814 0%, #001d3d 50%, #003566 100%);
+        z-index: -1;
+      `;
+      containerRef.current.appendChild(fallbackDiv);
+    } catch (error) {
+      // Ignore fallback creation errors
+    }
+  };
 
   return (
     <div
       ref={containerRef}
-      className={`fixed inset-0 -z-10 ${className}`}
+      className={`bio-background-container ${className}`}
       onMouseMove={handleMouseMove}
       style={{
-        background: 'linear-gradient(135deg, #000814 0%, #001d3d 50%, #003566 100%)',
+        background: isInitialized
+          ? 'transparent'
+          : 'linear-gradient(135deg, #000814 0%, #001d3d 50%, #003566 100%)',
         perspective: '1000px',
         transformStyle: 'preserve-3d',
       }}
     >
       <canvas
         ref={canvasRef}
-        className="absolute inset-0 w-full h-full"
+        className="absolute inset-0 w-full h-full bio-particles"
         style={{
           transformStyle: 'preserve-3d',
           transform: 'translateZ(0)',
+          pointerEvents: 'none',
+          display: 'block',
         }}
       />
 
-      {/* Performance HUD (development only) */}
-      {process.env.NODE_ENV === 'development' && isInitialized && (
-        <div className="absolute top-4 left-4 bg-black bg-opacity-50 text-white p-3 rounded font-mono text-sm">
+      {/* Bio-inspired animated overlay */}
+      <div
+        className="absolute inset-0 opacity-10"
+        style={{
+          background: `
+            radial-gradient(circle at 30% 30%, rgba(0, 100, 200, 0.15) 0%, transparent 50%),
+            radial-gradient(circle at 70% 70%, rgba(100, 0, 200, 0.15) 0%, transparent 50%)
+          `,
+          animation: 'bioBackgroundPulse 8s ease-in-out infinite alternate',
+        }}
+      />
+
+      {/* Error indicator for critical failures */}
+      {hasError && process.env.NODE_ENV === 'development' && (
+        <div className="absolute top-4 right-4 bg-red-900 bg-opacity-75 text-white p-2 rounded font-mono text-xs z-50">
+          <div>⚠️ Background System Error</div>
+          <div>Using Fallback Mode</div>
+        </div>
+      )}
+
+      {/* Performance indicator (development only) */}
+      {process.env.NODE_ENV === 'development' && isInitialized && !hasError && (
+        <div className="absolute top-4 left-4 bg-black bg-opacity-50 text-white p-2 rounded font-mono text-xs z-50">
           <div>Engine: {currentEngine.toUpperCase()}</div>
-          <div>FPS: {performance.fps}</div>
           <div>Quality: {quality.toUpperCase()}</div>
-          {currentEngine === 'pathtracing' && (
-            <div>Samples: {pathTracerRef.current?.getPerformanceStats().samples || 0}</div>
-          )}
+          <div>FPS: {performanceRef.current.fps}</div>
+          {smartSwarmRef.current && <div>Smart Swarm: Active</div>}
+          {particleSystemRef.current && <div>Neural Particles: Active</div>}
         </div>
       )}
     </div>

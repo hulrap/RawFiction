@@ -58,13 +58,6 @@ const LegalCard = lazy(() =>
   import('./projects/legal/LegalCard').then(module => ({ default: module.LegalCard }))
 );
 
-// Loading fallback component
-const CardLoadingFallback: React.FC = () => (
-  <div className="card-glass p-8 flex items-center justify-center">
-    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--brand-accent)]"></div>
-  </div>
-);
-
 // Import types
 import type { ProjectProps } from './shared/types';
 
@@ -76,18 +69,52 @@ interface PortfolioProject {
   websiteUrl?: string;
 }
 
-// Circuit Breaker Component
+// Error Boundary with Recovery
 class ErrorBoundary extends React.Component<
-  { children: React.ReactNode; fallback?: React.ReactNode },
-  { hasError: boolean }
+  { children: React.ReactNode; fallback?: React.ReactNode; id?: string },
+  { hasError: boolean; errorCount: number; lastErrorTime: number }
 > {
-  constructor(props: { children: React.ReactNode; fallback?: React.ReactNode }) {
+  private retryTimeout?: NodeJS.Timeout;
+
+  constructor(props: { children: React.ReactNode; fallback?: React.ReactNode; id?: string }) {
     super(props);
-    this.state = { hasError: false };
+    this.state = { hasError: false, errorCount: 0, lastErrorTime: 0 };
   }
 
-  static getDerivedStateFromError() {
+  static getDerivedStateFromError(error: Error) {
+    // Log error for debugging in development
+    if (process.env.NODE_ENV === 'development') {
+      console.error('ErrorBoundary caught error:', error);
+    }
     return { hasError: true };
+  }
+
+  override componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    const now = Date.now();
+    this.setState(prev => ({
+      errorCount: prev.errorCount + 1,
+      lastErrorTime: now,
+    }));
+
+    // Auto-recovery for transient errors
+    if (this.state.errorCount < 3) {
+      this.retryTimeout = setTimeout(
+        () => {
+          this.setState({ hasError: false });
+        },
+        Math.min(1000 * Math.pow(2, this.state.errorCount), 5000)
+      );
+    }
+
+    if (process.env.NODE_ENV === 'development') {
+      console.error(`ErrorBoundary [${this.props.id}]:`, error, errorInfo);
+    }
+  }
+
+  override componentWillUnmount() {
+    if (this.retryTimeout) {
+      clearTimeout(this.retryTimeout);
+    }
   }
 
   override render() {
@@ -95,8 +122,23 @@ class ErrorBoundary extends React.Component<
       return (
         this.props.fallback || (
           <div className="card-glass p-8 text-center">
-            <div className="text-[var(--brand-accent)] mb-4">⚠️</div>
-            <div className="text-sm opacity-75">Component Error</div>
+            <div className="text-[var(--brand-accent)] mb-4 text-4xl">⚠️</div>
+            <div className="text-sm opacity-75 mb-4">
+              Component Error ({this.state.errorCount}/3)
+            </div>
+            {this.state.errorCount < 3 && (
+              <div className="text-xs text-gray-500">
+                Auto-recovering in {Math.min(1000 * Math.pow(2, this.state.errorCount), 5000)}ms...
+              </div>
+            )}
+            {this.state.errorCount >= 3 && (
+              <button
+                onClick={() => this.setState({ hasError: false, errorCount: 0 })}
+                className="btn-glass mt-4"
+              >
+                Manual Retry
+              </button>
+            )}
           </div>
         )
       );
@@ -198,109 +240,233 @@ const PORTFOLIO_PROJECTS: PortfolioProject[] = [
 ];
 
 export const PortfolioCarousel: React.FC = () => {
+  const totalProjects = PORTFOLIO_PROJECTS.length;
+
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [wheelEnabled, setWheelEnabled] = useState(true);
-  const [loadedCards, setLoadedCards] = useState<Set<number>>(new Set([0])); // Start with first card loaded
+  // Zero latency initialization - preload critical cards immediately
+  const [loadedCards, setLoadedCards] = useState<Set<number>>(() => {
+    const initialCards = new Set<number>();
+
+    // Load all lightweight cards immediately (zero cost)
+    for (let i = 0; i < totalProjects; i++) {
+      const lightweightIds = ['welcome', 'confidential', 'legal'];
+      const projectId = PORTFOLIO_PROJECTS[i]?.id;
+      if (projectId && lightweightIds.includes(projectId)) {
+        initialCards.add(i);
+      }
+    }
+
+    // Preload navigation sequence: last, first, second, third, fourth
+    const navigationOrder = [
+      totalProjects - 1, // last (Legal)
+      0, // first (Welcome)
+      1, // second (Raw Fiction)
+      2, // third (AI Instructor)
+      3, // fourth (AI Alignment)
+    ];
+
+    navigationOrder.forEach(index => {
+      if (index < totalProjects) {
+        initialCards.add(index);
+      }
+    });
+
+    return initialCards;
+  });
   const [loadingQueue, setLoadingQueue] = useState<number[]>([]);
 
-  const totalProjects = PORTFOLIO_PROJECTS.length;
+  // Determine which cards are lightweight (static text) vs heavy (embedded sites)
+  const isLightweightCard = useCallback((index: number) => {
+    const lightweightIds = ['welcome', 'confidential', 'legal'];
+    const projectId = PORTFOLIO_PROJECTS[index]?.id;
+    return projectId ? lightweightIds.includes(projectId) : false;
+  }, []);
 
   // Components are now loaded on demand without preloading
 
-  // Sequential loading system
+  // Smart navigation-based loading system
   useEffect(() => {
-    const getLoadPriority = (index: number) => {
-      const relativeIndex = index - currentIndex;
-      const normalizedIndex = ((relativeIndex % totalProjects) + totalProjects) % totalProjects;
+    const getNavigationOrder = () => {
+      // Navigation order: last, first, second, then third, fourth, etc.
+      const lastIndex = totalProjects - 1;
+      const firstIndex = 0;
+      const secondIndex = 1;
 
-      // Priority order: current -> immediate neighbors -> visible cards -> rest
-      if (normalizedIndex === 0) return 1; // Current card (highest priority)
-      if (normalizedIndex === 1 || normalizedIndex === totalProjects - 1) return 2; // Immediate neighbors
-      if (normalizedIndex <= 3 || normalizedIndex >= totalProjects - 3) return 3; // Other visible cards
-      return 4; // Background cards (lowest priority)
+      const navigationOrder = [lastIndex, firstIndex, secondIndex];
+
+      // Add remaining cards in order (third, fourth, etc.)
+      for (let i = 2; i < totalProjects - 1; i++) {
+        navigationOrder.push(i);
+      }
+
+      return navigationOrder;
     };
 
-    // Create prioritized loading queue
-    const priorityQueue = Array.from({ length: totalProjects }, (_, i) => i)
-      .filter(i => !loadedCards.has(i))
+    const getVisibleCards = () => {
+      const previousIndex = (currentIndex - 1 + totalProjects) % totalProjects;
+      const nextIndex = (currentIndex + 1) % totalProjects;
+      return [previousIndex, currentIndex, nextIndex];
+    };
+
+    const getLoadPriority = (index: number) => {
+      const visibleCards = getVisibleCards();
+      const navigationOrder = getNavigationOrder();
+
+      // Instant load for lightweight cards
+      if (isLightweightCard(index)) return 0;
+
+      // Highest priority for visible cards
+      if (visibleCards.includes(index)) {
+        if (index === currentIndex) return 1; // Current card
+        return 2; // Side cards
+      }
+
+      // Medium priority based on navigation order
+      const navOrderIndex = navigationOrder.indexOf(index);
+      if (navOrderIndex !== -1) return 10 + navOrderIndex;
+
+      return 999; // Very low priority for others
+    };
+
+    // Create optimized loading queue
+    const unloadedCards = Array.from({ length: totalProjects }, (_, i) => i).filter(
+      i => !loadedCards.has(i)
+    );
+
+    const priorityQueue = unloadedCards
       .sort((a, b) => getLoadPriority(a) - getLoadPriority(b))
-      .slice(0, 5); // Limit to 5 cards at a time
+      .slice(0, 5); // Limit concurrent loading
 
     setLoadingQueue(priorityQueue);
-  }, [currentIndex, totalProjects, loadedCards]);
+  }, [currentIndex, totalProjects, loadedCards, isLightweightCard]);
 
-  // Process loading queue with delays
+  // Zero latency loading - process immediately
   useEffect(() => {
     if (loadingQueue.length === 0) return;
 
-    const processNext = () => {
-      const nextIndex = loadingQueue[0];
-      if (nextIndex !== undefined) {
-        setLoadedCards(prev => new Set([...prev, nextIndex]));
-        setLoadingQueue(prev => prev.slice(1));
-      }
+    // Process all queued cards immediately - no delays
+    const processAllQueued = () => {
+      setLoadedCards(prev => {
+        const newLoaded = new Set(prev);
+        loadingQueue.forEach(index => newLoaded.add(index));
+        return newLoaded;
+      });
+      setLoadingQueue([]);
     };
 
-    // Immediate load for current card, delayed for others
-    const priority = loadingQueue[0] === currentIndex ? 0 : 1500;
-    const timer = setTimeout(processNext, priority);
+    // Use immediate execution for zero latency
+    processAllQueued();
+  }, [loadingQueue]);
 
+  // Background preloader - load all remaining cards immediately after mount
+  useEffect(() => {
+    const backgroundLoad = () => {
+      setLoadedCards(prev => {
+        const allCards = new Set(prev);
+        // Load ALL cards for zero latency navigation
+        for (let i = 0; i < totalProjects; i++) {
+          allCards.add(i);
+        }
+        return allCards;
+      });
+    };
+
+    // Load everything in the background immediately
+    const timer = setTimeout(backgroundLoad, 0);
     return () => clearTimeout(timer);
-  }, [loadingQueue, currentIndex]);
+  }, [totalProjects]);
 
-  // 3D Space positioning - multiple cards visible like in the image
+  // 3-Card positioning system: always show exactly 3 cards (previous, current, next)
   const getCardTransform = useCallback(
     (index: number) => {
-      const relativeIndex = index - currentIndex;
-      const normalizedIndex = ((relativeIndex % totalProjects) + totalProjects) % totalProjects;
+      // Calculate which position this card should be in
+      let position: 'left' | 'center' | 'right' | 'hidden';
 
-      // Define positions for multiple visible cards
-      const positions = [
-        // Center (active) card
-        { x: 0, y: 0, z: 0, rotX: 0, rotY: 0, scale: 1.0, opacity: 1 },
-        // Right cards - adjusted for smaller cards
-        { x: 280, y: -25, z: -160, rotX: 8, rotY: -25, scale: 0.85, opacity: 0.95 },
-        { x: 460, y: -70, z: -320, rotX: 12, rotY: -40, scale: 0.7, opacity: 0.8 },
-        // Left cards - adjusted for smaller cards
-        { x: -280, y: -25, z: -160, rotX: 8, rotY: 25, scale: 0.85, opacity: 0.95 },
-        { x: -460, y: -70, z: -320, rotX: 12, rotY: 40, scale: 0.7, opacity: 0.8 },
-        // Background cards - adjusted spacing
-        { x: 140, y: 50, z: -450, rotX: -8, rotY: -15, scale: 0.6, opacity: 0.6 },
-        { x: -140, y: 50, z: -450, rotX: -8, rotY: 15, scale: 0.6, opacity: 0.6 },
-        // Far background - subtle presence
-        { x: 0, y: 80, z: -600, rotX: -15, rotY: 0, scale: 0.5, opacity: 0.4 },
-      ];
-
-      const position =
-        positions[Math.min(normalizedIndex, positions.length - 1)] ||
-        positions[positions.length - 1];
-
-      // Production-grade null safety
-      if (!position) {
-        // Fallback position if something goes wrong
-        const fallbackPosition = { x: 0, y: 0, z: -1000, rotX: 0, rotY: 0, scale: 0.1, opacity: 0 };
-        return {
-          transform: `translate(-50%, -50%) translate3d(${fallbackPosition.x}px, ${fallbackPosition.y}px, ${fallbackPosition.z}px)`,
-          opacity: fallbackPosition.opacity,
-          pointerEvents: 'none',
-          zIndex: 0,
-          cursor: 'default',
-        } as React.CSSProperties;
+      // Current card is always center
+      if (index === currentIndex) {
+        position = 'center';
       }
+      // Next card is on the right
+      else if (index === (currentIndex + 1) % totalProjects) {
+        position = 'right';
+      }
+      // Previous card is on the left
+      else if (index === (currentIndex - 1 + totalProjects) % totalProjects) {
+        position = 'left';
+      }
+      // All other cards are hidden
+      else {
+        position = 'hidden';
+      }
+
+      // Define positions for the 3-card layout
+      const transforms = {
+        center: {
+          x: 0,
+          y: 0,
+          z: 0,
+          rotX: 0,
+          rotY: 0,
+          scale: 1.0,
+          opacity: 1,
+          zIndex: 100,
+          pointerEvents: 'auto',
+          cursor: 'default',
+        },
+        left: {
+          x: -320,
+          y: 20,
+          z: -100,
+          rotX: 5,
+          rotY: 25,
+          scale: 0.85,
+          opacity: 0.8,
+          zIndex: 50,
+          pointerEvents: 'auto',
+          cursor: 'pointer',
+        },
+        right: {
+          x: 320,
+          y: 20,
+          z: -100,
+          rotX: 5,
+          rotY: -25,
+          scale: 0.85,
+          opacity: 0.8,
+          zIndex: 50,
+          pointerEvents: 'auto',
+          cursor: 'pointer',
+        },
+        hidden: {
+          x: 0,
+          y: 0,
+          z: -1000,
+          rotX: 0,
+          rotY: 0,
+          scale: 0.1,
+          opacity: 0,
+          zIndex: 0,
+          pointerEvents: 'none',
+          cursor: 'default',
+        },
+      };
+
+      const transform = transforms[position];
 
       return {
         transform: `
-         translate(-50%, -50%)
-         translate3d(${position.x}px, ${position.y}px, ${position.z}px)
-         rotateX(${position.rotX}deg)
-         rotateY(${position.rotY}deg)
-         scale(${position.scale})
-       `,
-        opacity: position.opacity,
-        pointerEvents: position.opacity > 0.5 ? 'auto' : 'none', // Allow clicks on visible cards
-        zIndex: normalizedIndex === 0 ? 100 : 50 - normalizedIndex,
-        cursor: normalizedIndex === 0 ? 'default' : 'pointer',
+          translate(-50%, -50%)
+          translate3d(${transform.x}px, ${transform.y}px, ${transform.z}px)
+          rotateX(${transform.rotX}deg)
+          rotateY(${transform.rotY}deg)
+          scale(${transform.scale})
+        `,
+        opacity: transform.opacity,
+        pointerEvents: transform.pointerEvents as 'auto' | 'none',
+        zIndex: transform.zIndex,
+        cursor: transform.cursor,
       } as React.CSSProperties;
     },
     [currentIndex, totalProjects]
@@ -487,10 +653,10 @@ export const PortfolioCarousel: React.FC = () => {
           {PORTFOLIO_PROJECTS.map((project, index) => {
             const Component = project.component;
             const shouldLoad = loadedCards.has(index);
-            const isInQueue = loadingQueue.includes(index);
+            const isLightweight = isLightweightCard(index);
 
             return (
-              <ErrorBoundary key={project.id}>
+              <ErrorBoundary key={project.id} id={project.id}>
                 <div
                   className="portfolio-card space-card performance-optimized"
                   style={getCardTransform(index)}
@@ -511,15 +677,18 @@ export const PortfolioCarousel: React.FC = () => {
                 >
                   <div className="glass-overlay" />
                   <div className="card-content-container lazy-container">
-                    {shouldLoad ? (
-                      <Suspense fallback={<CardLoadingFallback />}>
+                    {shouldLoad || isLightweight ? (
+                      // Zero latency rendering - no loading states for preloaded components
+                      shouldLoad ? (
                         <Component id={project.id} />
-                      </Suspense>
+                      ) : (
+                        <Suspense fallback={null}>
+                          <Component id={project.id} />
+                        </Suspense>
+                      )
                     ) : (
                       <div className="card-glass p-8 flex items-center justify-center opacity-50">
-                        <div className="text-sm text-[var(--brand-accent)]">
-                          {isInQueue ? 'Queued...' : 'Waiting...'}
-                        </div>
+                        <div className="text-sm text-[var(--brand-accent)]">Loading...</div>
                       </div>
                     )}
                   </div>

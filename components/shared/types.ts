@@ -2,6 +2,8 @@ export interface TabItem {
   id: string;
   title: string;
   content: React.ReactNode;
+  description?: string;
+  icon?: React.ReactNode;
 }
 
 export interface ProjectProps {
@@ -9,6 +11,7 @@ export interface ProjectProps {
   isActive?: boolean;
   className?: string;
   style?: React.CSSProperties;
+  componentId?: string;
 }
 
 export interface EventData {
@@ -393,3 +396,51 @@ In anderen Worten, er ist ein Urgestein der amerikanischen Rap-Szene und wird ni
     tabStructure: 'single',
   },
 ];
+
+// Site-specific loading and CSP configurations
+export interface SiteCSPConfig {
+  frameAncestors?: string[] | 'none' | 'self' | '*';
+  allowedOrigins?: string[];
+  bypassCSP?: boolean;
+  useProxy?: boolean;
+  proxyEndpoint?: string;
+  customHeaders?: Record<string, string>;
+}
+
+export interface SiteLoadingStrategy {
+  method: 'direct' | 'proxy' | 'fallback' | 'screenshot';
+  timeout: number;
+  retryCount: number;
+  retryDelay: number;
+  enablePreconnect: boolean;
+  cacheBusting?: boolean;
+  rateLimit?: {
+    enabled: boolean;
+    delay: number;
+    backoff: 'linear' | 'exponential';
+  };
+}
+
+export interface SiteSandboxConfig {
+  allowScripts: boolean;
+  allowSameOrigin: boolean;
+  allowForms: boolean;
+  allowPopups: boolean;
+  allowFullscreen: boolean;
+  allowDownloads: boolean;
+  allowModals: boolean;
+  allowTopNavigation: boolean;
+  strictMode: boolean;
+}
+
+export interface SiteConfig {
+  url: string;
+  title: string;
+  csp: SiteCSPConfig;
+  loading: SiteLoadingStrategy;
+  sandbox: SiteSandboxConfig;
+  fallbackContent?: {
+    type: 'screenshot' | 'description' | 'redirect';
+    content: string;
+  };
+}

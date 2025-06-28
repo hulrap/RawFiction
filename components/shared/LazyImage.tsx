@@ -108,7 +108,8 @@ export const LazyImage: React.FC<LazyImageProps> = ({
       if (loadingState.attempts < 3 && timeSinceLastAttempt > 1000) {
         const retryDelay = Math.min(1000 * Math.pow(2, loadingState.attempts), 5000);
 
-        if (process.env.NODE_ENV !== 'production') {
+        if (process.env.NODE_ENV === 'development') {
+          // eslint-disable-next-line no-console
           console.warn(
             `LazyImage: Retrying ${componentId || src} in ${retryDelay}ms (attempt ${loadingState.attempts + 1})`
           );
@@ -126,7 +127,8 @@ export const LazyImage: React.FC<LazyImageProps> = ({
         setMetrics(prev => ({ ...prev, retries: prev.retries + 1 }));
       } else {
         setLoadingState(prev => ({ ...prev, error: true }));
-        if (process.env.NODE_ENV !== 'production') {
+        if (process.env.NODE_ENV === 'development') {
+          // eslint-disable-next-line no-console
           console.error(
             `LazyImage: Failed to load ${componentId || src} after ${loadingState.attempts} attempts`,
             error

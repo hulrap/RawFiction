@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { EmbeddedWebsiteFrame } from '../../shared/EmbeddedWebsiteFrame';
 import { useEmbeddedLoading, EmbeddedLoadingIndicator } from './Loading';
+import type { SiteConfig } from '../../shared/types';
 
 interface EmbeddedWrapperProps {
   url: string;
@@ -48,6 +49,47 @@ export const EmbeddedWrapper: React.FC<EmbeddedWrapperProps> = ({
     preloadDelay: 300,
     enablePreconnect: true,
   });
+
+  // Site-specific configuration for CSP handling
+  const siteConfig: SiteConfig = {
+    url,
+    title,
+    csp: {
+      frameAncestors: 'none', // AI Alignment Space blocks framing
+      bypassCSP: true,
+      useProxy: true,
+      proxyEndpoint: '/api/proxy',
+    },
+    loading: {
+      method: 'proxy', // Start with proxy due to CSP restrictions
+      timeout: 25000,
+      retryCount: 2,
+      retryDelay: 5000,
+      enablePreconnect: false,
+      cacheBusting: true,
+      rateLimit: {
+        enabled: true,
+        delay: 3000,
+        backoff: 'exponential',
+      },
+    },
+    sandbox: {
+      allowScripts: true,
+      allowSameOrigin: false, // Prevent sandbox escape
+      allowForms: true,
+      allowPopups: false,
+      allowFullscreen: false,
+      allowDownloads: false,
+      allowModals: true,
+      allowTopNavigation: false,
+      strictMode: true,
+    },
+    fallbackContent: {
+      type: 'description',
+      content:
+        'AI Alignment Space - A platform dedicated to advancing AI safety research and fostering collaboration in the AI alignment community.',
+    },
+  };
 
   const handleRecovery = useCallback(() => {
     setErrorState(prev => ({
@@ -200,6 +242,14 @@ export const EmbeddedWrapper: React.FC<EmbeddedWrapperProps> = ({
         title={title}
         onLoad={handleLoadSuccess}
         onError={handleLoadError}
+        siteConfig={siteConfig}
+        suppressLogs={true}
+        logSuppression={{
+          enabled: true,
+          keywords: ['ai-alignment', 'frame-ancestors', 'CSP'],
+          domains: ['ai-alignment.space'],
+          aggressive: true,
+        }}
       />
 
       <EmbeddedLoadingIndicator state={loadingState} title={title} onRetry={actions.manualRetry} />
