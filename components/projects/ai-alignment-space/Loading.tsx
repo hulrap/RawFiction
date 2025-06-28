@@ -163,7 +163,7 @@ export const useEmbeddedLoading = (config: EmbeddedLoadingConfig) => {
         };
       });
     },
-    [maxRetries, initiateLoad]
+    [maxRetries, initiateLoad, stopProgressSimulation]
   );
 
   const manualRetry = useCallback(() => {

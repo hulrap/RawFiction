@@ -149,7 +149,7 @@ export const useEmbeddedLoading = (config: EmbeddedLoadingConfig) => {
             ...prev,
             isLoading: false,
             hasError: true,
-            errorMessage: `Retry ${newRetryCount}/${maxRetries}: ${error}`,
+            errorMessage: `Creative Retry ${newRetryCount}/${maxRetries}: ${error}`,
             retryCount: newRetryCount,
           };
         }
@@ -158,12 +158,12 @@ export const useEmbeddedLoading = (config: EmbeddedLoadingConfig) => {
           ...prev,
           isLoading: false,
           hasError: true,
-          errorMessage: `Failed after ${maxRetries} attempts: ${error}`,
+          errorMessage: `Creative Connection Failed after ${maxRetries} attempts: ${error}`,
           retryCount: newRetryCount,
         };
       });
     },
-    [maxRetries, initiateLoad]
+    [maxRetries, initiateLoad, stopProgressSimulation]
   );
 
   const manualRetry = useCallback(() => {

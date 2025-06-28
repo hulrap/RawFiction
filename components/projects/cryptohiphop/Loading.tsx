@@ -9,7 +9,6 @@ export interface ContentLoadingState {
   isGalleryOpen: boolean;
   visibleImages: Set<string>;
   loadingProgress: number;
-  priorityQueue: string[];
 }
 
 export interface ImageLoadingConfig {
@@ -47,210 +46,64 @@ export const useContentLoading = (config: ContentLoadingConfig) => {
     isGalleryOpen: false,
     visibleImages: new Set(),
     loadingProgress: 0,
-    priorityQueue: [],
   });
 
-  const { tabs, images, batchSize = 4, intersectionThreshold = 0.1, preloadDistance = 2 } = config;
+  const {
+    tabs,
+    images,
+    batchSize: _batchSize = 4,
+    intersectionThreshold: _intersectionThreshold = 0.1,
+    preloadDistance: _preloadDistance = 2,
+  } = config;
 
   const loadingTimeouts = useRef<Map<string, NodeJS.Timeout>>(new Map());
   const intersectionObserver = useRef<IntersectionObserver>();
-  const loadingBatch = useRef<Set<string>>(new Set());
 
-  // Initialize intersection observer for image lazy loading
-  useEffect(() => {
-    intersectionObserver.current = new IntersectionObserver(
-      entries => {
-        entries.forEach(entry => {
-          const imageId = entry.target.getAttribute('data-image-id');
-          if (imageId && entry.isIntersecting) {
-            setState(prev => ({
-              ...prev,
-              visibleImages: new Set([...prev.visibleImages, imageId]),
-            }));
-            queueImageLoad(imageId, 'medium');
-          }
-        });
-      },
-      { threshold: intersectionThreshold }
-    );
-
-    return () => {
-      intersectionObserver.current?.disconnect();
-    };
-  }, [intersectionThreshold]);
-
-  // Priority-based loading queue management
+  // Simplified image loading function
   const queueImageLoad = useCallback(
-    (imageId: string, priority: 'high' | 'medium' | 'low') => {
-      setState(prev => {
-        if (prev.imagesLoaded.has(imageId) || loadingBatch.current.has(imageId)) {
-          return prev;
-        }
+    (imageId: string, _priority: 'high' | 'medium' | 'low' = 'medium') => {
+      if (state.imagesLoaded.has(imageId)) return;
 
-        const newQueue = [...prev.priorityQueue];
-        const image = images.find(img => img.id === imageId);
-
-        if (image) {
-          // Insert based on priority
-          const priorityIndex =
-            priority === 'high'
-              ? 0
-              : priority === 'medium'
-                ? Math.floor(newQueue.length / 2)
-                : newQueue.length;
-          newQueue.splice(priorityIndex, 0, imageId);
-        }
-
-        return {
-          ...prev,
-          priorityQueue: newQueue,
-        };
-      });
-    },
-    [images]
-  );
-
-  // Process loading queue in batches
-  const processLoadingQueue = useCallback(() => {
-    setState(prev => {
-      if (prev.priorityQueue.length === 0 || loadingBatch.current.size >= batchSize) {
-        return prev;
-      }
-
-      const toLoad = prev.priorityQueue.slice(0, batchSize - loadingBatch.current.size);
-      toLoad.forEach(imageId => {
-        loadingBatch.current.add(imageId);
-
-        const image = images.find(img => img.id === imageId);
-        if (image) {
-          const img = new Image();
-          img.onload = () => handleImageLoaded(imageId);
-          img.onerror = () => handleImageError(imageId);
-          img.src = image.src;
-        }
-      });
-
-      return {
-        ...prev,
-        priorityQueue: prev.priorityQueue.slice(toLoad.length),
-      };
-    });
-  }, [batchSize, images]);
-
-  const handleImageLoaded = useCallback(
-    (imageId: string) => {
-      loadingBatch.current.delete(imageId);
       setState(prev => ({
         ...prev,
         imagesLoaded: new Set([...prev.imagesLoaded, imageId]),
       }));
-
-      // Process next batch
-      setTimeout(processLoadingQueue, 50);
     },
-    [processLoadingQueue]
+    [state.imagesLoaded]
   );
 
-  const handleImageError = useCallback(
-    (imageId: string) => {
-      loadingBatch.current.delete(imageId);
-      console.warn(`Failed to load image: ${imageId}`);
-
-      // Continue with next batch even on error
-      setTimeout(processLoadingQueue, 50);
-    },
-    [processLoadingQueue]
-  );
-
-  // Tab loading management
+  // Simplified tab loading
   const loadTab = useCallback(
-    (tabId: string) => {
-      setState(prev => ({
-        ...prev,
-        activeTab: tabId,
-        isTabLoading: true,
-      }));
-
-      const tab = tabs.find(t => t.id === tabId);
-      if (!tab) return;
-
-      // Load tab content with delay simulation
-      const loadingTimeout = setTimeout(
-        () => {
-          setState(prev => ({
-            ...prev,
-            tabsLoaded: new Set([...prev.tabsLoaded, tabId]),
-            isTabLoading: false,
-          }));
-
-          // Preload adjacent tabs
-          const currentIndex = tabs.findIndex(t => t.id === tabId);
-          for (let i = 1; i <= preloadDistance; i++) {
-            const nextIndex = currentIndex + i;
-            const prevIndex = currentIndex - i;
-
-            if (nextIndex < tabs.length && tabs[nextIndex]) {
-              preloadTab(tabs[nextIndex].id);
-            }
-            if (prevIndex >= 0 && tabs[prevIndex]) {
-              preloadTab(tabs[prevIndex].id);
-            }
-          }
-
-          // Load high-priority images for this tab
-          const tabImages = images.filter(img => img.tabId === tabId && img.priority === 'high');
-          tabImages.forEach(img => queueImageLoad(img.id, 'high'));
-          processLoadingQueue();
-        },
-        tab.priority === 'immediate' ? 100 : 300
-      );
-
-      loadingTimeouts.current.set(tabId, loadingTimeout);
-    },
-    [tabs, preloadDistance, images, queueImageLoad, processLoadingQueue]
-  );
-
-  const preloadTab = useCallback(
     (tabId: string) => {
       if (state.tabsLoaded.has(tabId)) return;
 
-      const tab = tabs.find(t => t.id === tabId);
-      if (!tab || tab.priority === 'lazy') return;
+      setState(prev => ({
+        ...prev,
+        isTabLoading: true,
+        activeTab: tabId,
+      }));
 
-      const preloadTimeout = setTimeout(() => {
+      const timeout = setTimeout(() => {
         setState(prev => ({
           ...prev,
           tabsLoaded: new Set([...prev.tabsLoaded, tabId]),
+          isTabLoading: false,
         }));
-      }, 1000);
+      }, 500);
 
-      loadingTimeouts.current.set(`preload-${tabId}`, preloadTimeout);
+      loadingTimeouts.current.set(tabId, timeout);
     },
-    [tabs, state.tabsLoaded]
+    [state.tabsLoaded]
   );
 
-  // Gallery loading management
-  const openGallery = useCallback(
-    (galleryId: string, tabId: string) => {
-      setState(prev => ({
-        ...prev,
-        isGalleryOpen: true,
-        galleriesLoaded: new Set([...prev.galleriesLoaded, galleryId]),
-      }));
-
-      // Load all medium priority images for this gallery
-      const galleryImages = images.filter(
-        img => img.galleryId === galleryId && img.tabId === tabId
-      );
-
-      galleryImages.forEach(img => {
-        queueImageLoad(img.id, img.priority);
-      });
-
-      processLoadingQueue();
-    },
-    [images, queueImageLoad, processLoadingQueue]
-  );
+  // Gallery management
+  const openGallery = useCallback((galleryId: string, _tabId: string) => {
+    setState(prev => ({
+      ...prev,
+      isGalleryOpen: true,
+      galleriesLoaded: new Set([...prev.galleriesLoaded, galleryId]),
+    }));
+  }, []);
 
   const closeGallery = useCallback(() => {
     setState(prev => ({
@@ -259,13 +112,27 @@ export const useContentLoading = (config: ContentLoadingConfig) => {
     }));
   }, []);
 
-  // Observe image elements for lazy loading
-  const observeImage = useCallback((element: HTMLElement, imageId: string) => {
-    if (intersectionObserver.current) {
-      element.setAttribute('data-image-id', imageId);
-      intersectionObserver.current.observe(element);
-    }
-  }, []);
+  // Simple image observation
+  const observeImage = useCallback(
+    (element: HTMLElement, imageId: string) => {
+      if (!element || state.imagesLoaded.has(imageId)) return;
+
+      const observer = new IntersectionObserver(
+        entries => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              queueImageLoad(imageId);
+              observer.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.1, rootMargin: '50px' }
+      );
+
+      observer.observe(element);
+    },
+    [state.imagesLoaded, queueImageLoad]
+  );
 
   const unobserveImage = useCallback((element: HTMLElement) => {
     if (intersectionObserver.current) {
@@ -290,18 +157,13 @@ export const useContentLoading = (config: ContentLoadingConfig) => {
     }));
   }, [state.tabsLoaded.size, state.imagesLoaded.size, tabs.length, images.length]);
 
-  // Auto-process queue
-  useEffect(() => {
-    const interval = setInterval(processLoadingQueue, 100);
-    return () => clearInterval(interval);
-  }, [processLoadingQueue]);
-
   // Cleanup
   useEffect(() => {
+    const timeoutsRef = loadingTimeouts.current;
+
     return () => {
-      loadingTimeouts.current.forEach(timeout => clearTimeout(timeout));
-      loadingTimeouts.current.clear();
-      intersectionObserver.current?.disconnect();
+      timeoutsRef.forEach(timeout => clearTimeout(timeout));
+      timeoutsRef.clear();
     };
   }, []);
 
@@ -309,13 +171,11 @@ export const useContentLoading = (config: ContentLoadingConfig) => {
     state,
     actions: {
       loadTab,
-      preloadTab,
       openGallery,
       closeGallery,
       queueImageLoad,
       observeImage,
       unobserveImage,
-      processLoadingQueue,
     },
   };
 };
@@ -343,9 +203,7 @@ export const ContentLoadingIndicator: React.FC<{
     <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10">
       <div className="text-center bg-gray-800 rounded-lg p-4">
         <div className="text-2xl mb-2">{getLoadingIcon()}</div>
-        <div className="text-white text-sm mb-2">
-          {message || `Dropping ${type === 'gallery' ? 'beats' : type}...`}
-        </div>
+        <div className="text-white text-sm mb-2">{message || `Loading ${type}...`}</div>
         <div className="w-32 bg-gray-700 rounded-full h-1">
           <div
             className="h-1 rounded-full transition-all duration-300"

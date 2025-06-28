@@ -56,7 +56,6 @@ export const useEmbeddedLoading = (config: EmbeddedLoadingConfig) => {
           }
         };
       } catch (error) {
-        console.warn(`Failed to preconnect to ${url}:`, error);
         return; // Ensure all code paths return a value
       }
     }
@@ -163,7 +162,7 @@ export const useEmbeddedLoading = (config: EmbeddedLoadingConfig) => {
         };
       });
     },
-    [maxRetries, initiateLoad]
+    [maxRetries, initiateLoad, stopProgressSimulation]
   );
 
   const manualRetry = useCallback(() => {

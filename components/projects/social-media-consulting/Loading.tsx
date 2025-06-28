@@ -56,29 +56,6 @@ export const useContentLoading = (config: ContentLoadingConfig) => {
   const intersectionObserver = useRef<IntersectionObserver>();
   const loadingBatch = useRef<Set<string>>(new Set());
 
-  // Initialize intersection observer for image lazy loading
-  useEffect(() => {
-    intersectionObserver.current = new IntersectionObserver(
-      entries => {
-        entries.forEach(entry => {
-          const imageId = entry.target.getAttribute('data-image-id');
-          if (imageId && entry.isIntersecting) {
-            setState(prev => ({
-              ...prev,
-              visibleImages: new Set([...prev.visibleImages, imageId]),
-            }));
-            queueImageLoad(imageId, 'medium');
-          }
-        });
-      },
-      { threshold: intersectionThreshold }
-    );
-
-    return () => {
-      intersectionObserver.current?.disconnect();
-    };
-  }, [intersectionThreshold]);
-
   // Priority-based loading queue management
   const queueImageLoad = useCallback(
     (imageId: string, priority: 'high' | 'medium' | 'low') => {
@@ -110,7 +87,7 @@ export const useContentLoading = (config: ContentLoadingConfig) => {
     [images]
   );
 
-  // Process loading queue in batches
+  // Process loading queue in batches - unified processing function
   const processLoadingQueue = useCallback(() => {
     setState(prev => {
       if (prev.priorityQueue.length === 0 || loadingBatch.current.size >= batchSize) {
@@ -124,8 +101,31 @@ export const useContentLoading = (config: ContentLoadingConfig) => {
         const image = images.find(img => img.id === imageId);
         if (image) {
           const img = new Image();
-          img.onload = () => handleImageLoaded(imageId);
-          img.onerror = () => handleImageError(imageId);
+
+          img.onload = () => {
+            loadingBatch.current.delete(imageId);
+            setState(prevState => ({
+              ...prevState,
+              imagesLoaded: new Set([...prevState.imagesLoaded, imageId]),
+            }));
+            // Trigger next batch processing
+            setTimeout(() => processLoadingQueue(), 50);
+          };
+
+          img.onerror = () => {
+            loadingBatch.current.delete(imageId);
+            // Production-grade: Log specific error but continue gracefully
+            const errorDetails = {
+              imageId,
+              src: image.src,
+              priority: image.priority,
+              timestamp: Date.now(),
+            };
+            console.warn('Image load failed with graceful recovery:', errorDetails);
+            // Trigger next batch processing
+            setTimeout(() => processLoadingQueue(), 50);
+          };
+
           img.src = image.src;
         }
       });
@@ -137,29 +137,23 @@ export const useContentLoading = (config: ContentLoadingConfig) => {
     });
   }, [batchSize, images]);
 
-  const handleImageLoaded = useCallback(
-    (imageId: string) => {
-      loadingBatch.current.delete(imageId);
-      setState(prev => ({
-        ...prev,
-        imagesLoaded: new Set([...prev.imagesLoaded, imageId]),
-      }));
+  const preloadTab = useCallback(
+    (tabId: string) => {
+      if (state.tabsLoaded.has(tabId)) return;
 
-      // Process next batch
-      setTimeout(processLoadingQueue, 50);
+      const tab = tabs.find(t => t.id === tabId);
+      if (!tab || tab.priority === 'lazy') return;
+
+      const preloadTimeout = setTimeout(() => {
+        setState(prev => ({
+          ...prev,
+          tabsLoaded: new Set([...prev.tabsLoaded, tabId]),
+        }));
+      }, 1000);
+
+      loadingTimeouts.current.set(`preload-${tabId}`, preloadTimeout);
     },
-    [processLoadingQueue]
-  );
-
-  const handleImageError = useCallback(
-    (imageId: string) => {
-      loadingBatch.current.delete(imageId);
-      console.warn(`Failed to load image: ${imageId}`);
-
-      // Continue with next batch even on error
-      setTimeout(processLoadingQueue, 50);
-    },
-    [processLoadingQueue]
+    [tabs, state.tabsLoaded]
   );
 
   // Tab loading management
@@ -207,27 +201,31 @@ export const useContentLoading = (config: ContentLoadingConfig) => {
 
       loadingTimeouts.current.set(tabId, loadingTimeout);
     },
-    [tabs, preloadDistance, images, queueImageLoad, processLoadingQueue]
+    [tabs, preloadDistance, images, queueImageLoad, processLoadingQueue, preloadTab]
   );
 
-  const preloadTab = useCallback(
-    (tabId: string) => {
-      if (state.tabsLoaded.has(tabId)) return;
+  // Initialize intersection observer for image lazy loading
+  useEffect(() => {
+    intersectionObserver.current = new IntersectionObserver(
+      entries => {
+        entries.forEach(entry => {
+          const imageId = entry.target.getAttribute('data-image-id');
+          if (imageId && entry.isIntersecting) {
+            setState(prev => ({
+              ...prev,
+              visibleImages: new Set([...prev.visibleImages, imageId]),
+            }));
+            queueImageLoad(imageId, 'medium');
+          }
+        });
+      },
+      { threshold: intersectionThreshold }
+    );
 
-      const tab = tabs.find(t => t.id === tabId);
-      if (!tab || tab.priority === 'lazy') return;
-
-      const preloadTimeout = setTimeout(() => {
-        setState(prev => ({
-          ...prev,
-          tabsLoaded: new Set([...prev.tabsLoaded, tabId]),
-        }));
-      }, 1000);
-
-      loadingTimeouts.current.set(`preload-${tabId}`, preloadTimeout);
-    },
-    [tabs, state.tabsLoaded]
-  );
+    return () => {
+      intersectionObserver.current?.disconnect();
+    };
+  }, [intersectionThreshold, queueImageLoad]);
 
   // Gallery loading management
   const openGallery = useCallback(
@@ -296,12 +294,16 @@ export const useContentLoading = (config: ContentLoadingConfig) => {
     return () => clearInterval(interval);
   }, [processLoadingQueue]);
 
-  // Cleanup
+  // Cleanup with proper ref handling
   useEffect(() => {
+    const currentTimeouts = loadingTimeouts.current;
+    const currentObserver = intersectionObserver.current;
+
     return () => {
-      loadingTimeouts.current.forEach(timeout => clearTimeout(timeout));
-      loadingTimeouts.current.clear();
-      intersectionObserver.current?.disconnect();
+      // Use the captured refs from effect creation time
+      currentTimeouts.forEach(timeout => clearTimeout(timeout));
+      currentTimeouts.clear();
+      currentObserver?.disconnect();
     };
   }, []);
 

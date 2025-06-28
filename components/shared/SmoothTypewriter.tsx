@@ -21,7 +21,7 @@ export const SmoothTypewriter: React.FC<SmoothTypewriterProps> = ({
   onComplete,
   speed = 70, // Optimal speed: 80ms per character (12.5 chars/sec) for readability
   className = '',
-  onScroll
+  onScroll,
 }) => {
   const [lines, setLines] = useState<TypedLine[]>([]);
   const [isTyping, setIsTyping] = useState(false);
@@ -31,6 +31,7 @@ export const SmoothTypewriter: React.FC<SmoothTypewriterProps> = ({
   const currentCharIndexRef = useRef(0);
   const linesRef = useRef<TypedLine[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
+  const mounted = useRef(true);
 
   // Keep lines ref in sync with state
   useEffect(() => {
@@ -48,7 +49,7 @@ export const SmoothTypewriter: React.FC<SmoothTypewriterProps> = ({
       containerRef.current.scrollIntoView({
         behavior: 'smooth',
         block: 'nearest',
-        inline: 'nearest'
+        inline: 'nearest',
       });
     }
   }, [onScroll]);
@@ -59,7 +60,7 @@ export const SmoothTypewriter: React.FC<SmoothTypewriterProps> = ({
     const initialLines = contentLines.map(text => ({
       text: text.trim(),
       isComplete: false,
-      currentText: ''
+      currentText: '',
     }));
     setLines(initialLines);
     linesRef.current = initialLines;
@@ -85,8 +86,11 @@ export const SmoothTypewriter: React.FC<SmoothTypewriterProps> = ({
         if (!hasCompleted) {
           setHasCompleted(true);
           if (onComplete) {
-            console.log('SmoothTypewriter: Calling onComplete after delay');
-            setTimeout(onComplete, 1500);
+            setTimeout(() => {
+              if (mounted.current) {
+                onComplete();
+              }
+            }, 1500);
           }
         }
         return;
@@ -112,9 +116,7 @@ export const SmoothTypewriter: React.FC<SmoothTypewriterProps> = ({
 
         setLines(prev => {
           const newLines = prev.map((line, index) =>
-            index === currentLineIndex
-              ? { ...line, currentText: newText }
-              : line
+            index === currentLineIndex ? { ...line, currentText: newText } : line
           );
           linesRef.current = newLines;
           return newLines;
@@ -130,9 +132,7 @@ export const SmoothTypewriter: React.FC<SmoothTypewriterProps> = ({
         // Current line is complete
         setLines(prev => {
           const newLines = prev.map((line, index) =>
-            index === currentLineIndex
-              ? { ...line, isComplete: true }
-              : line
+            index === currentLineIndex ? { ...line, isComplete: true } : line
           );
           linesRef.current = newLines;
           return newLines;
@@ -150,7 +150,7 @@ export const SmoothTypewriter: React.FC<SmoothTypewriterProps> = ({
 
     // Start typing
     timeoutRef.current = setTimeout(typeNextCharacter, 75);
-  }, [speed, onComplete, isTyping]);
+  }, [speed, onComplete, isTyping, hasCompleted, scrollToBottom]);
 
   // Initialize lines when content changes
   useEffect(() => {

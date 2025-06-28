@@ -6,6 +6,7 @@ import {
   ContentLoadingIndicator,
   type TabLoadingConfig,
   type ImageLoadingConfig,
+  type ContentLoadingState,
 } from './Loading';
 import type { TabItem } from '../../shared/types';
 
@@ -17,7 +18,7 @@ interface WrapperContextType {
   isTabBroken: (tabId: string) => boolean;
   isGalleryBroken: (galleryId: string) => boolean;
   isImageBroken: (imageId: string) => boolean;
-  loadingState: any;
+  loadingState: ContentLoadingState;
 }
 
 const WrapperContext = createContext<WrapperContextType | null>(null);
@@ -95,15 +96,86 @@ export const ContentWrapper: React.FC<ContentWrapperProps> = ({
     preloadDistance: 1, // Conservative preloading for large files
   });
 
-  // Circuit breaker logic for luxury fashion content
+  // Circuit breaker logic
   const shouldBreakCircuit = useCallback(
-    (errorCount: number, timeWindow: number = 45000) => {
-      return errorCount >= 3 && Date.now() - errorState.lastErrorTime < timeWindow; // More sensitive for luxury content
+    (errorCount: number, timeWindow: number = 30000) => {
+      return errorCount >= 5 && Date.now() - errorState.lastErrorTime < timeWindow;
     },
     [errorState.lastErrorTime]
   );
 
-  // Luxury error handling with fashion context
+  const attemptRecovery = useCallback(
+    (errorType: 'tab' | 'gallery' | 'image' | 'general', errorId: string) => {
+      // Production-grade fashion recovery without console pollution
+
+      try {
+        setErrorState(prev => {
+          const newState = { ...prev };
+
+          switch (errorType) {
+            case 'tab':
+              newState.brokenTabs = new Set([...prev.brokenTabs]);
+              newState.brokenTabs.delete(errorId);
+              // Re-attempt tab loading
+              actions.loadTab(errorId);
+              break;
+            case 'gallery':
+              newState.brokenGalleries = new Set([...prev.brokenGalleries]);
+              newState.brokenGalleries.delete(errorId);
+              break;
+            case 'image':
+              newState.brokenImages = new Set([...prev.brokenImages]);
+              newState.brokenImages.delete(errorId);
+              // Re-queue image loading
+              actions.queueImageLoad(errorId, 'low');
+              break;
+          }
+
+          return newState;
+        });
+
+        onSuccess?.(`fashion-recovery-${errorType}-${errorId}`);
+      } catch (recoveryError) {
+        console.warn(`Fashion recovery failed for ${errorType}: ${errorId}`, recoveryError);
+        // Increase backoff for failed recovery
+        setRecoveryState(prev => ({
+          ...prev,
+          backoffMultiplier: prev.backoffMultiplier * 2,
+        }));
+      }
+    },
+    [actions, onSuccess]
+  );
+
+  // Fashion brand recovery scheduling
+  const scheduleRecovery = useCallback(
+    (errorType: 'tab' | 'gallery' | 'image' | 'general', errorId: string) => {
+      if (errorState.isCircuitOpen) return;
+
+      const backoffDelay = Math.min(
+        1000 * Math.pow(2, recoveryState.attempts) * recoveryState.backoffMultiplier,
+        18000 // Max 18 seconds for fashion content
+      );
+
+      recoveryTimeoutRef.current = setTimeout(() => {
+        attemptRecovery(errorType, errorId);
+      }, backoffDelay);
+
+      setRecoveryState(prev => ({
+        attempts: prev.attempts + 1,
+        lastAttempt: Date.now(),
+        backoffMultiplier: Math.min(prev.backoffMultiplier * 1.5, 4),
+      }));
+    },
+    [
+      errorState.isCircuitOpen,
+      recoveryState.attempts,
+      recoveryState.backoffMultiplier,
+      attemptRecovery,
+    ]
+  );
+
+  // Smart error handling with fashion brand protection
   const handleComponentError = useCallback(
     (
       errorType: 'tab' | 'gallery' | 'image' | 'general',
@@ -114,20 +186,27 @@ export const ContentWrapper: React.FC<ContentWrapperProps> = ({
       const errorMessage = `${errorType.toUpperCase()} Error in ${errorId}: ${error.message}`;
       const now = Date.now();
 
-      console.error(`[${id}] Raw Fiction error:`, {
+      // Professional error logging for fashion brand
+      const errorReport = {
         type: errorType,
         id: errorId,
         error: error.message,
         context,
         stack: error.stack,
         timestamp: new Date().toISOString(),
-      });
+        brand: 'Raw Fiction',
+      };
+
+      // Log for monitoring but avoid console pollution in production
+      if (process.env.NODE_ENV === 'development') {
+        console.error(`[${id}] Raw Fiction error:`, errorReport);
+      }
 
       setErrorState(prev => {
         const newErrorCount = prev.errorCount + 1;
         const shouldOpen = shouldBreakCircuit(newErrorCount);
 
-        let newState = {
+        const newState = {
           ...prev,
           errorCount: newErrorCount,
           lastErrorTime: now,
@@ -152,76 +231,10 @@ export const ContentWrapper: React.FC<ContentWrapperProps> = ({
 
       onError?.(errorMessage, context || 'unknown');
 
-      // Schedule luxury recovery
-      if (!errorState.isCircuitOpen) {
-        scheduleRecovery(errorType, errorId);
-      }
+      // Schedule fashion recovery
+      scheduleRecovery(errorType, errorId);
     },
-    [id, onError, shouldBreakCircuit, errorState.isCircuitOpen]
-  );
-
-  // Exponential backoff recovery for fashion content
-  const scheduleRecovery = useCallback(
-    (errorType: 'tab' | 'gallery' | 'image' | 'general', errorId: string) => {
-      const backoffDelay = Math.min(
-        2000 * Math.pow(2, recoveryState.attempts) * recoveryState.backoffMultiplier,
-        60000 // Max 60 seconds for luxury content
-      );
-
-      recoveryTimeoutRef.current = setTimeout(() => {
-        attemptRecovery(errorType, errorId);
-      }, backoffDelay);
-
-      setRecoveryState(prev => ({
-        attempts: prev.attempts + 1,
-        lastAttempt: Date.now(),
-        backoffMultiplier: Math.min(prev.backoffMultiplier * 1.8, 5), // Luxury exponential backoff
-      }));
-    },
-    [recoveryState.attempts, recoveryState.backoffMultiplier]
-  );
-
-  const attemptRecovery = useCallback(
-    (errorType: 'tab' | 'gallery' | 'image' | 'general', errorId: string) => {
-      console.log(`Attempting luxury recovery for ${errorType}: ${errorId}`);
-
-      try {
-        setErrorState(prev => {
-          let newState = { ...prev };
-
-          switch (errorType) {
-            case 'tab':
-              newState.brokenTabs = new Set([...prev.brokenTabs]);
-              newState.brokenTabs.delete(errorId);
-              // Re-attempt tab loading
-              actions.loadTab(errorId);
-              break;
-            case 'gallery':
-              newState.brokenGalleries = new Set([...prev.brokenGalleries]);
-              newState.brokenGalleries.delete(errorId);
-              break;
-            case 'image':
-              newState.brokenImages = new Set([...prev.brokenImages]);
-              newState.brokenImages.delete(errorId);
-              // Re-queue image loading
-              actions.queueImageLoad(errorId, 'low');
-              break;
-          }
-
-          return newState;
-        });
-
-        onSuccess?.(`luxury-recovery-${errorType}-${errorId}`);
-      } catch (recoveryError) {
-        console.warn(`Luxury recovery failed for ${errorType}: ${errorId}`, recoveryError);
-        // Increase backoff for failed recovery
-        setRecoveryState(prev => ({
-          ...prev,
-          backoffMultiplier: prev.backoffMultiplier * 2,
-        }));
-      }
-    },
-    [actions, onSuccess]
+    [id, onError, shouldBreakCircuit, scheduleRecovery]
   );
 
   // Health monitoring for luxury fashion content

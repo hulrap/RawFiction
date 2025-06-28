@@ -8,7 +8,7 @@ export const LegalCard: React.FC<ProjectProps> = ({ isActive: _isActive = true }
   }, []);
 
   const handleSuccess = useCallback((action: string) => {
-    console.log(`Legal documentation success: ${action}`);
+    console.warn(`Legal documentation success: ${action}`);
   }, []);
   const tabs: TabItem[] = [
     {

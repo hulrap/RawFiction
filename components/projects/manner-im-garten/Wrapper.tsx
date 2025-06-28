@@ -6,6 +6,7 @@ import {
   ContentLoadingIndicator,
   type TabLoadingConfig,
   type ImageLoadingConfig,
+  type ContentLoadingState,
 } from './Loading';
 import type { TabItem } from '../../shared/types';
 
@@ -17,7 +18,7 @@ interface WrapperContextType {
   isTabBroken: (tabId: string) => boolean;
   isGalleryBroken: (galleryId: string) => boolean;
   isImageBroken: (imageId: string) => boolean;
-  loadingState: any;
+  loadingState: ContentLoadingState;
 }
 
 const WrapperContext = createContext<WrapperContextType | null>(null);
@@ -103,91 +104,13 @@ export const ContentWrapper: React.FC<ContentWrapperProps> = ({
     [errorState.lastErrorTime]
   );
 
-  // Smart error handling with context isolation
-  const handleComponentError = useCallback(
-    (
-      errorType: 'tab' | 'gallery' | 'image' | 'general',
-      errorId: string,
-      error: Error,
-      context?: string
-    ) => {
-      const errorMessage = `${errorType.toUpperCase()} Error in ${errorId}: ${error.message}`;
-      const now = Date.now();
-
-      console.error(`[${id}] Component error:`, {
-        type: errorType,
-        id: errorId,
-        error: error.message,
-        context,
-        stack: error.stack,
-        timestamp: new Date().toISOString(),
-      });
-
-      setErrorState(prev => {
-        const newErrorCount = prev.errorCount + 1;
-        const shouldOpen = shouldBreakCircuit(newErrorCount);
-
-        let newState = {
-          ...prev,
-          errorCount: newErrorCount,
-          lastErrorTime: now,
-          isCircuitOpen: shouldOpen,
-        };
-
-        // Isolate the specific broken component
-        switch (errorType) {
-          case 'tab':
-            newState.brokenTabs = new Set([...prev.brokenTabs, errorId]);
-            break;
-          case 'gallery':
-            newState.brokenGalleries = new Set([...prev.brokenGalleries, errorId]);
-            break;
-          case 'image':
-            newState.brokenImages = new Set([...prev.brokenImages, errorId]);
-            break;
-        }
-
-        return newState;
-      });
-
-      onError?.(errorMessage, context || 'unknown');
-
-      // Schedule smart recovery
-      if (!errorState.isCircuitOpen) {
-        scheduleRecovery(errorType, errorId);
-      }
-    },
-    [id, onError, shouldBreakCircuit, errorState.isCircuitOpen]
-  );
-
-  // Exponential backoff recovery
-  const scheduleRecovery = useCallback(
-    (errorType: 'tab' | 'gallery' | 'image' | 'general', errorId: string) => {
-      const backoffDelay = Math.min(
-        1000 * Math.pow(2, recoveryState.attempts) * recoveryState.backoffMultiplier,
-        30000 // Max 30 seconds
-      );
-
-      recoveryTimeoutRef.current = setTimeout(() => {
-        attemptRecovery(errorType, errorId);
-      }, backoffDelay);
-
-      setRecoveryState(prev => ({
-        attempts: prev.attempts + 1,
-        lastAttempt: Date.now(),
-        backoffMultiplier: Math.min(prev.backoffMultiplier * 1.5, 4),
-      }));
-    },
-    [recoveryState.attempts, recoveryState.backoffMultiplier]
-  );
-
   const attemptRecovery = useCallback(
     (errorType: 'tab' | 'gallery' | 'image' | 'general', errorId: string) => {
-      console.log(`Attempting recovery for ${errorType}: ${errorId}`);
+      // Professional recovery logging without console pollution
 
       try {
         setErrorState(prev => {
-          let newState = { ...prev };
+          const newState = { ...prev };
 
           switch (errorType) {
             case 'tab':
@@ -222,6 +145,84 @@ export const ContentWrapper: React.FC<ContentWrapperProps> = ({
       }
     },
     [actions, onSuccess]
+  );
+
+  // Exponential backoff recovery
+  const scheduleRecovery = useCallback(
+    (errorType: 'tab' | 'gallery' | 'image' | 'general', errorId: string) => {
+      const backoffDelay = Math.min(
+        1000 * Math.pow(2, recoveryState.attempts) * recoveryState.backoffMultiplier,
+        30000 // Max 30 seconds
+      );
+
+      recoveryTimeoutRef.current = setTimeout(() => {
+        attemptRecovery(errorType, errorId);
+      }, backoffDelay);
+
+      setRecoveryState(prev => ({
+        attempts: prev.attempts + 1,
+        lastAttempt: Date.now(),
+        backoffMultiplier: Math.min(prev.backoffMultiplier * 1.5, 4),
+      }));
+    },
+    [recoveryState.attempts, recoveryState.backoffMultiplier, attemptRecovery]
+  );
+
+  // Smart error handling with context isolation
+  const handleComponentError = useCallback(
+    (
+      errorType: 'tab' | 'gallery' | 'image' | 'general',
+      errorId: string,
+      error: Error,
+      context?: string
+    ) => {
+      const errorMessage = `${errorType.toUpperCase()} Error in ${errorId}: ${error.message}`;
+      const now = Date.now();
+
+      console.error(`[${id}] Component error:`, {
+        type: errorType,
+        id: errorId,
+        error: error.message,
+        context,
+        stack: error.stack,
+        timestamp: new Date().toISOString(),
+      });
+
+      setErrorState(prev => {
+        const newErrorCount = prev.errorCount + 1;
+        const shouldOpen = shouldBreakCircuit(newErrorCount);
+
+        const newState = {
+          ...prev,
+          errorCount: newErrorCount,
+          lastErrorTime: now,
+          isCircuitOpen: shouldOpen,
+        };
+
+        // Isolate the specific broken component
+        switch (errorType) {
+          case 'tab':
+            newState.brokenTabs = new Set([...prev.brokenTabs, errorId]);
+            break;
+          case 'gallery':
+            newState.brokenGalleries = new Set([...prev.brokenGalleries, errorId]);
+            break;
+          case 'image':
+            newState.brokenImages = new Set([...prev.brokenImages, errorId]);
+            break;
+        }
+
+        return newState;
+      });
+
+      onError?.(errorMessage, context || 'unknown');
+
+      // Schedule smart recovery
+      if (!errorState.isCircuitOpen) {
+        scheduleRecovery(errorType, errorId);
+      }
+    },
+    [id, onError, shouldBreakCircuit, errorState.isCircuitOpen, scheduleRecovery]
   );
 
   // Health monitoring for internal content
@@ -377,7 +378,7 @@ export const ContentWrapper: React.FC<ContentWrapperProps> = ({
             <p className="text-sm text-green-200 mb-4 leading-relaxed">
               The community garden is sheltered due to harsh conditions.
               <br />
-              We're protecting the growing space until the environment stabilizes.
+              We&apos;re protecting the growing space until the environment stabilizes.
             </p>
             <div className="bg-green-800/50 rounded-lg p-3 mb-6 text-xs text-green-300">
               <div>Weather Events: {errorState.errorCount}</div>

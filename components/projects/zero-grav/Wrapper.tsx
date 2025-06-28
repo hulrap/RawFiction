@@ -14,7 +14,6 @@ const WrapperContext = createContext<WrapperContextType | null>(null);
 export const useWrapper = () => {
   const context = useContext(WrapperContext);
   if (!context) {
-    console.warn('useWrapper must be used within an EmbeddedWrapper component');
     return null;
   }
   return context;
@@ -92,25 +91,66 @@ export const EmbeddedWrapper: React.FC<EmbeddedWrapperProps> = ({
     [errorState.lastErrorTime]
   );
 
+  const attemptSpaceRecovery = useCallback(
+    (errorType: 'tab' | 'health' | 'general', errorId: string) => {
+      try {
+        setErrorState(prev => {
+          const newState = { ...prev };
+
+          if (errorType === 'tab') {
+            newState.brokenTabs = new Set([...prev.brokenTabs]);
+            newState.brokenTabs.delete(errorId);
+          }
+
+          return newState;
+        });
+
+        // Re-initialize loading for the current tab
+        actions.manualRetry();
+        onSuccess?.();
+      } catch (recoveryError) {
+        // Increase backoff for failed recovery
+        setRecoveryState(prev => ({
+          ...prev,
+          backoffMultiplier: prev.backoffMultiplier * 2,
+        }));
+      }
+    },
+    [actions, onSuccess]
+  );
+
+  // Space recovery system
+  const scheduleSpaceRecovery = useCallback(
+    (errorType: 'tab' | 'health' | 'general', errorId: string) => {
+      const backoffDelay = Math.min(
+        5000 * Math.pow(2, recoveryState.attempts) * recoveryState.backoffMultiplier,
+        60000 // Max 1 minute for space recovery
+      );
+
+      recoveryTimeoutRef.current = setTimeout(() => {
+        attemptSpaceRecovery(errorType, errorId);
+      }, backoffDelay);
+
+      setRecoveryState(prev => ({
+        attempts: prev.attempts + 1,
+        lastAttempt: Date.now(),
+        backoffMultiplier: Math.min(prev.backoffMultiplier * 1.5, 4),
+      }));
+    },
+    [recoveryState.attempts, recoveryState.backoffMultiplier, attemptSpaceRecovery]
+  );
+
   // Cosmic error handling for space platforms
   const handleSpaceError = useCallback(
     (errorType: 'tab' | 'health' | 'general', errorId: string, error: Error) => {
       const errorMessage = `${errorType.toUpperCase()} Error in ${errorId}: ${error.message}`;
       const now = Date.now();
 
-      console.error(`[${id}] Zero Grav space error:`, {
-        type: errorType,
-        id: errorId,
-        error: error.message,
-        stack: error.stack,
-        timestamp: new Date().toISOString(),
-      });
-
       setErrorState(prev => {
         const newErrorCount = prev.errorCount + 1;
         const shouldActivate = shouldActivateSpaceProtection(newErrorCount);
 
-        let newState = {
+        const newState = {
           ...prev,
           errorCount: newErrorCount,
           lastErrorTime: now,
@@ -132,65 +172,18 @@ export const EmbeddedWrapper: React.FC<EmbeddedWrapperProps> = ({
         scheduleSpaceRecovery(errorType, errorId);
       }
     },
-    [id, onError, shouldActivateSpaceProtection, errorState.isSpaceProtectionActive]
-  );
-
-  // Space recovery system
-  const scheduleSpaceRecovery = useCallback(
-    (errorType: 'tab' | 'health' | 'general', errorId: string) => {
-      const backoffDelay = Math.min(
-        5000 * Math.pow(2, recoveryState.attempts) * recoveryState.backoffMultiplier,
-        60000 // Max 1 minute for space recovery
-      );
-
-      recoveryTimeoutRef.current = setTimeout(() => {
-        attemptSpaceRecovery(errorType, errorId);
-      }, backoffDelay);
-
-      setRecoveryState(prev => ({
-        attempts: prev.attempts + 1,
-        lastAttempt: Date.now(),
-        backoffMultiplier: Math.min(prev.backoffMultiplier * 1.5, 4),
-      }));
-    },
-    [recoveryState.attempts, recoveryState.backoffMultiplier]
-  );
-
-  const attemptSpaceRecovery = useCallback(
-    (errorType: 'tab' | 'health' | 'general', errorId: string) => {
-      console.log(`Attempting space recovery for ${errorType}: ${errorId}`);
-
-      try {
-        setErrorState(prev => {
-          let newState = { ...prev };
-
-          if (errorType === 'tab') {
-            newState.brokenTabs = new Set([...prev.brokenTabs]);
-            newState.brokenTabs.delete(errorId);
-          }
-
-          return newState;
-        });
-
-        // Re-initialize loading for the current tab
-        actions.manualRetry();
-        onSuccess?.();
-      } catch (recoveryError) {
-        console.warn(`Space recovery failed for ${errorType}: ${errorId}`, recoveryError);
-        setRecoveryState(prev => ({
-          ...prev,
-          backoffMultiplier: prev.backoffMultiplier * 2,
-        }));
-      }
-    },
-    [actions, onSuccess]
+    [
+      onError,
+      shouldActivateSpaceProtection,
+      errorState.isSpaceProtectionActive,
+      scheduleSpaceRecovery,
+    ]
   );
 
   // Enhanced tab switching for space platforms
   const handleTabChange = useCallback(
     (tabId: string) => {
       if (errorState.brokenTabs.has(tabId)) {
-        console.warn(`Skipping broken space platform: ${tabId}`);
         return;
       }
 
@@ -213,10 +206,10 @@ export const EmbeddedWrapper: React.FC<EmbeddedWrapperProps> = ({
 
       // Check space platform accessibility
       const iframes = container.querySelectorAll('iframe');
-      iframes.forEach((iframe, index) => {
+      iframes.forEach(iframe => {
         const isAccessible = iframe.offsetHeight > 0 && iframe.offsetWidth > 0;
         if (!isAccessible) {
-          console.warn(`Space platform ${index + 1} became inaccessible`);
+          // Space platform became inaccessible - handled silently
         }
       });
 

@@ -163,7 +163,7 @@ export const useEmbeddedLoading = (config: EmbeddedLoadingConfig) => {
         };
       });
     },
-    [maxRetries, initiateLoad]
+    [maxRetries, initiateLoad, stopProgressSimulation]
   );
 
   const manualRetry = useCallback(() => {
@@ -245,7 +245,7 @@ export const EmbeddedLoadingIndicator: React.FC<{
             />
           </div>
           <p className="text-xs text-gray-400">{Math.round(state.loadingProgress)}%</p>
-          <p className="text-xs text-gray-500 mt-2">Accessing Vienna's cultural heritage...</p>
+          <p className="text-xs text-gray-500 mt-2">Accessing Vienna&apos;s cultural heritage...</p>
         </div>
       </div>
     );

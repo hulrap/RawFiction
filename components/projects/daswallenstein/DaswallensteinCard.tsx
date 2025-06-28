@@ -1,4 +1,4 @@
-import { memo, useCallback } from 'react';
+import { memo } from 'react';
 import { EmbeddedWrapper } from './Wrapper';
 
 interface DasWallensteinCardProps {
@@ -9,16 +9,6 @@ interface DasWallensteinCardProps {
 
 export const DaswallensteinCard: React.FC<DasWallensteinCardProps> = memo(
   ({ id, className, style }) => {
-    const handleError = useCallback((error: string) => {
-      console.error(`Das Wallenstein error: ${error}`);
-      // Could integrate with analytics or error reporting here
-    }, []);
-
-    const handleSuccess = useCallback(() => {
-      console.log('Das Wallenstein loaded successfully');
-      // Could trigger analytics events here
-    }, []);
-
     return (
       <EmbeddedWrapper
         id={id}
@@ -26,8 +16,6 @@ export const DaswallensteinCard: React.FC<DasWallensteinCardProps> = memo(
         title="Das Wallenstein"
         className={className || 'h-full w-full'}
         style={style || {}}
-        onError={handleError}
-        onSuccess={handleSuccess}
         fallbackContent={
           <div className="text-center">
             <h3 className="text-lg font-semibold mb-4">Das Wallenstein Unavailable</h3>
@@ -36,8 +24,8 @@ export const DaswallensteinCard: React.FC<DasWallensteinCardProps> = memo(
             </p>
             <div className="space-y-2">
               <p className="text-xs text-gray-500">
-                Das Wallenstein represents Vienna's rich cultural heritage and contemporary artistic
-                expression.
+                Das Wallenstein represents Vienna&apos;s rich cultural heritage and contemporary
+                artistic expression.
               </p>
             </div>
           </div>

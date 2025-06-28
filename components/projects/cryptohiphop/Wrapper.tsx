@@ -6,6 +6,7 @@ import {
   ContentLoadingIndicator,
   type TabLoadingConfig,
   type ImageLoadingConfig,
+  type ContentLoadingState,
 } from './Loading';
 import type { TabItem } from '../../shared/types';
 
@@ -17,7 +18,7 @@ interface WrapperContextType {
   isTabBroken: (tabId: string) => boolean;
   isGalleryBroken: (galleryId: string) => boolean;
   isImageBroken: (imageId: string) => boolean;
-  loadingState: any;
+  loadingState: ContentLoadingState;
 }
 
 const WrapperContext = createContext<WrapperContextType | null>(null);
@@ -103,7 +104,78 @@ export const ContentWrapper: React.FC<ContentWrapperProps> = ({
     [errorState.lastErrorTime]
   );
 
-  // Smart error handling with context isolation
+  const attemptRecovery = useCallback(
+    (errorType: 'tab' | 'gallery' | 'image' | 'general', errorId: string) => {
+      // Production-grade blockchain recovery without console pollution
+
+      try {
+        setErrorState(prev => {
+          const newState = { ...prev };
+
+          switch (errorType) {
+            case 'tab':
+              newState.brokenTabs = new Set([...prev.brokenTabs]);
+              newState.brokenTabs.delete(errorId);
+              // Re-attempt tab loading
+              actions.loadTab(errorId);
+              break;
+            case 'gallery':
+              newState.brokenGalleries = new Set([...prev.brokenGalleries]);
+              newState.brokenGalleries.delete(errorId);
+              break;
+            case 'image':
+              newState.brokenImages = new Set([...prev.brokenImages]);
+              newState.brokenImages.delete(errorId);
+              // Re-queue image loading
+              actions.queueImageLoad(errorId, 'low');
+              break;
+          }
+
+          return newState;
+        });
+
+        onSuccess?.(`blockchain-recovery-${errorType}-${errorId}`);
+      } catch (recoveryError) {
+        console.warn(`Blockchain recovery failed for ${errorType}: ${errorId}`, recoveryError);
+        // Increase backoff for failed recovery
+        setRecoveryState(prev => ({
+          ...prev,
+          backoffMultiplier: prev.backoffMultiplier * 2,
+        }));
+      }
+    },
+    [actions, onSuccess]
+  );
+
+  // Crypto community recovery scheduling
+  const scheduleRecovery = useCallback(
+    (errorType: 'tab' | 'gallery' | 'image' | 'general', errorId: string) => {
+      if (errorState.isCircuitOpen) return;
+
+      const backoffDelay = Math.min(
+        1000 * Math.pow(2, recoveryState.attempts) * recoveryState.backoffMultiplier,
+        25000 // Max 25 seconds for crypto content
+      );
+
+      recoveryTimeoutRef.current = setTimeout(() => {
+        attemptRecovery(errorType, errorId);
+      }, backoffDelay);
+
+      setRecoveryState(prev => ({
+        attempts: prev.attempts + 1,
+        lastAttempt: Date.now(),
+        backoffMultiplier: Math.min(prev.backoffMultiplier * 1.5, 4),
+      }));
+    },
+    [
+      errorState.isCircuitOpen,
+      recoveryState.attempts,
+      recoveryState.backoffMultiplier,
+      attemptRecovery,
+    ]
+  );
+
+  // Smart error handling with blockchain resilience
   const handleComponentError = useCallback(
     (
       errorType: 'tab' | 'gallery' | 'image' | 'general',
@@ -114,7 +186,7 @@ export const ContentWrapper: React.FC<ContentWrapperProps> = ({
       const errorMessage = `${errorType.toUpperCase()} Error in ${errorId}: ${error.message}`;
       const now = Date.now();
 
-      console.error(`[${id}] Component error:`, {
+      console.error(`[${id}] Crypto Hip Hop error:`, {
         type: errorType,
         id: errorId,
         error: error.message,
@@ -127,7 +199,7 @@ export const ContentWrapper: React.FC<ContentWrapperProps> = ({
         const newErrorCount = prev.errorCount + 1;
         const shouldOpen = shouldBreakCircuit(newErrorCount);
 
-        let newState = {
+        const newState = {
           ...prev,
           errorCount: newErrorCount,
           lastErrorTime: now,
@@ -152,76 +224,10 @@ export const ContentWrapper: React.FC<ContentWrapperProps> = ({
 
       onError?.(errorMessage, context || 'unknown');
 
-      // Schedule smart recovery
-      if (!errorState.isCircuitOpen) {
-        scheduleRecovery(errorType, errorId);
-      }
+      // Schedule crypto recovery
+      scheduleRecovery(errorType, errorId);
     },
-    [id, onError, shouldBreakCircuit, errorState.isCircuitOpen]
-  );
-
-  // Exponential backoff recovery
-  const scheduleRecovery = useCallback(
-    (errorType: 'tab' | 'gallery' | 'image' | 'general', errorId: string) => {
-      const backoffDelay = Math.min(
-        1000 * Math.pow(2, recoveryState.attempts) * recoveryState.backoffMultiplier,
-        30000 // Max 30 seconds
-      );
-
-      recoveryTimeoutRef.current = setTimeout(() => {
-        attemptRecovery(errorType, errorId);
-      }, backoffDelay);
-
-      setRecoveryState(prev => ({
-        attempts: prev.attempts + 1,
-        lastAttempt: Date.now(),
-        backoffMultiplier: Math.min(prev.backoffMultiplier * 1.5, 4),
-      }));
-    },
-    [recoveryState.attempts, recoveryState.backoffMultiplier]
-  );
-
-  const attemptRecovery = useCallback(
-    (errorType: 'tab' | 'gallery' | 'image' | 'general', errorId: string) => {
-      console.log(`Attempting recovery for ${errorType}: ${errorId}`);
-
-      try {
-        setErrorState(prev => {
-          let newState = { ...prev };
-
-          switch (errorType) {
-            case 'tab':
-              newState.brokenTabs = new Set([...prev.brokenTabs]);
-              newState.brokenTabs.delete(errorId);
-              // Re-attempt tab loading
-              actions.loadTab(errorId);
-              break;
-            case 'gallery':
-              newState.brokenGalleries = new Set([...prev.brokenGalleries]);
-              newState.brokenGalleries.delete(errorId);
-              break;
-            case 'image':
-              newState.brokenImages = new Set([...prev.brokenImages]);
-              newState.brokenImages.delete(errorId);
-              // Re-queue image loading
-              actions.queueImageLoad(errorId, 'low');
-              break;
-          }
-
-          return newState;
-        });
-
-        onSuccess?.(`recovery-${errorType}-${errorId}`);
-      } catch (recoveryError) {
-        console.warn(`Recovery failed for ${errorType}: ${errorId}`, recoveryError);
-        // Increase backoff for failed recovery
-        setRecoveryState(prev => ({
-          ...prev,
-          backoffMultiplier: prev.backoffMultiplier * 2,
-        }));
-      }
-    },
-    [actions, onSuccess]
+    [id, onError, shouldBreakCircuit, scheduleRecovery]
   );
 
   // Health monitoring for internal content

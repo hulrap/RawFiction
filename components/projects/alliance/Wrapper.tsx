@@ -49,6 +49,47 @@ export const EmbeddedWrapper: React.FC<EmbeddedWrapperProps> = ({
     enablePreconnect: true,
   });
 
+  const handleRecovery = useCallback(() => {
+    setErrorState(prev => ({
+      hasError: false,
+      errorId: '',
+      retryCount: prev.retryCount,
+    }));
+
+    // Re-initialize loading
+    setTimeout(() => {
+      actions.initiateLoad();
+    }, 1000);
+  }, [actions]);
+
+  const handleComponentError = useCallback(
+    (errorType: string, error: Error) => {
+      const errorId = `${id}-${Date.now()}`;
+      const errorMessage = `${errorType}: ${error.message}`;
+
+      setErrorState(prev => {
+        const newRetryCount = prev.retryCount + 1;
+
+        // Auto-recovery attempt after 5 seconds
+        if (newRetryCount < 3) {
+          errorTimeoutRef.current = setTimeout(() => {
+            handleRecovery();
+          }, 5000);
+        }
+
+        return {
+          hasError: true,
+          errorInfo: errorMessage,
+          errorId,
+          retryCount: newRetryCount,
+        };
+      });
+
+      onError?.(errorMessage);
+    },
+    [id, onError, handleRecovery]
+  );
+
   // Health check for embedded content
   const performHealthCheck = useCallback(() => {
     try {
@@ -61,10 +102,9 @@ export const EmbeddedWrapper: React.FC<EmbeddedWrapperProps> = ({
         }
       }
     } catch (error) {
-      console.warn(`Health check failed for ${title}:`, error);
       handleComponentError('Health check failure', error as Error);
     }
-  }, [title, loadingState.isLoaded]);
+  }, [loadingState.isLoaded, handleComponentError]);
 
   // Periodic health monitoring
   useEffect(() => {
@@ -78,53 +118,6 @@ export const EmbeddedWrapper: React.FC<EmbeddedWrapperProps> = ({
       }
     };
   }, [loadingState.isLoaded, errorState.hasError, performHealthCheck]);
-
-  const handleComponentError = useCallback(
-    (errorType: string, error: Error) => {
-      const errorId = `${id}-${Date.now()}`;
-      const errorMessage = `${errorType}: ${error.message}`;
-
-      console.error(`[${errorId}] Component error in ${title}:`, {
-        errorType,
-        error: error.message,
-        stack: error.stack,
-        url,
-        timestamp: new Date().toISOString(),
-      });
-
-      setErrorState(prev => ({
-        hasError: true,
-        errorInfo: errorMessage,
-        errorId,
-        retryCount: prev.retryCount + 1,
-      }));
-
-      onError?.(errorMessage);
-
-      // Auto-recovery attempt after 5 seconds
-      if (errorState.retryCount < 3) {
-        errorTimeoutRef.current = setTimeout(() => {
-          handleRecovery();
-        }, 5000);
-      }
-    },
-    [id, title, url, onError, errorState.retryCount]
-  );
-
-  const handleRecovery = useCallback(() => {
-    console.log(`Attempting recovery for ${title} (attempt ${errorState.retryCount + 1})`);
-
-    setErrorState({
-      hasError: false,
-      errorId: '',
-      retryCount: errorState.retryCount,
-    });
-
-    // Re-initialize loading
-    setTimeout(() => {
-      actions.initiateLoad();
-    }, 1000);
-  }, [title, errorState.retryCount, actions]);
 
   const handleLoadSuccess = useCallback(() => {
     setErrorState({

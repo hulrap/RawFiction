@@ -1,17 +1,9 @@
-import React, { useCallback } from 'react';
+import React from 'react';
 import { EmbeddedWrapper } from './Wrapper';
 import { EmbeddedWebsiteFrame } from '../../shared/EmbeddedWebsiteFrame';
 import type { ProjectProps, TabItem } from '../../shared/types';
 
 export const ZeroGravCard: React.FC<ProjectProps> = ({ isActive: _isActive = true }) => {
-  const handleError = useCallback((error: string) => {
-    console.error(`Zero Grav error: ${error}`);
-  }, []);
-
-  const handleSuccess = useCallback(() => {
-    console.log(`Zero Grav success`);
-  }, []);
-
   const tabs: TabItem[] = [
     {
       id: 'zerograv',
@@ -38,8 +30,6 @@ export const ZeroGravCard: React.FC<ProjectProps> = ({ isActive: _isActive = tru
       id="zero-grav"
       tabs={tabs}
       className="h-full w-full"
-      onError={handleError}
-      onSuccess={handleSuccess}
     />
   );
 };

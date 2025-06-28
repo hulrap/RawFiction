@@ -1,11 +1,11 @@
-import React, { useCallback } from 'react';
+import React from 'react';
 import { ContentWrapper } from './Wrapper';
 import { EmbeddedWebsiteFrame } from '../../shared/EmbeddedWebsiteFrame';
 import type { ProjectProps, TabItem } from '../../shared/types';
 const MANNER_EVENTS = [
   { id: '1', title: 'Spring Gathering', description: 'Early season garden conversations' },
   { id: '2', title: 'Summer Workshop', description: 'Intensive gardening techniques' },
-  { id: '3', title: 'Harvest Festival', description: "Celebrating the season's bounty" },
+  { id: '3', title: 'Harvest Festival', description: 'Celebrating the season&apos;s bounty' },
   { id: '4', title: 'Autumn Reflection', description: 'Contemplating growth and change' },
   { id: '5', title: 'Winter Planning', description: 'Preparing for the next cycle' },
   { id: '6', title: 'Community Build', description: 'Creating shared garden spaces' },
@@ -14,13 +14,6 @@ const MANNER_EVENTS = [
 ];
 
 export const MannerImGartenCard: React.FC<ProjectProps> = ({ isActive: _isActive = true }) => {
-  const handleError = useCallback((error: string, context: string) => {
-    console.error(`Männer im Garten error [${context}]: ${error}`);
-  }, []);
-
-  const handleSuccess = useCallback((action: string) => {
-    console.log(`Männer im Garten success: ${action}`);
-  }, []);
   const tabs: TabItem[] = [
     {
       id: 'overview',
@@ -174,8 +167,6 @@ export const MannerImGartenCard: React.FC<ProjectProps> = ({ isActive: _isActive
       id="manner-im-garten"
       tabs={tabs}
       className="h-full w-full"
-      onError={handleError}
-      onSuccess={handleSuccess}
       loadingConfig={loadingConfig}
     />
   );

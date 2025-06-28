@@ -1,10 +1,11 @@
 import React from 'react';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import type { ProjectProps } from './shared/types';
 
 interface PortfolioProject {
   id: string;
   title: string;
-  component: React.ComponentType;
+  component: React.ComponentType<ProjectProps>;
   description: string;
 }
 
@@ -22,7 +23,7 @@ export const NavigationControls: React.FC<NavigationControlsProps> = ({
   currentIndex,
   onNext,
   onPrevious,
-  isTransitioning
+  isTransitioning,
 }) => {
   return (
     <div className="nav-controls">
@@ -40,9 +41,7 @@ export const NavigationControls: React.FC<NavigationControlsProps> = ({
           {currentIndex + 1} / {projects.length}
         </span>
 
-        <span className="text-sm text-gradient font-medium">
-          {projects[currentIndex]?.title}
-        </span>
+        <span className="text-sm text-gradient font-medium">{projects[currentIndex]?.title}</span>
       </div>
 
       <button

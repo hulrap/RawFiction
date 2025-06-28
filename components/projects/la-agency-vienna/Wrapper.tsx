@@ -49,48 +49,23 @@ export const EmbeddedWrapper: React.FC<EmbeddedWrapperProps> = ({
     enablePreconnect: true,
   });
 
-  // Health check for embedded content
-  const performHealthCheck = useCallback(() => {
-    try {
-      const iframe = containerRef.current?.querySelector('iframe');
-      if (iframe && iframe.contentWindow) {
-        // Basic iframe accessibility check
-        const isAccessible = iframe.offsetHeight > 0 && iframe.offsetWidth > 0;
-        if (!isAccessible && loadingState.isLoaded) {
-          throw new Error('Iframe became inaccessible');
-        }
-      }
-    } catch (error) {
-      console.warn(`Health check failed for ${title}:`, error);
-      handleComponentError('Health check failure', error as Error);
-    }
-  }, [title, loadingState.isLoaded]);
+  const handleRecovery = useCallback(() => {
+    setErrorState({
+      hasError: false,
+      errorId: '',
+      retryCount: errorState.retryCount,
+    });
 
-  // Periodic health monitoring
-  useEffect(() => {
-    if (loadingState.isLoaded && !errorState.hasError) {
-      healthCheckRef.current = setInterval(performHealthCheck, 25000); // Check every 25 seconds (active for creative sites)
-    }
-
-    return () => {
-      if (healthCheckRef.current) {
-        clearInterval(healthCheckRef.current);
-      }
-    };
-  }, [loadingState.isLoaded, errorState.hasError, performHealthCheck]);
+    // Re-initialize loading
+    setTimeout(() => {
+      actions.initiateLoad();
+    }, 1000);
+  }, [errorState.retryCount, actions]);
 
   const handleComponentError = useCallback(
     (errorType: string, error: Error) => {
       const errorId = `${id}-${Date.now()}`;
       const errorMessage = `${errorType}: ${error.message}`;
-
-      console.error(`[${errorId}] Component error in ${title}:`, {
-        errorType,
-        error: error.message,
-        stack: error.stack,
-        url,
-        timestamp: new Date().toISOString(),
-      });
 
       setErrorState(prev => ({
         hasError: true,
@@ -108,23 +83,37 @@ export const EmbeddedWrapper: React.FC<EmbeddedWrapperProps> = ({
         }, 5000);
       }
     },
-    [id, title, url, onError, errorState.retryCount]
+    [id, onError, errorState.retryCount, handleRecovery]
   );
 
-  const handleRecovery = useCallback(() => {
-    console.log(`Attempting recovery for ${title} (attempt ${errorState.retryCount + 1})`);
+  // Health check for embedded content
+  const performHealthCheck = useCallback(() => {
+    try {
+      const iframe = containerRef.current?.querySelector('iframe');
+      if (iframe && iframe.contentWindow) {
+        // Basic iframe accessibility check
+        const isAccessible = iframe.offsetHeight > 0 && iframe.offsetWidth > 0;
+        if (!isAccessible && loadingState.isLoaded) {
+          throw new Error('Iframe became inaccessible');
+        }
+      }
+    } catch (error) {
+      handleComponentError('Health check failure', error as Error);
+    }
+  }, [loadingState.isLoaded, handleComponentError]);
 
-    setErrorState({
-      hasError: false,
-      errorId: '',
-      retryCount: errorState.retryCount,
-    });
+  // Periodic health monitoring
+  useEffect(() => {
+    if (loadingState.isLoaded && !errorState.hasError) {
+      healthCheckRef.current = setInterval(performHealthCheck, 25000); // Check every 25 seconds (active for creative sites)
+    }
 
-    // Re-initialize loading
-    setTimeout(() => {
-      actions.initiateLoad();
-    }, 1000);
-  }, [title, errorState.retryCount, actions]);
+    return () => {
+      if (healthCheckRef.current) {
+        clearInterval(healthCheckRef.current);
+      }
+    };
+  }, [loadingState.isLoaded, errorState.hasError, performHealthCheck]);
 
   const handleLoadSuccess = useCallback(() => {
     setErrorState({

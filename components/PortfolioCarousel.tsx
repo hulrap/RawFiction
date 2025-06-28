@@ -65,10 +65,13 @@ const CardLoadingFallback: React.FC = () => (
   </div>
 );
 
+// Import types
+import type { ProjectProps } from './shared/types';
+
 interface PortfolioProject {
   id: string;
   title: string;
-  component: React.ComponentType<any>;
+  component: React.ComponentType<ProjectProps>;
   description: string;
   websiteUrl?: string;
 }
@@ -85,10 +88,6 @@ class ErrorBoundary extends React.Component<
 
   static getDerivedStateFromError() {
     return { hasError: true };
-  }
-
-  override componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.warn('Card component error contained:', error, errorInfo);
   }
 
   override render() {
@@ -110,7 +109,7 @@ class ErrorBoundary extends React.Component<
 const PORTFOLIO_PROJECTS: PortfolioProject[] = [
   {
     id: 'welcome',
-    title: 'Welcome to the Matrix',
+    title: 'Welcome to the Portfolioverse',
     component: WelcomeCard,
     description: 'Enter the digital realm and explore the portfolio',
   },
@@ -315,7 +314,7 @@ export const PortfolioCarousel: React.FC = () => {
       setCurrentIndex(prev => (prev + 1) % totalProjects);
       setTimeout(() => setIsTransitioning(false), 800);
     } catch (error) {
-      console.warn('Navigation error contained:', error);
+      // Handle navigation errors silently
       setIsTransitioning(false);
     }
   }, [isTransitioning, totalProjects]);
@@ -327,7 +326,7 @@ export const PortfolioCarousel: React.FC = () => {
       setCurrentIndex(prev => (prev - 1 + totalProjects) % totalProjects);
       setTimeout(() => setIsTransitioning(false), 800);
     } catch (error) {
-      console.warn('Navigation error contained:', error);
+      // Handle navigation errors silently
       setIsTransitioning(false);
     }
   }, [isTransitioning, totalProjects]);
@@ -338,7 +337,6 @@ export const PortfolioCarousel: React.FC = () => {
         if (isTransitioning || index === currentIndex || index < 0 || index >= totalProjects)
           return;
 
-        console.log(`Navigating from ${currentIndex} to ${index}`); // Debug log
         setIsTransitioning(true);
         setCurrentIndex(index);
 
@@ -348,7 +346,7 @@ export const PortfolioCarousel: React.FC = () => {
         // Match the CSS transition duration
         setTimeout(() => setIsTransitioning(false), 900);
       } catch (error) {
-        console.warn('Navigation error contained:', error);
+        // Handle navigation errors silently
         setIsTransitioning(false);
       }
     },
@@ -383,7 +381,7 @@ export const PortfolioCarousel: React.FC = () => {
           goToPrevious();
         }
       } catch (error) {
-        console.warn('Wheel navigation error contained:', error);
+        // Handle wheel navigation errors silently
         setWheelEnabled(true);
       }
     };
@@ -419,7 +417,7 @@ export const PortfolioCarousel: React.FC = () => {
             break;
         }
       } catch (error) {
-        console.warn('Keyboard navigation error contained:', error);
+        // Handle keyboard navigation errors silently
       }
     };
 
@@ -439,7 +437,7 @@ export const PortfolioCarousel: React.FC = () => {
           startY = e.touches[0].clientY;
         }
       } catch (error) {
-        console.warn('Touch start error contained:', error);
+        // Handle touch start errors silently
       }
     };
 
@@ -463,7 +461,7 @@ export const PortfolioCarousel: React.FC = () => {
           }
         }
       } catch (error) {
-        console.warn('Touch navigation error contained:', error);
+        // Handle touch navigation errors silently
       }
     };
 

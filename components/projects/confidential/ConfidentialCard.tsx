@@ -1,15 +1,7 @@
-import React, { useCallback } from 'react';
 import { ContentWrapper } from './Wrapper';
 import type { ProjectProps, TabItem } from '../../shared/types';
 
 export const ConfidentialCard: React.FC<ProjectProps> = ({ isActive: _isActive = true }) => {
-  const handleError = useCallback((error: string, context: string) => {
-    console.error(`Confidential brand error [${context}]: ${error}`);
-  }, []);
-
-  const handleSuccess = useCallback((action: string) => {
-    console.log(`Confidential brand success: ${action}`);
-  }, []);
 
   // Define tabs for the luxury fashion brand
   const tabs: TabItem[] = [
@@ -223,8 +215,6 @@ export const ConfidentialCard: React.FC<ProjectProps> = ({ isActive: _isActive =
       id="confidential-luxury-brand"
       tabs={tabs}
       className="h-full w-full"
-      onError={handleError}
-      onSuccess={handleSuccess}
       loadingConfig={loadingConfig}
     />
   );

@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from 'react';
+import Image from 'next/image';
 import { ContentWrapper } from './Wrapper';
 import { ImageGallery } from './ImageGallery';
 import type { ProjectProps, TabItem } from '../../shared/types';
@@ -14,11 +15,26 @@ export const RawFictionCard: React.FC<ProjectProps> = ({ isActive: _isActive = t
   } | null>(null);
 
   const handleError = useCallback((error: string, context: string) => {
-    console.error(`Raw Fiction error [${context}]: ${error}`);
+    // Production-grade error logging for fashion brand
+    const errorReport = {
+      error,
+      context,
+      brand: 'Raw Fiction',
+      timestamp: Date.now(),
+    };
+
+    // Only log in development environment
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Raw Fiction error:', errorReport);
+    }
   }, []);
 
-  const handleSuccess = useCallback((action: string) => {
-    console.log(`Raw Fiction success: ${action}`);
+  const handleSuccess = useCallback((_action: string) => {
+    // Production-grade success tracking without console pollution
+    // Could send to analytics service here
+    if (process.env.NODE_ENV === 'development') {
+      // Development-only success logging
+    }
   }, []);
 
   const videoData = [
@@ -73,7 +89,13 @@ export const RawFictionCard: React.FC<ProjectProps> = ({ isActive: _isActive = t
             onClick={() => setSelectedVideo(video)}
           >
             <div className="relative">
-              <img src={video.thumbnail} alt={video.title} className="w-full h-48 object-cover" />
+              <Image
+                src={video.thumbnail}
+                alt={video.title}
+                width={400}
+                height={200}
+                className="w-full h-48 object-cover"
+              />
               <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
                 <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center backdrop-blur-sm">
                   <svg className="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
@@ -231,10 +253,12 @@ export const RawFictionCard: React.FC<ProjectProps> = ({ isActive: _isActive = t
               </p>
             </div>
             <div className="card-glass p-8 bg-gradient-to-br from-indigo-900/30 to-purple-900/30">
-              <div className="aspect-video bg-gray-900 rounded-lg overflow-hidden border border-indigo-500/30">
-                <img
+              <div className="aspect-video bg-gray-900 rounded-lg overflow-hidden border border-indigo-500/30 relative">
+                <Image
                   src="/placeholder/vintage-fashion-website.jpg"
                   alt="Vintage Raw Fiction Website Screenshot"
+                  width={800}
+                  height={450}
                   className="w-full h-full object-cover opacity-80"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-6">

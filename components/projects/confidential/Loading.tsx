@@ -56,29 +56,6 @@ export const useContentLoading = (config: ContentLoadingConfig) => {
   const intersectionObserver = useRef<IntersectionObserver>();
   const loadingBatch = useRef<Set<string>>(new Set());
 
-  // Initialize intersection observer for image lazy loading
-  useEffect(() => {
-    intersectionObserver.current = new IntersectionObserver(
-      entries => {
-        entries.forEach(entry => {
-          const imageId = entry.target.getAttribute('data-image-id');
-          if (imageId && entry.isIntersecting) {
-            setState(prev => ({
-              ...prev,
-              visibleImages: new Set([...prev.visibleImages, imageId]),
-            }));
-            queueImageLoad(imageId, 'medium');
-          }
-        });
-      },
-      { threshold: intersectionThreshold }
-    );
-
-    return () => {
-      intersectionObserver.current?.disconnect();
-    };
-  }, [intersectionThreshold]);
-
   // Priority-based loading queue management
   const queueImageLoad = useCallback(
     (imageId: string, priority: 'high' | 'medium' | 'low') => {
@@ -110,6 +87,42 @@ export const useContentLoading = (config: ContentLoadingConfig) => {
     [images]
   );
 
+  // Initialize intersection observer for image lazy loading
+  useEffect(() => {
+    intersectionObserver.current = new IntersectionObserver(
+      entries => {
+        entries.forEach(entry => {
+          const imageId = entry.target.getAttribute('data-image-id');
+          if (imageId && entry.isIntersecting) {
+            setState(prev => ({
+              ...prev,
+              visibleImages: new Set([...prev.visibleImages, imageId]),
+            }));
+            queueImageLoad(imageId, 'medium');
+          }
+        });
+      },
+      { threshold: intersectionThreshold }
+    );
+
+    return () => {
+      intersectionObserver.current?.disconnect();
+    };
+  }, [intersectionThreshold, queueImageLoad]);
+
+  const handleImageLoaded = useCallback((imageId: string) => {
+    loadingBatch.current.delete(imageId);
+    setState(prev => ({
+      ...prev,
+      imagesLoaded: new Set([...prev.imagesLoaded, imageId]),
+    }));
+  }, []);
+
+  const handleImageError = useCallback((imageId: string) => {
+    loadingBatch.current.delete(imageId);
+    console.warn(`Failed to load image: ${imageId}`);
+  }, []);
+
   // Process loading queue in batches
   const processLoadingQueue = useCallback(() => {
     setState(prev => {
@@ -124,8 +137,16 @@ export const useContentLoading = (config: ContentLoadingConfig) => {
         const image = images.find(img => img.id === imageId);
         if (image) {
           const img = new Image();
-          img.onload = () => handleImageLoaded(imageId);
-          img.onerror = () => handleImageError(imageId);
+          img.onload = () => {
+            handleImageLoaded(imageId);
+            // Process next batch
+            setTimeout(() => processLoadingQueue(), 50);
+          };
+          img.onerror = () => {
+            handleImageError(imageId);
+            // Continue with next batch even on error
+            setTimeout(() => processLoadingQueue(), 50);
+          };
           img.src = image.src;
         }
       });
@@ -135,31 +156,25 @@ export const useContentLoading = (config: ContentLoadingConfig) => {
         priorityQueue: prev.priorityQueue.slice(toLoad.length),
       };
     });
-  }, [batchSize, images]);
+  }, [batchSize, images, handleImageLoaded, handleImageError]);
 
-  const handleImageLoaded = useCallback(
-    (imageId: string) => {
-      loadingBatch.current.delete(imageId);
-      setState(prev => ({
-        ...prev,
-        imagesLoaded: new Set([...prev.imagesLoaded, imageId]),
-      }));
+  const preloadTab = useCallback(
+    (tabId: string) => {
+      if (state.tabsLoaded.has(tabId)) return;
 
-      // Process next batch
-      setTimeout(processLoadingQueue, 50);
+      const tab = tabs.find(t => t.id === tabId);
+      if (!tab || tab.priority === 'lazy') return;
+
+      const preloadTimeout = setTimeout(() => {
+        setState(prev => ({
+          ...prev,
+          tabsLoaded: new Set([...prev.tabsLoaded, tabId]),
+        }));
+      }, 1000);
+
+      loadingTimeouts.current.set(`preload-${tabId}`, preloadTimeout);
     },
-    [processLoadingQueue]
-  );
-
-  const handleImageError = useCallback(
-    (imageId: string) => {
-      loadingBatch.current.delete(imageId);
-      console.warn(`Failed to load image: ${imageId}`);
-
-      // Continue with next batch even on error
-      setTimeout(processLoadingQueue, 50);
-    },
-    [processLoadingQueue]
+    [tabs, state.tabsLoaded]
   );
 
   // Tab loading management
@@ -207,26 +222,7 @@ export const useContentLoading = (config: ContentLoadingConfig) => {
 
       loadingTimeouts.current.set(tabId, loadingTimeout);
     },
-    [tabs, preloadDistance, images, queueImageLoad, processLoadingQueue]
-  );
-
-  const preloadTab = useCallback(
-    (tabId: string) => {
-      if (state.tabsLoaded.has(tabId)) return;
-
-      const tab = tabs.find(t => t.id === tabId);
-      if (!tab || tab.priority === 'lazy') return;
-
-      const preloadTimeout = setTimeout(() => {
-        setState(prev => ({
-          ...prev,
-          tabsLoaded: new Set([...prev.tabsLoaded, tabId]),
-        }));
-      }, 1000);
-
-      loadingTimeouts.current.set(`preload-${tabId}`, preloadTimeout);
-    },
-    [tabs, state.tabsLoaded]
+    [tabs, preloadDistance, images, queueImageLoad, processLoadingQueue, preloadTab]
   );
 
   // Gallery loading management
@@ -298,10 +294,13 @@ export const useContentLoading = (config: ContentLoadingConfig) => {
 
   // Cleanup
   useEffect(() => {
+    const timeoutMap = loadingTimeouts.current;
+    const observer = intersectionObserver.current;
+
     return () => {
-      loadingTimeouts.current.forEach(timeout => clearTimeout(timeout));
-      loadingTimeouts.current.clear();
-      intersectionObserver.current?.disconnect();
+      timeoutMap.forEach(timeout => clearTimeout(timeout));
+      timeoutMap.clear();
+      observer?.disconnect();
     };
   }, []);
 

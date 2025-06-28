@@ -9,6 +9,9 @@ import {
 } from './Loading';
 import type { TabItem } from '../../shared/types';
 
+// Import the proper loading state type
+import type { ContentLoadingState } from './Loading';
+
 // Context for sharing wrapper utilities with child components
 interface WrapperContextType {
   handleTabChange: (tabId: string) => void;
@@ -17,7 +20,7 @@ interface WrapperContextType {
   isTabBroken: (tabId: string) => boolean;
   isGalleryBroken: (galleryId: string) => boolean;
   isImageBroken: (imageId: string) => boolean;
-  loadingState: any;
+  loadingState: ContentLoadingState;
 }
 
 const WrapperContext = createContext<WrapperContextType | null>(null);
@@ -103,91 +106,13 @@ export const ContentWrapper: React.FC<ContentWrapperProps> = ({
     [errorState.lastErrorTime]
   );
 
-  // Professional error handling for business content
-  const handleComponentError = useCallback(
-    (
-      errorType: 'tab' | 'gallery' | 'image' | 'general',
-      errorId: string,
-      error: Error,
-      context?: string
-    ) => {
-      const errorMessage = `${errorType.toUpperCase()} Error in ${errorId}: ${error.message}`;
-      const now = Date.now();
-
-      console.error(`[${id}] Social Media Consulting error:`, {
-        type: errorType,
-        id: errorId,
-        error: error.message,
-        context,
-        stack: error.stack,
-        timestamp: new Date().toISOString(),
-      });
-
-      setErrorState(prev => {
-        const newErrorCount = prev.errorCount + 1;
-        const shouldOpen = shouldBreakCircuit(newErrorCount);
-
-        let newState = {
-          ...prev,
-          errorCount: newErrorCount,
-          lastErrorTime: now,
-          isCircuitOpen: shouldOpen,
-        };
-
-        // Isolate the specific broken component
-        switch (errorType) {
-          case 'tab':
-            newState.brokenTabs = new Set([...prev.brokenTabs, errorId]);
-            break;
-          case 'gallery':
-            newState.brokenGalleries = new Set([...prev.brokenGalleries, errorId]);
-            break;
-          case 'image':
-            newState.brokenImages = new Set([...prev.brokenImages, errorId]);
-            break;
-        }
-
-        return newState;
-      });
-
-      onError?.(errorMessage, context || 'unknown');
-
-      // Schedule business recovery
-      if (!errorState.isCircuitOpen) {
-        scheduleRecovery(errorType, errorId);
-      }
-    },
-    [id, onError, shouldBreakCircuit, errorState.isCircuitOpen]
-  );
-
-  // Business-optimized recovery for marketing content
-  const scheduleRecovery = useCallback(
-    (errorType: 'tab' | 'gallery' | 'image' | 'general', errorId: string) => {
-      const backoffDelay = Math.min(
-        500 * Math.pow(1.5, recoveryState.attempts) * recoveryState.backoffMultiplier, // Faster recovery for static content
-        15000 // Max 15 seconds for business content
-      );
-
-      recoveryTimeoutRef.current = setTimeout(() => {
-        attemptRecovery(errorType, errorId);
-      }, backoffDelay);
-
-      setRecoveryState(prev => ({
-        attempts: prev.attempts + 1,
-        lastAttempt: Date.now(),
-        backoffMultiplier: Math.min(prev.backoffMultiplier * 1.3, 3), // Gentler backoff for static content
-      }));
-    },
-    [recoveryState.attempts, recoveryState.backoffMultiplier]
-  );
-
   const attemptRecovery = useCallback(
     (errorType: 'tab' | 'gallery' | 'image' | 'general', errorId: string) => {
-      console.log(`Attempting business recovery for ${errorType}: ${errorId}`);
+      console.warn(`Attempting business recovery for ${errorType}: ${errorId}`);
 
       try {
         setErrorState(prev => {
-          let newState = { ...prev };
+          const newState = { ...prev };
 
           switch (errorType) {
             case 'tab':
@@ -222,6 +147,89 @@ export const ContentWrapper: React.FC<ContentWrapperProps> = ({
       }
     },
     [actions, onSuccess]
+  );
+
+  // Business recovery with professional scheduling
+  const scheduleRecovery = useCallback(
+    (errorType: 'tab' | 'gallery' | 'image' | 'general', errorId: string) => {
+      if (errorState.isCircuitOpen) return;
+
+      const backoffDelay = Math.min(
+        500 * Math.pow(1.5, recoveryState.attempts) * recoveryState.backoffMultiplier,
+        15000 // Max 15 seconds for business content
+      );
+
+      recoveryTimeoutRef.current = setTimeout(() => {
+        attemptRecovery(errorType, errorId);
+      }, backoffDelay);
+
+      setRecoveryState(prev => ({
+        attempts: prev.attempts + 1,
+        lastAttempt: Date.now(),
+        backoffMultiplier: Math.min(prev.backoffMultiplier * 1.3, 3),
+      }));
+    },
+    [
+      errorState.isCircuitOpen,
+      recoveryState.attempts,
+      recoveryState.backoffMultiplier,
+      attemptRecovery,
+    ]
+  );
+
+  // Professional error handling for business content
+  const handleComponentError = useCallback(
+    (
+      errorType: 'tab' | 'gallery' | 'image' | 'general',
+      errorId: string,
+      error: Error,
+      context?: string
+    ) => {
+      const errorMessage = `${errorType.toUpperCase()} Error in ${errorId}: ${error.message}`;
+      const now = Date.now();
+
+      console.error(`[${id}] Social Media Consulting error:`, {
+        type: errorType,
+        id: errorId,
+        error: error.message,
+        context,
+        stack: error.stack,
+        timestamp: new Date().toISOString(),
+      });
+
+      setErrorState(prev => {
+        const newErrorCount = prev.errorCount + 1;
+        const shouldOpen = shouldBreakCircuit(newErrorCount);
+
+        const newState = {
+          ...prev,
+          errorCount: newErrorCount,
+          lastErrorTime: now,
+          isCircuitOpen: shouldOpen,
+        };
+
+        // Isolate the specific broken component
+        switch (errorType) {
+          case 'tab':
+            newState.brokenTabs = new Set([...prev.brokenTabs, errorId]);
+            break;
+          case 'gallery':
+            newState.brokenGalleries = new Set([...prev.brokenGalleries, errorId]);
+            break;
+          case 'image':
+            newState.brokenImages = new Set([...prev.brokenImages, errorId]);
+            break;
+        }
+
+        return newState;
+      });
+
+      onError?.(errorMessage, context || 'unknown');
+
+      // Schedule business recovery
+      scheduleRecovery(errorType, errorId);
+    },
+    [id, onError, shouldBreakCircuit, scheduleRecovery]
   );
 
   // Business content health monitoring

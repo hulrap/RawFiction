@@ -1,15 +1,7 @@
-import React, { useCallback } from 'react';
 import { ContentWrapper } from './Wrapper';
 import type { ProjectProps, TabItem } from '../../shared/types';
 
 export const CryptohiphopCard: React.FC<ProjectProps> = ({ isActive: _isActive = true }) => {
-  const handleError = useCallback((error: string, context: string) => {
-    console.error(`Crypto Hip Hop error [${context}]: ${error}`);
-  }, []);
-
-  const handleSuccess = useCallback((action: string) => {
-    console.log(`Crypto Hip Hop success: ${action}`);
-  }, []);
 
   // Define tabs for the crypto hip hop platform
   const tabs: TabItem[] = [
@@ -310,8 +302,6 @@ export const CryptohiphopCard: React.FC<ProjectProps> = ({ isActive: _isActive =
       id="crypto-hiphop-platform"
       tabs={tabs}
       className="h-full w-full"
-      onError={handleError}
-      onSuccess={handleSuccess}
       loadingConfig={loadingConfig}
     />
   );

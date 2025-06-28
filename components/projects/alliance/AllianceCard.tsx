@@ -8,13 +8,8 @@ interface AllianceCardProps {
 }
 
 export const AllianceCard: React.FC<AllianceCardProps> = memo(({ id, className, style }) => {
-  const handleError = useCallback((error: string) => {
-    console.error(`Queer Alliance error: ${error}`);
-    // Could integrate with analytics or error reporting here
-  }, []);
 
   const handleSuccess = useCallback(() => {
-    console.log('Queer Alliance loaded successfully');
     // Could trigger analytics events here
   }, []);
 
@@ -25,7 +20,6 @@ export const AllianceCard: React.FC<AllianceCardProps> = memo(({ id, className, 
       title="Queer Alliance"
       className={className || 'h-full w-full'}
       style={style || {}}
-      onError={handleError}
       onSuccess={handleSuccess}
       fallbackContent={
         <div className="text-center">

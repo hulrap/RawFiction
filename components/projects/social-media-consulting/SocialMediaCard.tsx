@@ -8,7 +8,7 @@ export const SocialMediaCard: React.FC<ProjectProps> = ({ isActive: _isActive = 
   }, []);
 
   const handleSuccess = useCallback((action: string) => {
-    console.log(`Social Media Consulting success: ${action}`);
+    console.warn(`Social Media Consulting success: ${action}`);
   }, []);
 
   const tabs: TabItem[] = [
@@ -43,8 +43,8 @@ export const SocialMediaCard: React.FC<ProjectProps> = ({ isActive: _isActive = 
               <div className="card-glass p-8 bg-gradient-to-br from-cyan-900/20 to-blue-900/20 hover:from-cyan-800/30 hover:to-blue-800/30 transition-colors">
                 <h3 className="heading-card mb-4 text-cyan-300">🎯 Strategy Consulting</h3>
                 <p className="text-sm opacity-75 leading-relaxed">
-                  Comprehensive social media strategies tailored to your brand's unique voice and
-                  business objectives across all major platforms and emerging channels.
+                  Comprehensive social media strategies tailored to your brand&apos;s unique voice
+                  and business objectives across all major platforms and emerging channels.
                 </p>
               </div>
             </div>

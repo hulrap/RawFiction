@@ -8,13 +8,8 @@ interface AiAlignmentCardProps {
 }
 
 export const AiAlignmentCard: React.FC<AiAlignmentCardProps> = memo(({ id, className, style }) => {
-  const handleError = useCallback((error: string) => {
-    console.error(`AI Alignment Space error: ${error}`);
-    // Could integrate with analytics or error reporting here
-  }, []);
 
   const handleSuccess = useCallback(() => {
-    console.log('AI Alignment Space loaded successfully');
     // Could trigger analytics events here
   }, []);
 
@@ -25,7 +20,6 @@ export const AiAlignmentCard: React.FC<AiAlignmentCardProps> = memo(({ id, class
       title="AI Alignment Space"
       className={className || 'h-full w-full'}
       style={style || {}}
-      onError={handleError}
       onSuccess={handleSuccess}
       fallbackContent={
         <div className="text-center">
