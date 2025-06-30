@@ -21,11 +21,6 @@ export const EmbeddedWebsiteFrame: React.FC<EmbeddedWebsiteFrameProps> = ({
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Minimal logging
-  React.useEffect(() => {
-    console.log(`Loading ${title}: ${url}`);
-  }, [url, title]);
-
   // Prevent scroll event bubbling from iframe
   React.useEffect(() => {
     const container = containerRef.current;
@@ -71,12 +66,10 @@ export const EmbeddedWebsiteFrame: React.FC<EmbeddedWebsiteFrameProps> = ({
   };
 
   const handleIframeLoad = () => {
-    console.log(`📄 ${title} iframe loaded`);
     onLoad?.();
   };
 
   const handleIframeError = () => {
-    console.log(`❌ ${title} failed to load`);
     onError?.('Failed to load iframe');
   };
 

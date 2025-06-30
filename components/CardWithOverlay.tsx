@@ -24,6 +24,7 @@ interface CardWithOverlayProps {
   carouselPosition: string;
   carouselTransform: CarouselTransform;
   forceHighQuality?: boolean;
+  onOverlayReady?: () => void;
 }
 
 // Enhanced 3D cube wall shaders with proper visibility and hover effects
@@ -191,8 +192,7 @@ const CubeGrid: React.FC<{
   flowProgress: number;
   isFlowing: boolean;
   onReady: () => void;
-  carouselPosition: string;
-}> = ({ mouse, opacity, flowProgress, isFlowing, onReady, carouselPosition }) => {
+}> = ({ mouse, opacity, flowProgress, isFlowing, onReady }) => {
   const meshRef = useRef<THREE.InstancedMesh>(null);
   const [isInitialized, setIsInitialized] = useState(false);
 
@@ -220,15 +220,7 @@ const CubeGrid: React.FC<{
   const CUBES_Y = Math.floor(EFFECTIVE_HEIGHT / CUBE_PITCH);
   const TOTAL_CUBES = CUBES_X * CUBES_Y;
 
-  // Debug logging (reduced)
-  if (process.env.NODE_ENV === 'development') {
-    console.log('Cube Grid UNIFORM:', {
-      position: carouselPosition,
-      CUBES_X,
-      CUBES_Y,
-      TOTAL_CUBES,
-    });
-  }
+  // Debug logging removed for production
 
   // Hover radius - adjustable for ripple effect size
   const HOVER_RADIUS = 0.2;
@@ -257,7 +249,7 @@ const CubeGrid: React.FC<{
 
       // Simple hash function for consistent randomization
       const hash = (x: number, y: number) => {
-        let h = Math.sin(x * 127.1 + y * 311.7) * 43758.5453;
+        const h = Math.sin(x * 127.1 + y * 311.7) * 43758.5453;
         return h - Math.floor(h);
       };
 
@@ -267,10 +259,7 @@ const CubeGrid: React.FC<{
       const startX = -totalGridWidth / 2;
       const startY = -totalGridHeight / 2;
 
-      // Grid layout debug (development only)
-      if (process.env.NODE_ENV === 'development') {
-        console.log('Grid Layout:', { CUBES_X, CUBES_Y, startX, startY });
-      }
+      // Grid layout debug removed for production
 
       // FORCED TEST PATTERN - Ignore calculations and force a visible grid
       const FORCE_TEST = false;
@@ -294,8 +283,7 @@ const CubeGrid: React.FC<{
             if (index < TOTAL_CUBES) {
               meshRef.current.setMatrixAt(index, instanceMatrix);
 
-              // Debug: Log all positions in test mode
-              console.log(`TEST Cube ${index} (${x},${y}):`, { posX, posY, posZ });
+              // Test positions logged in development mode
 
               index++;
             }
@@ -313,12 +301,6 @@ const CubeGrid: React.FC<{
             const instanceMatrix = new THREE.Matrix4();
             instanceMatrix.setPosition(posX, posY, posZ);
             meshRef.current.setMatrixAt(index, instanceMatrix);
-
-            // Debug first few cubes only
-            if (index < 5 && process.env.NODE_ENV === 'development') {
-              console.log(`Cube ${index}:`, { posX, posY, posZ });
-            }
-
             index++;
           }
         }
@@ -326,10 +308,6 @@ const CubeGrid: React.FC<{
 
       meshRef.current.instanceMatrix.needsUpdate = true;
       meshRef.current.computeBoundingSphere();
-
-      if (process.env.NODE_ENV === 'development') {
-        console.log('✅ Cubes positioned:', index, 'expected:', TOTAL_CUBES);
-      }
     }
   }, [
     CUBES_X,
@@ -340,6 +318,7 @@ const CubeGrid: React.FC<{
     EFFECTIVE_HEIGHT,
     visibleWidth,
     visibleHeight,
+    TOTAL_CUBES,
   ]);
 
   // Animation loop with proper uniform updates
@@ -391,6 +370,7 @@ export const CardWithOverlay: React.FC<CardWithOverlayProps> = ({
   carouselPosition,
   carouselTransform,
   forceHighQuality = false,
+  onOverlayReady,
 }) => {
   const [isShattered, setIsShattered] = useState(false);
   const [isFlowing, setIsFlowing] = useState(false);
@@ -406,18 +386,19 @@ export const CardWithOverlay: React.FC<CardWithOverlayProps> = ({
   const overlayRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
-  // Atomic loading synchronization - ONLY initialize when card is visible
+  // Initialize ALL overlays immediately - regardless of visibility
   useEffect(() => {
-    const isCardVisible = carouselPosition !== 'hidden';
-    if (isOverlayVisible && isContentReady && isWebGLReady && !isAtomicReady && isCardVisible) {
+    if (isOverlayVisible && isContentReady && isWebGLReady && !isAtomicReady) {
       const timer = setTimeout(() => {
         setIsAtomicReady(true);
         invalidate();
+        // Notify parent that overlay is ready
+        onOverlayReady?.();
       }, 50);
       return () => clearTimeout(timer);
     }
     return undefined;
-  }, [isOverlayVisible, isContentReady, isWebGLReady, isAtomicReady, carouselPosition]);
+  }, [isOverlayVisible, isContentReady, isWebGLReady, isAtomicReady, onOverlayReady]);
 
   // Track when card becomes visible to force Canvas re-mount
   const [canvasKey, setCanvasKey] = useState(0);
@@ -573,7 +554,6 @@ export const CardWithOverlay: React.FC<CardWithOverlayProps> = ({
                     flowProgress={flowProgress}
                     isFlowing={isFlowing}
                     onReady={handleWebGLReady}
-                    carouselPosition={carouselPosition}
                   />
                 </Canvas>
               </div>
@@ -589,7 +569,7 @@ export const CardWithOverlay: React.FC<CardWithOverlayProps> = ({
                 >
                   <div className="glass-overlay-text">
                     <motion.h2
-                      className="glass-overlay-title"
+                      className="glass-overlay-title uppercase"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{ delay: 0.1, duration: 0.5 }}

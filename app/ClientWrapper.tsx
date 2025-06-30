@@ -1,9 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { SimpleLoadingScreen } from '@/components/shared/SimpleLoadingScreen';
 import dynamic from 'next/dynamic';
-import { Suspense } from 'react';
 
 // Dynamic imports with SSR disabled to prevent hydration issues
 const Background = dynamic(
@@ -21,25 +19,14 @@ const PortfolioCarousel = dynamic(
 );
 
 export default function ClientWrapper() {
-  const [isLoading, setIsLoading] = useState(true);
   const [isClient, setIsClient] = useState(false);
-  const [showContent, setShowContent] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
   }, []);
 
-  const handleLoadingComplete = () => {
-    setIsLoading(false);
-
-    // Small delay to ensure smooth transition, then fade in content
-    setTimeout(() => {
-      setShowContent(true);
-    }, 100);
-  };
-
   if (!isClient) {
-    return <SimpleLoadingScreen onComplete={() => {}} />;
+    return null; // No loading screen - let PortfolioCarousel handle it
   }
 
   return (
@@ -55,17 +42,7 @@ export default function ClientWrapper() {
         className="fixed inset-0 -z-10"
       />
 
-      {isLoading ? (
-        <SimpleLoadingScreen onComplete={handleLoadingComplete} />
-      ) : (
-        <div
-          className={`transition-opacity duration-700 ${showContent ? 'opacity-100' : 'opacity-0'}`}
-        >
-          <Suspense fallback={<SimpleLoadingScreen onComplete={() => {}} />}>
-            <PortfolioCarousel />
-          </Suspense>
-        </div>
-      )}
+      <PortfolioCarousel />
     </>
   );
 }

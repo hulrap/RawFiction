@@ -10,11 +10,6 @@ interface AiInstructorCardProps {
 
 export const AiInstructorCard: React.FC<AiInstructorCardProps> = memo(
   ({ id, className, style }) => {
-    // Component mounted
-    React.useEffect(() => {
-      console.log('AI Instructor initialized');
-    }, [id]);
-
     // Simple direct loading configuration for AI Instructor
     const aiInstructorConfig: SiteConfig = {
       url: 'https://ai-instructor.me',

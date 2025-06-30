@@ -152,7 +152,7 @@ class ErrorBoundary extends React.Component<
 const PORTFOLIO_PROJECTS: PortfolioProject[] = [
   {
     id: 'welcome',
-    title: 'Welcome to the Portfolioverse',
+    title: 'Portfolioverse',
     component: WelcomeCard,
     description: 'Enter the digital realm and explore the portfolio',
   },
@@ -247,132 +247,37 @@ export const PortfolioCarousel: React.FC = () => {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [wheelEnabled, setWheelEnabled] = useState(true);
   const [shatteredCards, setShatteredCards] = useState<Set<number>>(new Set());
-  // Zero latency initialization - preload critical cards immediately
+
+  // Global loading state - wait for ALL card overlays to be ready
+  const [allCardsReady, setAllCardsReady] = useState(false);
+  const [readyCards, setReadyCards] = useState<Set<number>>(new Set());
+
+  // Load all cards immediately - no lazy loading or priorities
   const [loadedCards, setLoadedCards] = useState<Set<number>>(() => {
-    const initialCards = new Set<number>();
-
-    // Load all lightweight cards immediately (zero cost)
+    const allCards = new Set<number>();
     for (let i = 0; i < totalProjects; i++) {
-      const lightweightIds = ['welcome', 'confidential', 'legal'];
-      const projectId = PORTFOLIO_PROJECTS[i]?.id;
-      if (projectId && lightweightIds.includes(projectId)) {
-        initialCards.add(i);
-      }
+      allCards.add(i);
     }
-
-    // Preload navigation sequence: last, first, second, third, fourth
-    const navigationOrder = [
-      totalProjects - 1, // last (Legal)
-      0, // first (Welcome)
-      1, // second (Raw Fiction)
-      2, // third (AI Instructor)
-      3, // fourth (AI Alignment)
-    ];
-
-    navigationOrder.forEach(index => {
-      if (index < totalProjects) {
-        initialCards.add(index);
-      }
-    });
-
-    return initialCards;
+    return allCards;
   });
-  const [loadingQueue, setLoadingQueue] = useState<number[]>([]);
 
-  // Determine which cards are lightweight (static text) vs heavy (embedded sites)
-  const isLightweightCard = useCallback((index: number) => {
-    const lightweightIds = ['welcome', 'confidential', 'legal'];
-    const projectId = PORTFOLIO_PROJECTS[index]?.id;
-    return projectId ? lightweightIds.includes(projectId) : false;
-  }, []);
+  // Track card overlay readiness for global loading screen
+  const handleCardReady = useCallback(
+    (cardIndex: number) => {
+      setReadyCards(prev => {
+        const newReady = new Set(prev);
+        newReady.add(cardIndex);
 
-  // Components are now loaded on demand without preloading
+        // Check if all cards are ready
+        if (newReady.size === totalProjects) {
+          setAllCardsReady(true);
+        }
 
-  // Smart navigation-based loading system
-  useEffect(() => {
-    const getNavigationOrder = () => {
-      // Navigation order: last, first, second, then third, fourth, etc.
-      const lastIndex = totalProjects - 1;
-      const firstIndex = 0;
-      const secondIndex = 1;
-
-      const navigationOrder = [lastIndex, firstIndex, secondIndex];
-
-      // Add remaining cards in order (third, fourth, etc.)
-      for (let i = 2; i < totalProjects - 1; i++) {
-        navigationOrder.push(i);
-      }
-
-      return navigationOrder;
-    };
-
-    const getVisibleCards = () => {
-      const previousIndex = (currentIndex - 1 + totalProjects) % totalProjects;
-      const nextIndex = (currentIndex + 1) % totalProjects;
-      return [previousIndex, currentIndex, nextIndex];
-    };
-
-    const getLoadPriority = (index: number) => {
-      const visibleCards = getVisibleCards();
-      const navigationOrder = getNavigationOrder();
-
-      // Instant load for lightweight cards
-      if (isLightweightCard(index)) return 0;
-
-      // Highest priority for visible cards
-      if (visibleCards.includes(index)) {
-        if (index === currentIndex) return 1; // Current card
-        return 2; // Side cards
-      }
-
-      // Medium priority based on navigation order
-      const navOrderIndex = navigationOrder.indexOf(index);
-      if (navOrderIndex !== -1) return 10 + navOrderIndex;
-
-      return 999; // Very low priority for others
-    };
-
-    // Create optimized loading queue
-    const unloadedCards = Array.from({ length: totalProjects }, (_, i) => i).filter(
-      i => !loadedCards.has(i)
-    );
-
-    const priorityQueue = unloadedCards
-      .sort((a, b) => getLoadPriority(a) - getLoadPriority(b))
-      .slice(0, 5); // Limit concurrent loading
-
-    setLoadingQueue(priorityQueue);
-  }, [currentIndex, totalProjects, loadedCards, isLightweightCard]);
-
-  // Zero latency loading - process immediately
-  useEffect(() => {
-    if (loadingQueue.length === 0) return;
-
-    // Process all queued cards immediately - no delays
-    const processAllQueued = () => {
-      setLoadedCards(prev => {
-        const newLoaded = new Set(prev);
-        loadingQueue.forEach(index => newLoaded.add(index));
-        return newLoaded;
+        return newReady;
       });
-      setLoadingQueue([]);
-    };
-
-    // Use immediate execution for zero latency
-    processAllQueued();
-  }, [loadingQueue]);
-
-  // IMMEDIATE preloader - load ALL cards instantly for consistent cube grid quality
-  useEffect(() => {
-    // Load ALL cards immediately to prevent any rendering quality differences
-    setLoadedCards(prev => {
-      const allCards = new Set(prev);
-      for (let i = 0; i < totalProjects; i++) {
-        allCards.add(i);
-      }
-      return allCards;
-    });
-  }, [totalProjects]);
+    },
+    [totalProjects]
+  );
 
   // 3-Card positioning system: always show exactly 3 cards (previous, current, next)
   const getCardTransform = useCallback(
@@ -650,12 +555,22 @@ export const PortfolioCarousel: React.FC = () => {
         </div>
       }
     >
+      {/* Global Loading Screen - Wait for all card overlays */}
+      {!allCardsReady && (
+        <div className="fixed inset-0 z-[9999] bg-[var(--brand-bg)] flex items-center justify-center">
+          <div className="text-6xl text-[var(--brand-accent)] font-mono tracking-wider animate-pulse">
+            {readyCards.size} / 13
+          </div>
+        </div>
+      )}
+
       <div className="carousel-container">
         <div className="carousel-wrapper">
           {PORTFOLIO_PROJECTS.map((project, index) => {
             const Component = project.component;
             const shouldLoad = loadedCards.has(index);
-            const isLightweight = isLightweightCard(index);
+            const lightweightIds = ['welcome', 'confidential', 'legal'];
+            const isLightweight = lightweightIds.includes(project.id);
             const cardTransform = getCardTransform(index);
 
             return (
@@ -690,6 +605,7 @@ export const PortfolioCarousel: React.FC = () => {
                     carouselPosition={cardTransform.carouselPosition}
                     carouselTransform={cardTransform.carouselTransform}
                     forceHighQuality={true} // Force high quality for all cards
+                    onOverlayReady={() => handleCardReady(index)}
                   >
                     {shouldLoad || isLightweight ? (
                       // Zero latency rendering - no loading states for preloaded components

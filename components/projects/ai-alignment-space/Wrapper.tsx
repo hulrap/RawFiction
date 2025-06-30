@@ -23,7 +23,6 @@ export const EmbeddedWrapper: React.FC<EmbeddedWrapperProps> = memo(
     });
 
     const handleLoadSuccess = useCallback(() => {
-      console.log('AI Alignment Space loaded successfully');
       setLoadingState({
         isLoading: false,
         hasError: false,
@@ -35,9 +34,7 @@ export const EmbeddedWrapper: React.FC<EmbeddedWrapperProps> = memo(
 
     const handleLoadError = useCallback(
       (error: string) => {
-        console.log('AI Alignment Space load error:', error);
-
-        // Check if it's a Cloudflare protection issue (more comprehensive detection)
+        // Check if it's a Cloudflare protection issue
         const isCloudflareBlocked =
           error.includes('cloudflare') ||
           error.includes('DDoS') ||

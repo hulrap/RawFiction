@@ -142,8 +142,6 @@ export const useEmbeddedLoading = (config: EmbeddedLoadingConfig) => {
             htmlContent.includes('challenge-platform') ||
             htmlContent.includes('__CF$cv$params')
           ) {
-            console.log('🛡️ Security protection detected for:', title);
-
             // Check if we're in localhost (dev) vs production
             const isLocalhost =
               window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
@@ -166,7 +164,6 @@ export const useEmbeddedLoading = (config: EmbeddedLoadingConfig) => {
         }
       } catch (e) {
         // Can't access iframe content due to CORS - assume it's loading correctly
-        console.log('✅', title, 'loaded (CORS protected)');
       }
 
       // If we get here, it's likely the real content

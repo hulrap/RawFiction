@@ -10,10 +10,9 @@ interface AllianceCardProps {
 
 export const AllianceCard: React.FC<AllianceCardProps> = memo(({ id, className, style }) => {
   const handleSuccess = useCallback(() => {
-    console.log('Queer Alliance loaded');
-  }, []);
+ }, []);
 
-  // Simple direct loading configuration for Queer Alliance
+  // Simple direct loading configuration
   const queerAllianceConfig: SiteConfig = {
     url: 'https://www.queer-alliance.com/',
     title: 'Queer Alliance',

@@ -9,11 +9,6 @@ interface AiAlignmentCardProps {
 }
 
 export const AiAlignmentCard: React.FC<AiAlignmentCardProps> = memo(({ id, className, style }) => {
-  // Component mounted
-  React.useEffect(() => {
-    console.log('AI Alignment Space initialized');
-  }, [id]);
-
   // Simple direct loading configuration for AI Alignment Space
   const aiAlignmentConfig: SiteConfig = {
     url: 'https://ai-alignment.space',
