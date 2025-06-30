@@ -1,5 +1,3 @@
-import React from 'react';
-
 export interface ProductItem {
   id: string;
   src: string;
@@ -100,16 +98,43 @@ export const generateGarbagePlanetProducts = (): ProductItem[] => {
   // GP16-GP23 (products with detailed descriptions) - Added first for descending order
   for (let i = 23; i >= 16; i--) {
     const productInfo = GP_PRODUCT_INFO[i as keyof typeof GP_PRODUCT_INFO];
-    const imageVariants = [
-      `/projects/raw-fiction-content/collections/garbage-planet-1/GP${i}-1.jpg`,
-      `/projects/raw-fiction-content/collections/garbage-planet-1/GP${i}-2.jpg`,
-      `/projects/raw-fiction-content/collections/garbage-planet-1/GP${i}-3.jpg`,
-      `/projects/raw-fiction-content/collections/garbage-planet-1/GP${i}-4.jpg`,
-    ];
+
+    // Special image ordering for specific products
+    let mainImage: string;
+    let imageVariants: string[];
+
+    if (i === 21) {
+      // GP21 (Pants): 2nd image (GP21-2.jpg) as main
+      mainImage = `/projects/raw-fiction-content/collections/garbage-planet-1/GP${i}-2.jpg`;
+      imageVariants = [
+        `/projects/raw-fiction-content/collections/garbage-planet-1/GP${i}-2.jpg`,
+        `/projects/raw-fiction-content/collections/garbage-planet-1/GP${i}-4.jpg`,
+        `/projects/raw-fiction-content/collections/garbage-planet-1/GP${i}-3.jpg`,
+        `/projects/raw-fiction-content/collections/garbage-planet-1/GP${i}-1.jpg`,
+      ];
+    } else if (i === 20 || i === 16) {
+      // GP20 (LongT) and GP16 (Crop-top): 4th image (GP-1.jpg) as main
+      mainImage = `/projects/raw-fiction-content/collections/garbage-planet-1/GP${i}-1.jpg`;
+      imageVariants = [
+        `/projects/raw-fiction-content/collections/garbage-planet-1/GP${i}-1.jpg`,
+        `/projects/raw-fiction-content/collections/garbage-planet-1/GP${i}-4.jpg`,
+        `/projects/raw-fiction-content/collections/garbage-planet-1/GP${i}-3.jpg`,
+        `/projects/raw-fiction-content/collections/garbage-planet-1/GP${i}-2.jpg`,
+      ];
+    } else {
+      // Default ordering for other products
+      mainImage = `/projects/raw-fiction-content/collections/garbage-planet-1/GP${i}-4.jpg`;
+      imageVariants = [
+        `/projects/raw-fiction-content/collections/garbage-planet-1/GP${i}-4.jpg`,
+        `/projects/raw-fiction-content/collections/garbage-planet-1/GP${i}-3.jpg`,
+        `/projects/raw-fiction-content/collections/garbage-planet-1/GP${i}-2.jpg`,
+        `/projects/raw-fiction-content/collections/garbage-planet-1/GP${i}-1.jpg`,
+      ];
+    }
 
     products.push({
       id: `gp${i}`,
-      src: `/projects/raw-fiction-content/collections/garbage-planet-1/GP${i}-1.jpg`,
+      src: mainImage,
       alt: `${productInfo.name}`,
       title: `GP${i} - ${productInfo.name}`,
       collection: 'Garbage Planet',
@@ -137,15 +162,17 @@ export const generateGarbagePlanetProducts = (): ProductItem[] => {
 
   // GP1-GP15 (shirts without descriptions, using GB image files) - Added second for descending order
   for (let i = 15; i >= 1; i--) {
+    // For shirts: -1.jpg files are the main/first images
+    const mainImage = `/projects/raw-fiction-content/collections/garbage-planet-1/GB${i}-1.jpg`;
     const imageVariants = [
-      `/projects/raw-fiction-content/collections/garbage-planet-1/GB${i}-1.jpg`,
-      `/projects/raw-fiction-content/collections/garbage-planet-1/GB${i}-2.jpg`,
-      `/projects/raw-fiction-content/collections/garbage-planet-1/GB${i}-3.jpg`,
+      `/projects/raw-fiction-content/collections/garbage-planet-1/GB${i}-1.jpg`, // -1 as main/first
+      `/projects/raw-fiction-content/collections/garbage-planet-1/GB${i}-2.jpg`, // -2 as second
+      `/projects/raw-fiction-content/collections/garbage-planet-1/GB${i}-3.jpg`, // -3 as third
     ];
 
     products.push({
       id: `gp${i}`,
-      src: `/projects/raw-fiction-content/collections/garbage-planet-1/GB${i}-1.jpg`,
+      src: mainImage,
       alt: `Garbage Planet Shirt GP${i}`,
       title: `GP${i} - Shirt`,
       collection: 'Garbage Planet',

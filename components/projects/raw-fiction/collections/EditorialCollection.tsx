@@ -1,5 +1,3 @@
-import React from 'react';
-
 export interface EditorialItem {
   id: string;
   src: string;

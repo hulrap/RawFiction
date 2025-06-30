@@ -102,20 +102,18 @@ export const RawFictionCard: React.FC<ProjectProps> = ({ isActive: _isActive = t
               <p className="text-lg text-gray-300 mb-8">
                 Sustainability • Environmental Awareness • Ethical Fashion
               </p>
-              <div className="bg-gray-800/50 border border-gray-700/50 rounded-lg p-6 mb-8 text-left">
+              <div className="bg-gray-800/50 border border-gray-700/50 rounded-lg p-6 mb-8 text-center">
                 <h3 className="text-lg font-semibold text-white mb-3">Collection Story</h3>
                 <p className="text-sm text-gray-300 leading-relaxed">
-                  Wir Menschen haben einzeln viele positive und negative Seiten. Doch durch die Gier
-                  von Wenigen und die Bequemlichkeit vieler, ist die Menschheit als Ganzes einfach
-                  Garbage. Wir verschmutzen und verpesten unseren Planeten auf unerträgliche Weise
-                  und in unvorstellbarem Ausmaß. Der Mist landet im Meer, in Flüssen, in Wäldern und
-                  auf Wiesen.
-                </p>
-                <p className="text-sm text-gray-300 leading-relaxed mt-3">
-                  Mit unserer Kollektion wollen wir auf die Miststände und den Dreck den wir
-                  hinterlassen aufmerksam machen. Unsere Kleidung ist zu 100% umweltfreundlich und
-                  fair produziert und verschmutzt weder das Grundwasser, noch enthält sie
-                  Plastikfasern.
+                  Humanity as a whole has become garbage. Through the greed of few and the
+                  convenience of many, we pollute and contaminate our planet in unbearable ways and
+                  unimaginable scales. With our collection, we want to draw attention to these
+                  grievances and the dirt we leave behind. Our clothing is 100% environmentally
+                  friendly and fairly produced, containing no plastic fibers and not polluting
+                  groundwater. Our packaging is made 100% from production remnants that would
+                  otherwise end up in trash. Additionally, Raw Fiction supports &ldquo;The Ocean
+                  Cleanup&rdquo; with parts of our proceeds to help clean the world&apos;s largest
+                  ocean garbage patches.
                 </p>
               </div>
             </div>
@@ -140,13 +138,18 @@ export const RawFictionCard: React.FC<ProjectProps> = ({ isActive: _isActive = t
               <p className="text-lg text-gray-300 mb-8">
                 Identity • Expression • Celebration of Diversity
               </p>
-              <div className="bg-gray-800/50 border border-gray-700/50 rounded-lg p-6 mb-8 text-left">
+              <div className="bg-gray-800/50 border border-gray-700/50 rounded-lg p-6 mb-8 text-center">
                 <h3 className="text-lg font-semibold text-white mb-3">Collection Story</h3>
                 <p className="text-sm text-gray-300 leading-relaxed">
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis aute irure dolor in
-                  reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-                  Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt
-                  mollit anim id est laborum.
+                  Until this day, many LGBTQIA+ individuals around the globe are being cast aside
+                  from their peers when outing themselves. Whole societies follow their leaders when
+                  it comes to violently persecuting LGBTQIA+ people for &quot;being different&quot;.
+                  Today 68 countries still criminalize LGBTQIA+ identity. With our collection we
+                  want to gather donations to make a difference and raise awareness about the
+                  life-threatening conditions for LGBTQIA+ people at the same time. Because LGBTQIA+
+                  asylum seekers are still marginalized and harassed when reaching their final
+                  destination, we chose Micro Rainbow as our partner NGO for the Pride Collection to
+                  support those who need safety and acceptance.
                 </p>
               </div>
             </div>
@@ -171,22 +174,24 @@ export const RawFictionCard: React.FC<ProjectProps> = ({ isActive: _isActive = t
               <p className="text-lg text-gray-300 mb-8">
                 Limited Edition • Exclusive Design • Premium Materials
               </p>
-              <div className="bg-gray-800/50 border border-gray-700/50 rounded-lg p-6 mb-8 text-left">
-                <h3 className="text-lg font-semibold text-white mb-3">Collection Story</h3>
-                <p className="text-sm text-gray-300 leading-relaxed">
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Excepteur sint occaecat
-                  cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est
-                  laborum.
-                </p>
-              </div>
             </div>
-            <div className="text-center py-20">
-              <div className="w-16 h-16 bg-gradient-to-br from-gray-600 to-gray-700 rounded-lg flex items-center justify-center mx-auto mb-4">
-                <span className="text-white font-semibold">RF</span>
-              </div>
-              <h3 className="text-xl font-semibold text-white mb-2">Coming Soon</h3>
-              <p className="text-gray-400">This capsule collection is currently in development</p>
+            <div className="bg-gray-800/50 border border-gray-700/50 rounded-lg p-6 mb-8 text-center">
+              <h3 className="text-lg font-semibold text-white mb-3">Brand Collaboration</h3>
+              <p className="text-sm text-gray-300 leading-relaxed">
+                We did a lovely brand collaboration with Pure Chlorine, an alt-pop band that creates
+                moody but high-energetic music. Heavy guitar-riffs meet pulsating EDM-sounds, while
+                peroxide blonde hair meets black leather jackets. Pure Chlorine creates pop songs
+                with a &quot;fuck you&quot; attitude towards the stigma of mental illness and the
+                everlasting silence about it. This limited capsule collection embodies that
+                rebellious spirit and authentic artistic expression.
+              </p>
             </div>
+            <ImageGallery
+              componentId="raw-fiction-pure-chlorine"
+              collectionId="pure-chlorine"
+              title="Pure Chlorine Collection"
+              mode="collection"
+            />
           </div>
         </div>
       ),
@@ -202,12 +207,16 @@ export const RawFictionCard: React.FC<ProjectProps> = ({ isActive: _isActive = t
               <p className="text-lg text-gray-300 mb-8">
                 Social Commentary • Awareness • Change Through Fashion
               </p>
-              <div className="bg-gray-800/50 border border-gray-700/50 rounded-lg p-6 mb-8 text-left">
+              <div className="bg-gray-800/50 border border-gray-700/50 rounded-lg p-6 mb-8 text-center">
                 <h3 className="text-lg font-semibold text-white mb-3">Collection Story</h3>
                 <p className="text-sm text-gray-300 leading-relaxed">
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sunt in culpa qui officia
-                  deserunt mollit anim id est laborum. Sed do eiusmod tempor incididunt ut labore et
-                  dolore magna aliqua.
+                  This collection addresses one of the most persistent social issues of our time.
+                  Through powerful statement pieces, we challenge racism and promote equality in all
+                  its forms. Each garment is ethically produced with 100% organic cotton and
+                  supports ENAR (European Network Against Racism) through direct donations. From
+                  accessible shirts to premium handcrafted pieces, this collection embodies our
+                  commitment to social justice while planting a tree for every piece sold. Fashion
+                  becomes a tool for change, awareness, and progress toward a more equitable world.
                 </p>
               </div>
             </div>
@@ -362,13 +371,15 @@ export const RawFictionCard: React.FC<ProjectProps> = ({ isActive: _isActive = t
       {
         id: 'pure-chlorine',
         title: 'Pure Chlorine',
-        priority: 'lazy' as const,
+        hasGallery: true,
+        imageCount: 12,
+        priority: 'preload' as const,
       },
       {
         id: 'racism',
         title: 'Racism',
         hasGallery: true,
-        imageCount: 32,
+        imageCount: 8,
         priority: 'preload' as const,
       },
       {
@@ -490,6 +501,24 @@ export const RawFictionCard: React.FC<ProjectProps> = ({ isActive: _isActive = t
         priority: 'medium' as const,
         tabId: 'pride',
         galleryId: 'pride-main',
+      })),
+
+      // Pure Chlorine Collection - PURECROP_1 to PURECROP_6, HER_1 to HER_6
+      ...Array.from({ length: 6 }, (_, i) => ({
+        id: `pure-chlorine-purecrop-${i + 1}`,
+        src: `/projects/raw-fiction-content/collections/pure-chlorine/PURECROP_${i + 1}.jpg`,
+        alt: `Pure Chlorine Collection Pure Crop ${i + 1}`,
+        priority: 'medium' as const,
+        tabId: 'pure-chlorine',
+        galleryId: 'pure-chlorine-main',
+      })),
+      ...Array.from({ length: 6 }, (_, i) => ({
+        id: `pure-chlorine-her-${i + 1}`,
+        src: `/projects/raw-fiction-content/collections/pure-chlorine/HER_${i + 1}.jpg`,
+        alt: `Pure Chlorine Collection Her ${i + 1}`,
+        priority: 'medium' as const,
+        tabId: 'pure-chlorine',
+        galleryId: 'pure-chlorine-main',
       })),
 
       // Racism Collection - R1-1 to R1-4, R2-1 to R2-4, etc.

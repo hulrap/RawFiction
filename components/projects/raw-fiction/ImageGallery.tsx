@@ -1,9 +1,9 @@
+/* eslint-disable @next/next/no-img-element */
 import React, { useState, useCallback } from 'react';
-import { LazyImage } from '../../shared/LazyImage';
 import { generateGarbagePlanetProducts } from './collections/GarbagePlanetCollection';
 import { generatePrideProducts } from './collections/PrideCollection';
 import { generateRacismProducts } from './collections/RacismCollection';
-import { generateEditorialImages } from './collections/EditorialCollection';
+import { generatePureChlorineProducts } from './collections/PureChlorineCollection';
 import type { ProductItem } from './collections/GarbagePlanetCollection';
 import type { EditorialItem } from './collections/EditorialCollection';
 
@@ -31,46 +31,14 @@ interface FolderItem {
   productImages?: ProductItem[];
 }
 
-// Collection definitions based on actual content
-const COLLECTIONS_DATA = {
-  'garbage-planet': {
-    name: 'Garbage Planet',
-    description:
-      'Sustainable fashion collection featuring handcrafted pieces made from 100% organic linen. Each garment is produced in Vienna, Austria with high environmental and social standards. The collection includes shirts (GB1-GB15) and detailed fashion pieces (GP16-GP23) with complete sustainability features.',
-    productCount: 23,
-  },
-  'garbage-planet-2': {
-    name: 'Garbage Planet 2.0',
-    description:
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam, quis nostrud exercitation.',
-    productCount: 0,
-  },
-  pride: {
-    name: 'Pride',
-    description:
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis aute irure dolor in reprehenderit in voluptate.',
-  },
-  'pure-chlorine': {
-    name: 'Pure Chlorine (Capsule)',
-    description:
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Excepteur sint occaecat cupidatat non proident.',
-    productCount: 0,
-  },
-  racism: {
-    name: 'Racism',
-    description:
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sunt in culpa qui officia deserunt mollit anim.',
-  },
-};
-
 // Archive folder structure
 const ARCHIVE_FOLDERS: FolderItem[] = [
   {
-    id: 'editorial-shoots',
-    name: 'Editorial Shoots',
+    id: 'editorials',
+    name: 'Editorials',
     type: 'folder',
-    itemCount: 5,
-    size: '2.3GB',
+    itemCount: 3,
+    size: '2.1GB',
   },
   {
     id: 'backstage',
@@ -86,6 +54,92 @@ const ARCHIVE_FOLDERS: FolderItem[] = [
     itemCount: 150,
     size: '3.1GB',
   },
+  {
+    id: 'videos',
+    name: 'Videos',
+    type: 'folder',
+    itemCount: 0,
+    size: '500MB',
+  },
+];
+
+// Editorial collections within the Archive
+const EDITORIAL_COLLECTIONS: FolderItem[] = [
+  {
+    id: 'garbage-planet-1-editorial',
+    name: 'Garbage Planet 1.0 Editorial',
+    type: 'folder',
+    itemCount: 148,
+    size: '1.8GB',
+    images: Array.from({ length: 148 }, (_, i) => ({
+      id: `gp1-editorial-${i + 1}`,
+      src: `/projects/raw-fiction-content/archive/editorial/garbage-planet-1/Editorial_${i + 1}.jpg`,
+      alt: `Garbage Planet Editorial ${i + 1}`,
+      title: `Photocredits`,
+      collection: 'Garbage Planet 1.0 Editorial',
+      category: 'Editorial',
+      description: 'Marcel Bernard',
+      credits: {
+        photographer: 'Marcel Bernard',
+        models: ['Vladimir Cabak', 'Romana Binder', 'Raphael Hulan'],
+      },
+    })),
+  },
+  {
+    id: 'pride-editorial',
+    name: 'Pride Editorial',
+    type: 'folder',
+    itemCount: 9,
+    size: '54MB',
+    images: [
+      'IMG_9277.JPG',
+      'IMG_9280.JPG',
+      'IMG_9332.JPG',
+      'IMG_9335.JPG',
+      'IMG_9339.JPG',
+      'IMG_9362.JPG',
+      'IMG_9374.JPG',
+      'IMG_9384.JPG',
+      'IMG_9390.JPG',
+    ].map((filename, i) => ({
+      id: `pride-editorial-${i + 1}`,
+      src: `/projects/raw-fiction-content/archive/editorial/pride/${filename}`,
+      alt: `Pride Editorial ${i + 1}`,
+      title: `Photocredits`,
+      collection: 'Pride Editorial',
+      category: 'Editorial',
+      description: 'Marcel Bernard',
+      credits: {
+        photographer: 'Marcel Bernard',
+        models: ['Vladimir Cabak', 'Romana Binder', 'Raphael Hulan'],
+      },
+    })),
+  },
+  {
+    id: 'pure-chlorine-editorial',
+    name: 'Pure Chlorine Editorial',
+    type: 'folder',
+    itemCount: 42,
+    size: '218MB',
+    images: Array.from({ length: 44 }, (_, i) => {
+      const imageNumber = i + 1;
+      // Skip numbers 45 and 46 since they don't exist
+      if (imageNumber === 45 || imageNumber === 46) return null;
+      return {
+        id: `pure-chlorine-editorial-${imageNumber}`,
+        src: `/projects/raw-fiction-content/archive/editorial/pure-chlorine/MG_7391 (${imageNumber}).jpg`,
+        alt: `Pure Chlorine Editorial ${imageNumber}`,
+        title: `Photocredits`,
+        collection: 'Pure Chlorine Editorial',
+        category: 'Editorial',
+        description: 'Marcel Bernard',
+        credits: {
+          photographer: 'Marcel Bernard',
+          models: ['Pure Chlorine Artist'],
+        },
+      };
+    }).filter(Boolean) as ImageItem[],
+  },
 ];
 
 interface ImageGalleryProps {
@@ -96,7 +150,7 @@ interface ImageGalleryProps {
 }
 
 export const ImageGallery: React.FC<ImageGalleryProps> = ({
-  componentId = 'raw-fiction-gallery',
+  componentId: _componentId = 'raw-fiction-gallery',
   collectionId = 'garbage-planet',
   title = 'Collection Gallery',
   mode = 'collection',
@@ -106,7 +160,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
   >(null);
   const [currentFolder, setCurrentFolder] = useState<FolderItem | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [sortBy, setSortBy] = useState<'name' | 'date' | 'size'>('name');
+  const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
 
   const openFolder = useCallback((folder: FolderItem) => {
     setCurrentFolder(folder);
@@ -127,11 +181,11 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
             return generatePrideProducts();
           case 'racism':
             return generateRacismProducts();
+          case 'pure-chlorine':
+            return generatePureChlorineProducts();
           default:
             return [];
         }
-      case 'editorial':
-        return generateEditorialImages(collectionId);
       case 'vintage':
         return Array.from({ length: 34 }, (_, i) => ({
           id: `vintage-${i + 1}`,
@@ -150,6 +204,74 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
   }, [mode, collectionId]);
 
   const images = getImages();
+
+  // Get current images array for navigation
+  const getCurrentImages = useCallback(() => {
+    if (mode === 'archive' && currentFolder?.images) {
+      return currentFolder.images;
+    }
+    return images;
+  }, [mode, currentFolder, images]);
+
+  // Navigation functions
+  const navigateToImage = useCallback(
+    (direction: 'prev' | 'next') => {
+      const currentImages = getCurrentImages();
+      if (!currentImages.length) return;
+
+      const newIndex =
+        direction === 'prev'
+          ? Math.max(0, currentImageIndex - 1)
+          : Math.min(currentImages.length - 1, currentImageIndex + 1);
+
+      setCurrentImageIndex(newIndex);
+      const nextImage = currentImages[newIndex];
+      if (nextImage) {
+        setSelectedImage(nextImage);
+      }
+    },
+    [getCurrentImages, currentImageIndex]
+  );
+
+  // Handle image selection with index tracking
+  const handleImageSelect = useCallback(
+    (image: ImageItem | ProductItem | EditorialItem, index?: number) => {
+      const currentImages = getCurrentImages();
+      const imageIndex =
+        index !== undefined ? index : currentImages.findIndex(img => img.id === image.id);
+      setCurrentImageIndex(imageIndex);
+      setSelectedImage(image);
+    },
+    [getCurrentImages]
+  );
+
+  // Keyboard navigation
+  const handleKeyPress = useCallback(
+    (event: KeyboardEvent) => {
+      if (!selectedImage) return;
+
+      if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        navigateToImage('prev');
+      } else if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        navigateToImage('next');
+      } else if (event.key === 'Escape') {
+        event.preventDefault();
+        setSelectedImage(null);
+      }
+    },
+    [selectedImage, navigateToImage]
+  );
+
+  // Add keyboard event listener when modal is open
+  React.useEffect(() => {
+    if (selectedImage) {
+      document.addEventListener('keydown', handleKeyPress);
+      return () => document.removeEventListener('keydown', handleKeyPress);
+    }
+    return undefined;
+  }, [selectedImage, handleKeyPress]);
 
   // Archive Mode - Folder Explorer Interface
   if (mode === 'archive') {
@@ -178,15 +300,6 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
             >
               {viewMode === 'grid' ? 'List View' : 'Grid View'}
             </button>
-            <select
-              value={sortBy}
-              onChange={e => setSortBy(e.target.value as 'name' | 'date' | 'size')}
-              className="px-2 py-1 bg-gray-600/50 rounded text-xs border-none text-white"
-            >
-              <option value="name">Sort by Name</option>
-              <option value="date">Sort by Date</option>
-              <option value="size">Sort by Size</option>
-            </select>
           </div>
         </div>
 
@@ -209,7 +322,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
           className={`${viewMode === 'grid' ? 'grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4' : 'space-y-2'}`}
         >
           {!currentFolder
-            ? // Folder view
+            ? // Main archive folders
               ARCHIVE_FOLDERS.map(folder => (
                 <div
                   key={folder.id}
@@ -241,58 +354,71 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
                   )}
                 </div>
               ))
-            : // Placeholder for folder contents
-              Array.from({ length: 12 }, (_, i) => (
-                <div
-                  key={i}
-                  className={`${viewMode === 'grid' ? 'bg-gray-800/50 border border-gray-700/50 rounded-lg p-0 overflow-hidden cursor-pointer hover:scale-105 transition-transform duration-300' : 'flex items-center space-x-4 p-3 rounded-lg hover:bg-gray-700/50 cursor-pointer transition-colors'}`}
-                  onClick={() =>
-                    setSelectedImage({
-                      id: `archive-${i}`,
-                      src: `/placeholder/archive-${i}.jpg`,
-                      alt: `Archive Item ${i}`,
-                      title: `Archive ${i + 1}`,
-                      category: 'Archive',
-                      fileSize: '2.1MB',
-                      resolution: '4K',
-                      description: 'Archive content from Raw Fiction digital collection',
-                    })
-                  }
-                >
-                  {viewMode === 'grid' ? (
-                    <>
-                      <LazyImage
-                        src={`/placeholder/archive-${i}.jpg`}
-                        alt={`Archive Item ${i}`}
-                        className="w-full h-32 object-cover"
-                        componentId={`${componentId}-${currentFolder.id}`}
-                      />
-                      <div className="p-3">
-                        <h3 className="text-xs font-medium text-gray-200 mb-1 truncate">
-                          Archive {i + 1}
-                        </h3>
-                        <p className="text-xs text-gray-400 truncate">2.1MB</p>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <LazyImage
-                        src={`/placeholder/archive-${i}.jpg`}
-                        alt={`Archive Item ${i}`}
-                        className="w-12 h-12 object-cover rounded"
-                        componentId={`${componentId}-${currentFolder.id}`}
-                      />
-                      <div className="flex-1">
-                        <div className="text-sm font-medium text-gray-200 truncate">
-                          Archive {i + 1}
+            : currentFolder.id === 'editorials'
+              ? // Editorial collections subfolder
+                EDITORIAL_COLLECTIONS.map(collection => (
+                  <div
+                    key={collection.id}
+                    className={`${viewMode === 'grid' ? 'bg-gray-800/50 border border-gray-700/50 rounded-lg p-4 text-center cursor-pointer hover:bg-gray-700/50 transition-colors group' : 'flex items-center space-x-4 p-3 rounded-lg hover:bg-gray-700/50 cursor-pointer transition-colors'}`}
+                    onClick={() => openFolder(collection)}
+                  >
+                    {viewMode === 'grid' ? (
+                      <>
+                        <div className="w-12 h-12 bg-gradient-to-br from-gray-600 to-gray-700 rounded-lg flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                          <span className="text-white text-xs font-semibold">GP</span>
                         </div>
-                        <div className="text-xs text-gray-400">4K • 2.1MB</div>
-                      </div>
-                      <div className="text-xs text-gray-500">Image</div>
-                    </>
-                  )}
-                </div>
-              ))}
+                        <h3 className="text-sm font-medium text-gray-200 mb-1">
+                          {collection.name}
+                        </h3>
+                        <p className="text-xs text-gray-400">{collection.itemCount} images</p>
+                        <p className="text-xs text-gray-500">{collection.size}</p>
+                      </>
+                    ) : (
+                      <>
+                        <div className="w-8 h-8 bg-gradient-to-br from-gray-600 to-gray-700 rounded flex items-center justify-center">
+                          <span className="text-white text-xs font-semibold">GP</span>
+                        </div>
+                        <div className="flex-1">
+                          <div className="text-sm font-medium text-gray-200">{collection.name}</div>
+                          <div className="text-xs text-gray-400">
+                            {collection.itemCount} images • {collection.size}
+                          </div>
+                        </div>
+                        <div className="text-xs text-gray-500">Collection</div>
+                      </>
+                    )}
+                  </div>
+                ))
+              : // Image contents of selected collection
+                currentFolder.images?.map(image => (
+                  <div
+                    key={image.id}
+                    className={`${viewMode === 'grid' ? 'bg-gray-800/50 border border-gray-700/50 rounded-lg p-0 overflow-hidden cursor-pointer hover:scale-105 transition-transform duration-300' : 'flex items-center space-x-4 p-3 rounded-lg hover:bg-gray-700/50 cursor-pointer transition-colors'}`}
+                    onClick={() => handleImageSelect(image, currentFolder?.images?.indexOf(image))}
+                  >
+                    {viewMode === 'grid' ? (
+                      <img
+                        src={image.src}
+                        alt={image.alt}
+                        className="w-full h-32 object-cover"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <>
+                        <img
+                          src={image.src}
+                          alt={image.alt}
+                          className="w-12 h-12 object-cover rounded"
+                          loading="lazy"
+                        />
+                        <div className="flex-1">
+                          <div className="text-sm font-medium text-gray-200">Editorial Image</div>
+                        </div>
+                        <div className="text-xs text-gray-500">Image</div>
+                      </>
+                    )}
+                  </div>
+                )) || []}
         </div>
 
         {/* Image Modal */}
@@ -301,38 +427,65 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
             className="fixed inset-0 bg-black bg-opacity-95 flex items-center justify-center z-50 p-4"
             onClick={() => setSelectedImage(null)}
           >
-            <div className="bg-gray-900/95 border border-gray-700/50 rounded-xl p-8 max-w-6xl max-h-full overflow-auto backdrop-blur-lg">
-              <LazyImage
+            <div className="bg-gray-900/95 border border-gray-700/50 rounded-xl p-8 max-w-6xl max-h-full overflow-auto backdrop-blur-lg relative">
+              {/* Navigation Arrows */}
+              {getCurrentImages().length > 1 && (
+                <>
+                  {/* Previous Arrow */}
+                  {currentImageIndex > 0 && (
+                    <button
+                      className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all duration-200 z-10"
+                      onClick={e => {
+                        e.stopPropagation();
+                        navigateToImage('prev');
+                      }}
+                    >
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <path
+                          d="M15 18L9 12L15 6"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </button>
+                  )}
+
+                  {/* Next Arrow */}
+                  {currentImageIndex < getCurrentImages().length - 1 && (
+                    <button
+                      className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all duration-200 z-10"
+                      onClick={e => {
+                        e.stopPropagation();
+                        navigateToImage('next');
+                      }}
+                    >
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <path
+                          d="M9 18L15 12L9 6"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </button>
+                  )}
+                </>
+              )}
+
+              <img
                 src={selectedImage.src}
                 alt={selectedImage.alt}
                 className="w-full h-auto max-h-[70vh] object-contain mb-6 rounded-lg"
-                componentId={`${componentId}-modal`}
+                loading="eager"
               />
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <h3 className="text-xl font-bold text-white mb-2">{selectedImage.title}</h3>
-                  {selectedImage.description && (
-                    <p className="text-sm text-gray-300 mb-4">{selectedImage.description}</p>
-                  )}
-                </div>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Collection:</span>
-                    <span className="text-white">{selectedImage.collection}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Category:</span>
-                    <span className="text-white">{selectedImage.category}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">File Size:</span>
-                    <span className="text-gray-300">{selectedImage.fileSize}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Resolution:</span>
-                    <span className="text-gray-300">{selectedImage.resolution}</span>
-                  </div>
-                </div>
+              <div className="text-center">
+                <h3 className="text-xl font-bold text-white mb-2">{selectedImage.title}</h3>
+                {selectedImage.description && (
+                  <p className="text-sm text-gray-300 mb-4">{selectedImage.description}</p>
+                )}
               </div>
               <button
                 className="mt-6 px-6 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
@@ -364,7 +517,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
               </div>
               <div
                 className="border border-gray-700/50 rounded-lg overflow-hidden bg-gray-800/30 cursor-pointer hover:border-gray-600/70 transition-colors"
-                onClick={() => setSelectedImage(image)}
+                onClick={() => handleImageSelect(image, index)}
               >
                 <img
                   src={image.src}
@@ -383,7 +536,54 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
             className="fixed inset-0 bg-black bg-opacity-95 flex items-center justify-center z-50 p-4"
             onClick={() => setSelectedImage(null)}
           >
-            <div className="max-w-7xl max-h-full overflow-auto">
+            <div className="max-w-7xl max-h-full overflow-auto relative">
+              {/* Navigation Arrows */}
+              {getCurrentImages().length > 1 && (
+                <>
+                  {/* Previous Arrow */}
+                  {currentImageIndex > 0 && (
+                    <button
+                      className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all duration-200 z-10"
+                      onClick={e => {
+                        e.stopPropagation();
+                        navigateToImage('prev');
+                      }}
+                    >
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <path
+                          d="M15 18L9 12L15 6"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </button>
+                  )}
+
+                  {/* Next Arrow */}
+                  {currentImageIndex < getCurrentImages().length - 1 && (
+                    <button
+                      className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all duration-200 z-10"
+                      onClick={e => {
+                        e.stopPropagation();
+                        navigateToImage('next');
+                      }}
+                    >
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <path
+                          d="M9 18L15 12L9 6"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </button>
+                  )}
+                </>
+              )}
+
               <img
                 src={selectedImage.src}
                 alt={selectedImage.alt}
@@ -407,38 +607,29 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
   // Standard Collection/Editorial Mode
   return (
     <div className="space-y-8">
-      <div className="text-center">
-        <h2 className="text-3xl font-bold text-white mb-4">{title}</h2>
-        {mode === 'collection' &&
-          COLLECTIONS_DATA[collectionId as keyof typeof COLLECTIONS_DATA] && (
-            <p className="text-gray-300 max-w-3xl mx-auto leading-relaxed">
-              {COLLECTIONS_DATA[collectionId as keyof typeof COLLECTIONS_DATA].description}
-            </p>
-          )}
-      </div>
+      {/* Only show title and description for editorial mode */}
+      {mode === 'editorial' && (
+        <div className="text-center">
+          <h2 className="text-3xl font-bold text-white mb-4">{title}</h2>
+        </div>
+      )}
 
       {/* Collection Statistics */}
       {mode === 'collection' && (
-        <div className="flex justify-center space-x-8 text-sm">
+        <div className="flex justify-center text-sm">
           <div className="text-center">
             <div className="text-2xl font-bold text-white">{images.length}</div>
             <div className="text-gray-400">Products</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-white">
-              {images.filter(img => 'hasDescription' in img && img.hasDescription).length}
-            </div>
-            <div className="text-gray-400">With Descriptions</div>
           </div>
         </div>
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {images.map(image => (
+        {images.map((image, index) => (
           <div
             key={image.id}
             className="bg-gray-800/50 border border-gray-700/50 rounded-lg overflow-hidden cursor-pointer hover:scale-105 transition-all duration-300 group"
-            onClick={() => setSelectedImage(image)}
+            onClick={() => handleImageSelect(image, index)}
           >
             <div className="relative">
               <img
@@ -465,42 +656,65 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
           onClick={() => setSelectedImage(null)}
         >
           <div
-            className="bg-gray-900/95 border border-gray-700/50 rounded-xl p-8 max-w-6xl max-h-full overflow-auto backdrop-blur-lg"
+            className="bg-gray-900/95 border border-gray-700/50 rounded-xl p-8 max-w-6xl max-h-full overflow-auto backdrop-blur-lg relative"
             onClick={e => e.stopPropagation()}
           >
-            <LazyImage
+            {/* Navigation Arrows */}
+            {getCurrentImages().length > 1 && (
+              <>
+                {/* Previous Arrow */}
+                {currentImageIndex > 0 && (
+                  <button
+                    className="absolute left-4 top-1/3 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all duration-200 z-10"
+                    onClick={e => {
+                      e.stopPropagation();
+                      navigateToImage('prev');
+                    }}
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                      <path
+                        d="M15 18L9 12L15 6"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </button>
+                )}
+
+                {/* Next Arrow */}
+                {currentImageIndex < getCurrentImages().length - 1 && (
+                  <button
+                    className="absolute right-4 top-1/3 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all duration-200 z-10"
+                    onClick={e => {
+                      e.stopPropagation();
+                      navigateToImage('next');
+                    }}
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                      <path
+                        d="M9 18L15 12L9 6"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </button>
+                )}
+              </>
+            )}
+
+            <img
               src={selectedImage.src}
               alt={selectedImage.alt}
               className="w-full h-auto max-h-[60vh] object-contain mb-4 rounded-lg shadow-2xl"
-              componentId={`${componentId}-modal`}
+              loading="eager"
             />
 
-            {/* Image Variants Gallery */}
-            {'imageVariants' in selectedImage &&
-              selectedImage.imageVariants &&
-              selectedImage.imageVariants.length > 1 && (
-                <div className="mb-6">
-                  <h4 className="text-sm font-semibold text-gray-300 mb-2">
-                    Product Variants ({selectedImage.imageVariants.length} images)
-                  </h4>
-                  <div className="flex gap-2 overflow-x-auto pb-2">
-                    {selectedImage.imageVariants.map((variant, index) => (
-                      <img
-                        key={index}
-                        src={variant}
-                        alt={`${selectedImage.title} variant ${index + 1}`}
-                        className="w-16 h-16 object-cover rounded border border-gray-600 hover:border-gray-400 cursor-pointer flex-shrink-0"
-                        onClick={e => {
-                          e.stopPropagation();
-                          setSelectedImage({ ...selectedImage, src: variant });
-                        }}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-
             <div className="grid md:grid-cols-2 gap-6">
+              {/* Left Side - Description and Product Details */}
               <div>
                 <h3 className="text-xl font-bold text-white mb-2">{selectedImage.title}</h3>
                 {'productCode' in selectedImage && (
@@ -516,21 +730,24 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
 
                 {/* Editorial Credits */}
                 {'credits' in selectedImage && selectedImage.credits && (
-                  <div className="bg-gray-800/50 rounded-lg p-4 mb-4">
-                    <h4 className="font-semibold text-white mb-2">Credits</h4>
-                    <div className="space-y-1 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-gray-400">Photographer:</span>
+                  <>
+                    <div className="bg-gray-800/50 rounded-lg p-4 mb-4">
+                      <h4 className="font-semibold text-white mb-2">Photography</h4>
+                      <div className="text-sm">
                         <span className="text-white">{selectedImage.credits.photographer}</span>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-400">Models:</span>
-                        <span className="text-white">
-                          {selectedImage.credits.models.join(', ')}
-                        </span>
+                    </div>
+                    <div className="bg-gray-800/50 rounded-lg p-4 mb-4">
+                      <h4 className="font-semibold text-white mb-2">Models</h4>
+                      <div className="space-y-1 text-sm">
+                        {selectedImage.credits.models.map((model, index) => (
+                          <div key={index} className="text-white">
+                            {model}
+                          </div>
+                        ))}
                       </div>
                     </div>
-                  </div>
+                  </>
                 )}
 
                 {/* Product Specifications */}
@@ -560,33 +777,43 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
                 )}
               </div>
 
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Collection:</span>
-                  <span className="text-white">{selectedImage.collection}</span>
+              {/* Right Side - Images and Metadata Tags */}
+              <div>
+                {/* Image Variants Gallery */}
+                {'imageVariants' in selectedImage &&
+                  selectedImage.imageVariants &&
+                  selectedImage.imageVariants.length > 1 && (
+                    <div className="mb-6">
+                      <h4 className="text-sm font-semibold text-gray-300 mb-2">
+                        Images ({selectedImage.imageVariants.length} images)
+                      </h4>
+                      <div className="flex gap-2 overflow-x-auto pb-2">
+                        {selectedImage.imageVariants.map((variant, index) => (
+                          <img
+                            key={index}
+                            src={variant}
+                            alt={`${selectedImage.title} variant ${index + 1}`}
+                            className="w-16 h-16 object-cover rounded border border-gray-600 hover:border-gray-400 cursor-pointer flex-shrink-0"
+                            onClick={e => {
+                              e.stopPropagation();
+                              setSelectedImage({ ...selectedImage, src: variant });
+                            }}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                {/* Metadata Tags */}
+                <div className="space-y-2 text-sm">
+                  {/* Only show category for non-editorial images, or if it's not just "Editorial" */}
+                  {selectedImage.category && selectedImage.category !== 'Editorial' && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Category:</span>
+                      <span className="text-white">{selectedImage.category}</span>
+                    </div>
+                  )}
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Category:</span>
-                  <span className="text-white">{selectedImage.category}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">File Size:</span>
-                  <span className="text-gray-300">{selectedImage.fileSize}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Resolution:</span>
-                  <span className="text-gray-300">{selectedImage.resolution}</span>
-                </div>
-                {'hasDescription' in selectedImage && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Description:</span>
-                    <span
-                      className={selectedImage.hasDescription ? 'text-green-400' : 'text-red-400'}
-                    >
-                      {selectedImage.hasDescription ? 'Available' : 'Not Available'}
-                    </span>
-                  </div>
-                )}
               </div>
             </div>
 
