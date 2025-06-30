@@ -337,21 +337,23 @@ export const ContentWrapper: React.FC<ContentWrapperProps> = ({
     ...tab,
     content: errorState.brokenTabs.has(tab.id) ? (
       <div className="flex items-center justify-center h-64 text-center">
-        <div className="bg-gradient-to-br from-purple-900/60 to-pink-900/60 rounded-xl p-8 border border-purple-400/50 shadow-2xl">
-          <div className="text-5xl mb-4">✨</div>
-          <h3 className="text-lg font-semibold text-purple-200 mb-2">
+        <div className="bg-gray-800/80 rounded-xl p-8 border border-gray-600/50 shadow-2xl">
+          <div className="w-16 h-16 bg-gradient-to-br from-gray-600 to-gray-700 rounded-lg flex items-center justify-center mx-auto mb-4">
+            <span className="text-white font-semibold">RF</span>
+          </div>
+          <h3 className="text-lg font-semibold text-gray-200 mb-2">
             Collection Temporarily Unavailable
           </h3>
-          <p className="text-sm text-purple-300 mb-4 leading-relaxed">
-            This luxury fashion collection is being carefully restored.
+          <p className="text-sm text-gray-300 mb-4 leading-relaxed">
+            This fashion collection is being carefully restored.
             <br />
-            Our designers are ensuring optimal viewing experience.
+            Our team is ensuring optimal viewing experience.
           </p>
           <button
             onClick={() => attemptRecovery('tab', tab.id)}
-            className="px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg font-medium transition-all duration-200 shadow-lg"
+            className="px-6 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-lg font-medium transition-all duration-200 shadow-lg"
           >
-            ✨ Restore Collection
+            Restore Collection
           </button>
         </div>
       </div>
@@ -389,19 +391,21 @@ export const ContentWrapper: React.FC<ContentWrapperProps> = ({
   if (errorState.isCircuitOpen) {
     return (
       <div id={id} className={`relative ${className}`} style={style}>
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/40 to-pink-900/40 border-2 border-purple-400/60 flex items-center justify-center backdrop-blur-lg">
-          <div className="text-center p-10 bg-gradient-to-br from-purple-900/80 to-pink-900/80 rounded-2xl border border-purple-300/50 shadow-2xl max-w-md">
-            <div className="text-purple-300 text-7xl mb-6">💎</div>
-            <h3 className="text-2xl font-bold text-purple-100 mb-3">Luxury Protection Mode</h3>
-            <p className="text-sm text-purple-200 mb-4 leading-relaxed">
-              Our high-fashion collections are under protective care due to system stress.
+        <div className="absolute inset-0 bg-gray-900/80 border-2 border-gray-600/60 flex items-center justify-center backdrop-blur-lg">
+          <div className="text-center p-10 bg-gray-800/90 rounded-2xl border border-gray-600/50 shadow-2xl max-w-md">
+            <div className="w-20 h-20 bg-gradient-to-br from-gray-600 to-gray-700 rounded-xl flex items-center justify-center mx-auto mb-6">
+              <span className="text-white font-bold text-xl">RF</span>
+            </div>
+            <h3 className="text-2xl font-bold text-gray-100 mb-3">Protection Mode</h3>
+            <p className="text-sm text-gray-200 mb-4 leading-relaxed">
+              Our fashion collections are under protective care due to system stress.
               <br />
-              <span className="text-pink-300">Premium content requires optimal conditions.</span>
+              <span className="text-gray-300">Content requires optimal conditions.</span>
             </p>
-            <div className="bg-purple-800/50 rounded-lg p-4 mb-6 text-xs text-purple-300 space-y-1">
-              <div>Fashion Events: {errorState.errorCount}</div>
+            <div className="bg-gray-700/50 rounded-lg p-4 mb-6 text-xs text-gray-300 space-y-1">
+              <div>Events: {errorState.errorCount}</div>
               <div>Last Issue: {new Date(errorState.lastErrorTime).toLocaleTimeString()}</div>
-              <div className="text-pink-400">Luxury Safety Protocol: ACTIVE</div>
+              <div className="text-gray-400">Safety Protocol: ACTIVE</div>
             </div>
             <button
               onClick={() => {
@@ -416,9 +420,9 @@ export const ContentWrapper: React.FC<ContentWrapperProps> = ({
                   backoffMultiplier: 1,
                 });
               }}
-              className="px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-xl font-bold shadow-xl transition-all duration-300 transform hover:scale-105"
+              className="px-8 py-4 bg-gray-600 hover:bg-gray-500 text-white rounded-xl font-bold shadow-xl transition-all duration-300 transform hover:scale-105"
             >
-              💎 Restore Luxury Access
+              Restore Access
             </button>
           </div>
         </div>
@@ -450,13 +454,13 @@ export const ContentWrapper: React.FC<ContentWrapperProps> = ({
           isLoading={loadingState.isTabLoading}
           progress={loadingState.loadingProgress}
           type="tab"
-          message="Curating luxury fashion content..."
+          message="Curating fashion content..."
         />
 
-        {/* Luxury status indicator */}
+        {/* Status indicator */}
         {(errorState.brokenTabs.size > 0 || errorState.brokenImages.size > 0) && (
-          <div className="absolute top-4 right-4 bg-gradient-to-r from-purple-600/90 to-pink-600/90 text-white px-5 py-2 rounded-xl text-xs font-medium shadow-xl z-20 border border-purple-400/50">
-            ✨ Curating: {errorState.brokenTabs.size} collections, {errorState.brokenImages.size}{' '}
+          <div className="absolute top-4 right-4 bg-gray-800/90 text-white px-5 py-2 rounded-xl text-xs font-medium shadow-xl z-20 border border-gray-600/50">
+            Curating: {errorState.brokenTabs.size} collections, {errorState.brokenImages.size}{' '}
             images
           </div>
         )}

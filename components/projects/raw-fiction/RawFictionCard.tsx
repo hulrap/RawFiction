@@ -1,19 +1,10 @@
-import React, { useState, useCallback } from 'react';
+import React, { useCallback } from 'react';
 import Image from 'next/image';
 import { ContentWrapper } from './Wrapper';
 import { ImageGallery } from './ImageGallery';
 import type { ProjectProps, TabItem } from '../../shared/types';
 
 export const RawFictionCard: React.FC<ProjectProps> = ({ isActive: _isActive = true }) => {
-  const [selectedVideo, setSelectedVideo] = useState<{
-    id: string;
-    title: string;
-    description: string;
-    thumbnail: string;
-    videoUrl: string;
-    duration: string;
-  } | null>(null);
-
   const handleError = useCallback((error: string, context: string) => {
     // Production-grade error logging for fashion brand
     const errorReport = {
@@ -37,86 +28,6 @@ export const RawFictionCard: React.FC<ProjectProps> = ({ isActive: _isActive = t
     }
   }, []);
 
-  const videoData = [
-    {
-      id: '1',
-      title: 'Raw Fiction SS24 Campaign',
-      description: 'Behind the scenes of our Spring/Summer 2024 collection shoot',
-      thumbnail: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&q=80',
-      videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-      duration: '2:30',
-    },
-    {
-      id: '2',
-      title: 'Design Process',
-      description: 'From concept to creation - our design philosophy',
-      thumbnail: 'https://images.unsplash.com/photo-1445205170230-053b83016050?w=800&q=80',
-      videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-      duration: '3:45',
-    },
-    {
-      id: '3',
-      title: 'Sustainable Fashion',
-      description: 'Our commitment to environmental responsibility',
-      thumbnail: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&q=80',
-      videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-      duration: '4:15',
-    },
-    {
-      id: '4',
-      title: 'Street Style Lookbook',
-      description: 'Raw Fiction pieces styled for urban life',
-      thumbnail: 'https://images.unsplash.com/photo-1509631179647-0177331693ae?w=800&q=80',
-      videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-      duration: '1:55',
-    },
-  ];
-
-  const VideoGallery: React.FC = () => (
-    <div className="space-y-6">
-      <div className="text-center">
-        <h2 className="heading-section">Video Gallery</h2>
-        <p className="text-sm opacity-75 max-w-2xl mx-auto">
-          Dive deeper into the Raw Fiction world through our curated video content
-        </p>
-      </div>
-
-      <div className="grid md:grid-cols-2 gap-6">
-        {videoData.map(video => (
-          <div
-            key={video.id}
-            className="card-glass overflow-hidden cursor-pointer hover:scale-105 transition-transform duration-300"
-            onClick={() => setSelectedVideo(video)}
-          >
-            <div className="relative">
-              <Image
-                src={video.thumbnail}
-                alt={video.title}
-                width={400}
-                height={200}
-                className="w-full h-48 object-cover"
-              />
-              <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-                <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center backdrop-blur-sm">
-                  <svg className="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M8 5v14l11-7z" />
-                  </svg>
-                </div>
-              </div>
-              <div className="absolute bottom-2 right-2 bg-black bg-opacity-75 text-white text-xs px-2 py-1 rounded">
-                {video.duration}
-              </div>
-            </div>
-            <div className="p-4">
-              <h3 className="font-semibold text-metallic mb-2">{video.title}</h3>
-              <p className="text-sm opacity-75">{video.description}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-
   const tabs: TabItem[] = [
     {
       id: 'overview',
@@ -125,58 +36,54 @@ export const RawFictionCard: React.FC<ProjectProps> = ({ isActive: _isActive = t
         <div className="h-full w-full p-8 overflow-y-auto">
           <div className="max-w-6xl mx-auto space-y-12">
             <div className="text-center">
-              <h1 className="heading-main mb-6 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                Raw Fiction
-              </h1>
-              <p className="text-xl opacity-90 max-w-3xl mx-auto leading-relaxed">
+              <h1 className="text-5xl font-bold text-white mb-6">Raw Fiction</h1>
+              <p className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
                 Raw Fiction is a cutting-edge fashion brand that pushes the boundaries of
                 contemporary design. Our collections blend raw materials with sophisticated
                 craftsmanship to create pieces that tell stories.
               </p>
-              <div className="inline-block mt-6 px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full text-sm font-medium">
-                ✨ High Fashion • Digital Art • Luxury Collections
+              <div className="inline-block mt-6 px-6 py-2 bg-gradient-to-r from-gray-600 to-gray-800 rounded-full text-sm font-medium text-white">
+                High Fashion • Digital Art • Luxury Collections
               </div>
             </div>
 
             <div className="grid md:grid-cols-5 gap-6">
-              {['SS24', 'AW23', 'Resort', 'Capsule', 'Archive'].map((collection, index) => (
+              {[
+                { name: 'Garbage Planet', subtitle: 'Sustainability Focus' },
+                { name: 'Pride', subtitle: 'Identity & Expression' },
+                { name: 'Pure Chlorine', subtitle: 'Capsule Collection' },
+                { name: 'Racism', subtitle: 'Social Commentary' },
+                { name: 'Archive', subtitle: 'Digital Heritage' },
+              ].map(collection => (
                 <div
-                  key={collection}
-                  className="card-glass p-6 text-center hover:bg-purple-900/20 transition-colors group"
+                  key={collection.name}
+                  className="bg-gray-800/50 border border-gray-700/50 rounded-lg p-6 text-center hover:bg-gray-700/50 transition-colors group"
                 >
-                  <div className="text-3xl mb-3 group-hover:scale-110 transition-transform">
-                    {index === 0
-                      ? '🌸'
-                      : index === 1
-                        ? '🍂'
-                        : index === 2
-                          ? '🏖️'
-                          : index === 3
-                            ? '💎'
-                            : '📚'}
+                  <div className="w-12 h-12 bg-gradient-to-br from-gray-600 to-gray-700 rounded-lg flex items-center justify-center mb-3 mx-auto group-hover:scale-110 transition-transform">
+                    <span className="text-white font-semibold text-sm">RF</span>
                   </div>
-                  <h3 className="text-lg font-bold text-purple-300 mb-2">{collection}</h3>
-                  <p className="text-xs opacity-75">Collection {index + 1}</p>
+                  <h3 className="text-lg font-bold text-white mb-2">{collection.name}</h3>
+                  <p className="text-xs text-gray-400">{collection.subtitle}</p>
                 </div>
               ))}
             </div>
 
             <div className="grid md:grid-cols-2 gap-8">
-              <div className="card-glass p-8 bg-gradient-to-br from-purple-900/20 to-pink-900/20">
-                <h3 className="heading-card mb-4 text-purple-300">Brand Philosophy</h3>
-                <p className="text-sm opacity-75 leading-relaxed">
+              <div className="bg-gray-800/50 border border-gray-700/50 rounded-lg p-8">
+                <h3 className="text-xl font-bold text-white mb-4">Brand Philosophy</h3>
+                <p className="text-sm text-gray-300 leading-relaxed">
                   We believe fashion should be a form of artistic expression that challenges
                   conventional norms while maintaining wearability and comfort. Each piece is a
                   statement of individuality and creative rebellion.
                 </p>
               </div>
 
-              <div className="card-glass p-8 bg-gradient-to-br from-pink-900/20 to-purple-900/20">
-                <h3 className="heading-card mb-4 text-pink-300">Digital Collections</h3>
-                <p className="text-sm opacity-75 leading-relaxed">
+              <div className="bg-gray-800/50 border border-gray-700/50 rounded-lg p-8">
+                <h3 className="text-xl font-bold text-white mb-4">Digital Collections</h3>
+                <p className="text-sm text-gray-300 leading-relaxed">
                   Our extensive digital archives contain hundreds of high-resolution fashion images,
-                  behind-the-scenes content, and exclusive runway footage. Experience luxury fashion
-                  through immersive digital galleries.
+                  behind-the-scenes content, and exclusive editorial footage. Experience luxury
+                  fashion through immersive digital galleries.
                 </p>
               </div>
             </div>
@@ -185,42 +92,195 @@ export const RawFictionCard: React.FC<ProjectProps> = ({ isActive: _isActive = t
       ),
     },
     {
-      id: 'collections-ss24',
-      title: 'SS24',
+      id: 'garbage-planet',
+      title: 'Garbage Planet',
       content: (
         <div className="h-full w-full p-8 overflow-y-auto">
           <div className="max-w-4xl mx-auto space-y-8">
             <div className="text-center">
-              <h2 className="heading-section text-pink-300">Spring/Summer 2024</h2>
-              <p className="text-lg opacity-90 mb-8">
-                Ethereal Romance • Urban Edge • Sustainable Luxury
+              <h2 className="text-3xl font-bold text-white mb-4">Garbage Planet</h2>
+              <p className="text-lg text-gray-300 mb-8">
+                Sustainability • Environmental Awareness • Ethical Fashion
               </p>
+              <div className="bg-gray-800/50 border border-gray-700/50 rounded-lg p-6 mb-8 text-left">
+                <h3 className="text-lg font-semibold text-white mb-3">Collection Story</h3>
+                <p className="text-sm text-gray-300 leading-relaxed">
+                  Wir Menschen haben einzeln viele positive und negative Seiten. Doch durch die Gier
+                  von Wenigen und die Bequemlichkeit vieler, ist die Menschheit als Ganzes einfach
+                  Garbage. Wir verschmutzen und verpesten unseren Planeten auf unerträgliche Weise
+                  und in unvorstellbarem Ausmaß. Der Mist landet im Meer, in Flüssen, in Wäldern und
+                  auf Wiesen.
+                </p>
+                <p className="text-sm text-gray-300 leading-relaxed mt-3">
+                  Mit unserer Kollektion wollen wir auf die Miststände und den Dreck den wir
+                  hinterlassen aufmerksam machen. Unsere Kleidung ist zu 100% umweltfreundlich und
+                  fair produziert und verschmutzt weder das Grundwasser, noch enthält sie
+                  Plastikfasern.
+                </p>
+              </div>
             </div>
             <ImageGallery
-              componentId="raw-fiction-ss24"
-              collectionId="ss24"
-              title="Spring/Summer 2024 Collection"
+              componentId="raw-fiction-garbage-planet"
+              collectionId="garbage-planet"
+              title="Garbage Planet Collection"
+              mode="collection"
             />
           </div>
         </div>
       ),
     },
     {
-      id: 'collections-aw23',
-      title: 'AW23',
+      id: 'pride',
+      title: 'Pride',
       content: (
         <div className="h-full w-full p-8 overflow-y-auto">
           <div className="max-w-4xl mx-auto space-y-8">
             <div className="text-center">
-              <h2 className="heading-section text-amber-300">Autumn/Winter 2023</h2>
-              <p className="text-lg opacity-90 mb-8">
-                Dark Academia • Structured Silhouettes • Rich Textures
+              <h2 className="text-3xl font-bold text-white mb-4">Pride Collection</h2>
+              <p className="text-lg text-gray-300 mb-8">
+                Identity • Expression • Celebration of Diversity
               </p>
+              <div className="bg-gray-800/50 border border-gray-700/50 rounded-lg p-6 mb-8 text-left">
+                <h3 className="text-lg font-semibold text-white mb-3">Collection Story</h3>
+                <p className="text-sm text-gray-300 leading-relaxed">
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis aute irure dolor in
+                  reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+                  Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt
+                  mollit anim id est laborum.
+                </p>
+              </div>
             </div>
             <ImageGallery
-              componentId="raw-fiction-aw23"
-              collectionId="aw23"
-              title="Autumn/Winter 2023 Collection"
+              componentId="raw-fiction-pride"
+              collectionId="pride"
+              title="Pride Collection"
+              mode="collection"
+            />
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: 'pure-chlorine',
+      title: 'Pure Chlorine',
+      content: (
+        <div className="h-full w-full p-8 overflow-y-auto">
+          <div className="max-w-4xl mx-auto space-y-8">
+            <div className="text-center">
+              <h2 className="text-3xl font-bold text-white mb-4">Pure Chlorine (Capsule)</h2>
+              <p className="text-lg text-gray-300 mb-8">
+                Limited Edition • Exclusive Design • Premium Materials
+              </p>
+              <div className="bg-gray-800/50 border border-gray-700/50 rounded-lg p-6 mb-8 text-left">
+                <h3 className="text-lg font-semibold text-white mb-3">Collection Story</h3>
+                <p className="text-sm text-gray-300 leading-relaxed">
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Excepteur sint occaecat
+                  cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est
+                  laborum.
+                </p>
+              </div>
+            </div>
+            <div className="text-center py-20">
+              <div className="w-16 h-16 bg-gradient-to-br from-gray-600 to-gray-700 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <span className="text-white font-semibold">RF</span>
+              </div>
+              <h3 className="text-xl font-semibold text-white mb-2">Coming Soon</h3>
+              <p className="text-gray-400">This capsule collection is currently in development</p>
+            </div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: 'racism',
+      title: 'Racism',
+      content: (
+        <div className="h-full w-full p-8 overflow-y-auto">
+          <div className="max-w-4xl mx-auto space-y-8">
+            <div className="text-center">
+              <h2 className="text-3xl font-bold text-white mb-4">Racism Collection</h2>
+              <p className="text-lg text-gray-300 mb-8">
+                Social Commentary • Awareness • Change Through Fashion
+              </p>
+              <div className="bg-gray-800/50 border border-gray-700/50 rounded-lg p-6 mb-8 text-left">
+                <h3 className="text-lg font-semibold text-white mb-3">Collection Story</h3>
+                <p className="text-sm text-gray-300 leading-relaxed">
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sunt in culpa qui officia
+                  deserunt mollit anim id est laborum. Sed do eiusmod tempor incididunt ut labore et
+                  dolore magna aliqua.
+                </p>
+              </div>
+            </div>
+            <ImageGallery
+              componentId="raw-fiction-racism"
+              collectionId="racism"
+              title="Racism Collection"
+              mode="collection"
+            />
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: 'garbage-planet-2',
+      title: 'Garbage Planet 2.0',
+      content: (
+        <div className="h-full w-full p-8 overflow-y-auto">
+          <div className="max-w-4xl mx-auto space-y-8">
+            <div className="text-center">
+              <h2 className="text-3xl font-bold text-white mb-4">Garbage Planet 2.0</h2>
+              <p className="text-lg text-gray-300 mb-8">
+                Evolution • Next Chapter • Advanced Sustainability
+              </p>
+              <div className="bg-gray-800/50 border border-gray-700/50 rounded-lg p-6 mb-8 text-left">
+                <h3 className="text-lg font-semibold text-white mb-3">Collection Story</h3>
+                <p className="text-sm text-gray-300 leading-relaxed">
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam,
+                  quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                </p>
+              </div>
+            </div>
+            <div className="text-center py-20">
+              <div className="w-16 h-16 bg-gradient-to-br from-gray-600 to-gray-700 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <span className="text-white font-semibold">RF</span>
+              </div>
+              <h3 className="text-xl font-semibold text-white mb-2">In Development</h3>
+              <p className="text-gray-400">The next evolution of our environmental message</p>
+            </div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: 'editorial-shoots',
+      title: 'Editorial',
+      content: (
+        <div className="h-full w-full p-8 overflow-y-auto">
+          <div className="max-w-4xl mx-auto space-y-8">
+            <div className="text-center">
+              <h2 className="text-3xl font-bold text-white mb-4">Editorial Shoots</h2>
+              <p className="text-lg text-gray-300 mb-8">
+                Professional Photography • Behind the Scenes • Creative Vision
+              </p>
+              <div className="bg-gray-800/50 border border-gray-700/50 rounded-lg p-6 mb-8 text-left">
+                <h3 className="text-lg font-semibold text-white mb-3">Photo Credits</h3>
+                <div className="grid md:grid-cols-2 gap-4 text-sm text-gray-300">
+                  <div>
+                    <span className="text-gray-400">Photographer:</span>
+                    <div className="font-medium">Marcel Bernard</div>
+                  </div>
+                  <div>
+                    <span className="text-gray-400">Models:</span>
+                    <div className="font-medium">Romana Binder, Vladimir Cabak, Raphael Hulan</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <ImageGallery
+              componentId="raw-fiction-editorial"
+              collectionId="garbage-planet-1"
+              title="Editorial Photography"
+              mode="editorial"
             />
           </div>
         </div>
@@ -235,7 +295,7 @@ export const RawFictionCard: React.FC<ProjectProps> = ({ isActive: _isActive = t
             componentId="raw-fiction-archives"
             collectionId="archives"
             title="Digital Fashion Archives"
-            desktopMode={true}
+            mode="archive"
           />
         </div>
       ),
@@ -247,13 +307,13 @@ export const RawFictionCard: React.FC<ProjectProps> = ({ isActive: _isActive = t
         <div className="h-full w-full p-8 overflow-y-auto">
           <div className="max-w-4xl mx-auto space-y-6">
             <div className="text-center mb-8">
-              <h2 className="heading-section text-indigo-300">Original Raw Fiction Website</h2>
-              <p className="text-sm opacity-75">
+              <h2 className="text-3xl font-bold text-white mb-4">Original Raw Fiction Website</h2>
+              <p className="text-sm text-gray-400">
                 Archived from our early days - a snapshot of fashion history
               </p>
             </div>
-            <div className="card-glass p-8 bg-gradient-to-br from-indigo-900/30 to-purple-900/30">
-              <div className="aspect-video bg-gray-900 rounded-lg overflow-hidden border border-indigo-500/30 relative">
+            <div className="bg-gray-800/50 border border-gray-700/50 rounded-lg p-8">
+              <div className="aspect-video bg-gray-900 rounded-lg overflow-hidden border border-gray-600/30 relative mb-6">
                 <Image
                   src="/placeholder/vintage-fashion-website.jpg"
                   alt="Vintage Raw Fiction Website Screenshot"
@@ -270,35 +330,60 @@ export const RawFictionCard: React.FC<ProjectProps> = ({ isActive: _isActive = t
                   </div>
                 </div>
               </div>
+              <ImageGallery
+                componentId="raw-fiction-vintage"
+                collectionId="vintage"
+                title="Vintage Website Archive"
+                mode="vintage"
+              />
             </div>
           </div>
         </div>
       ),
     },
-    {
-      id: 'videos',
-      title: 'Videos',
-      content: <VideoGallery />,
-    },
   ];
 
-  // Sophisticated loading configuration for heavy fashion content
+  // Loading configuration for the new collections
   const loadingConfig = {
     tabs: [
       { id: 'overview', title: 'Overview', priority: 'immediate' as const },
       {
-        id: 'collections-ss24',
-        title: 'SS24',
+        id: 'garbage-planet',
+        title: 'Garbage Planet',
         hasGallery: true,
-        imageCount: 150,
+        imageCount: 72,
         priority: 'preload' as const,
       },
       {
-        id: 'collections-aw23',
-        title: 'AW23',
+        id: 'pride',
+        title: 'Pride',
         hasGallery: true,
-        imageCount: 120,
+        imageCount: 25,
         priority: 'preload' as const,
+      },
+      {
+        id: 'pure-chlorine',
+        title: 'Pure Chlorine',
+        priority: 'lazy' as const,
+      },
+      {
+        id: 'racism',
+        title: 'Racism',
+        hasGallery: true,
+        imageCount: 32,
+        priority: 'preload' as const,
+      },
+      {
+        id: 'garbage-planet-2',
+        title: 'Garbage Planet 2.0',
+        priority: 'lazy' as const,
+      },
+      {
+        id: 'editorial-shoots',
+        title: 'Editorial',
+        hasGallery: true,
+        imageCount: 148,
+        priority: 'lazy' as const,
       },
       {
         id: 'digital-archives',
@@ -307,95 +392,75 @@ export const RawFictionCard: React.FC<ProjectProps> = ({ isActive: _isActive = t
         imageCount: 500,
         priority: 'lazy' as const,
       },
-      { id: 'vintage-site', title: 'Vintage Site', priority: 'lazy' as const },
       {
-        id: 'videos',
-        title: 'Videos',
+        id: 'vintage-site',
+        title: 'Vintage Site',
         hasGallery: true,
-        imageCount: 25,
+        imageCount: 34,
         priority: 'lazy' as const,
       },
     ],
     images: [
-      // SS24 Collection - High Priority Fashion Images
-      ...Array.from({ length: 12 }, (_, i) => ({
-        id: `ss24-hero-${i + 1}`,
-        src: `/placeholder/ss24-fashion-${i + 1}.jpg`,
-        alt: `SS24 Fashion Look ${i + 1}`,
+      // Garbage Planet Collection
+      ...Array.from({ length: 72 }, (_, i) => ({
+        id: `garbage-planet-${i + 1}`,
+        src: `/projects/raw-fiction-content/collections/garbage-planet-1/${i <= 45 ? 'GB' : 'GP'}${Math.ceil((i + 1) / 3)}-${(i % 3) + 1}.jpg`,
+        alt: `Garbage Planet Product ${i + 1}`,
         priority: 'high' as const,
-        tabId: 'collections-ss24',
-        galleryId: 'ss24-main',
+        tabId: 'garbage-planet',
+        galleryId: 'garbage-planet-main',
       })),
 
-      // AW23 Collection
-      ...Array.from({ length: 10 }, (_, i) => ({
-        id: `aw23-hero-${i + 1}`,
-        src: `/placeholder/aw23-fashion-${i + 1}.jpg`,
-        alt: `AW23 Fashion Look ${i + 1}`,
+      // Pride Collection
+      ...Array.from({ length: 25 }, (_, i) => ({
+        id: `pride-${i + 1}`,
+        src: `/projects/raw-fiction-content/collections/pride/product-${i + 1}.jpg`,
+        alt: `Pride Collection ${i + 1}`,
         priority: 'medium' as const,
-        tabId: 'collections-aw23',
-        galleryId: 'aw23-main',
+        tabId: 'pride',
+        galleryId: 'pride-main',
       })),
 
-      // Digital Archives - Hundreds of images
-      ...Array.from({ length: 50 }, (_, i) => ({
-        id: `archive-fashion-${i + 1}`,
-        src: `/placeholder/archive-fashion-${i + 1}.jpg`,
-        alt: `Archive Fashion ${i + 1}`,
-        priority: 'low' as const,
-        tabId: 'digital-archives',
-        galleryId: 'archive-main',
+      // Racism Collection
+      ...Array.from({ length: 32 }, (_, i) => ({
+        id: `racism-${i + 1}`,
+        src: `/projects/raw-fiction-content/collections/racism/R${Math.ceil((i + 1) / 4)}-${(i % 4) + 1}.jpg`,
+        alt: `Racism Collection ${i + 1}`,
+        priority: 'medium' as const,
+        tabId: 'racism',
+        galleryId: 'racism-main',
       })),
 
-      // Video Thumbnails
-      ...videoData.map(video => ({
-        id: `video-thumb-${video.id}`,
-        src: video.thumbnail,
-        alt: `${video.title} Thumbnail`,
+      // Editorial Images
+      ...Array.from({ length: 148 }, (_, i) => ({
+        id: `editorial-${i + 1}`,
+        src: `/projects/raw-fiction-content/archive/editorial/garbage-planet-1/Editorial_${i + 1}.jpg`,
+        alt: `Editorial ${i + 1}`,
         priority: 'low' as const,
-        tabId: 'videos',
-        galleryId: 'video-gallery',
+        tabId: 'editorial-shoots',
+        galleryId: 'editorial-main',
+      })),
+
+      // Vintage Images
+      ...Array.from({ length: 34 }, (_, i) => ({
+        id: `vintage-${i + 1}`,
+        src: `/projects/raw-fiction-content/vintage-site/rawfiction${i + 1}.png`,
+        alt: `Vintage Raw Fiction Website Screenshot ${i + 1}`,
+        priority: 'low' as const,
+        tabId: 'vintage-site',
+        galleryId: 'vintage-main',
       })),
     ],
   };
 
   return (
-    <>
-      <ContentWrapper
-        id="raw-fiction"
-        tabs={tabs}
-        className="h-full w-full"
-        onError={handleError}
-        onSuccess={handleSuccess}
-        loadingConfig={loadingConfig}
-      />
-
-      {selectedVideo && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-95 flex items-center justify-center z-50 p-4"
-          onClick={() => setSelectedVideo(null)}
-        >
-          <div className="card-glass p-6 max-w-5xl w-full max-h-full overflow-auto bg-gradient-to-br from-purple-900/50 to-pink-900/50 border border-purple-500/30">
-            <div className="aspect-video mb-4 rounded-lg overflow-hidden">
-              <iframe
-                src={selectedVideo.videoUrl}
-                title={selectedVideo.title}
-                className="w-full h-full"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
-            </div>
-            <h3 className="heading-card mb-2 text-purple-300">{selectedVideo.title}</h3>
-            <p className="text-sm opacity-75 mb-4">{selectedVideo.description}</p>
-            <button
-              className="btn-primary bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-              onClick={() => setSelectedVideo(null)}
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
-    </>
+    <ContentWrapper
+      id="raw-fiction"
+      tabs={tabs}
+      className="h-full w-full"
+      onError={handleError}
+      onSuccess={handleSuccess}
+      loadingConfig={loadingConfig}
+    />
   );
 };
