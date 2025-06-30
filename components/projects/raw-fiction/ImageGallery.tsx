@@ -25,6 +25,9 @@ interface ProductItem extends ImageItem {
     content: string;
     emissions: string;
     shipping: string;
+    features?: string;
+    donations?: string;
+    badge?: string;
   };
 }
 
@@ -52,8 +55,8 @@ const COLLECTIONS_DATA = {
   'garbage-planet': {
     name: 'Garbage Planet',
     description:
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-    productCount: 72,
+      'Sustainable fashion collection featuring handcrafted pieces made from 100% organic linen. Each garment is produced in Vienna, Austria with high environmental and social standards. The collection includes shirts (GB1-GB15) and detailed fashion pieces (GP16-GP23) with complete sustainability features.',
+    productCount: 77, // 15 shirts × 3 variants + 8 fashion pieces × 4 variants = 45 + 32 = 77
     hasProductDescriptions: (productNum: number) => productNum >= 16, // GB1-15 don't have descriptions
     getProductCode: (productNum: number) =>
       productNum <= 15 ? `GB${productNum}` : `GP${productNum}`,
@@ -121,61 +124,131 @@ const ARCHIVE_FOLDERS: FolderItem[] = [
   },
 ];
 
+// Product information for Garbage Planet collection
+const GP_PRODUCT_INFO = {
+  16: {
+    name: 'Crop-top',
+    sold: true,
+    sex: 'Unisex/Feminine (Model size M)',
+    description:
+      'Our crop-top is handcrafted in Vienna, Austria with love. The fabric consists of pure GOTS certified linen. Our crop-top is Unisex, but with a feminine touch. Besides the cotton yarn they are 100% made out of woven black linen fabric, featuring a steel button on the backside of the neck.',
+    features:
+      'Unisex design with feminine touch, 100% woven black linen fabric, steel button on neck backside, very airy and cooling due to linen fabric - perfect for warm summer days.',
+  },
+  17: {
+    name: 'Hotpants',
+    sold: true,
+    sex: 'Unisex/Feminine',
+    description: 'Handcrafted sustainable hotpants made from 100% organic GOTS certified linen.',
+    features:
+      'Comfortable fit, sustainable materials, handmade in Vienna with high social standards.',
+  },
+  18: {
+    name: 'Turtleneck',
+    sold: true,
+    sex: 'Feminine (Model size M)',
+    description:
+      'Our turtleneck is handcrafted in Vienna, Austria with love. The fabric consists of pure GOTS certified linen. Our turtleneck is feminine. Besides the cotton yarn it is 100% made out of woven black linen fabric, featuring steel buttons on the collar.',
+    features:
+      'Feminine design, 100% woven black linen fabric, steel buttons on collar, can be worn with buttons in front or back.',
+  },
+  19: {
+    name: 'Kimono',
+    sold: true,
+    sex: 'Unisex',
+    description: 'Elegant kimono design handcrafted from sustainable materials.',
+    features: 'Flowing kimono silhouette, versatile styling options, made from organic linen.',
+  },
+  20: {
+    name: 'LongT',
+    sold: true,
+    sex: 'Unisex',
+    description: 'Long-sleeved sustainable t-shirt made from organic materials.',
+    features: 'Comfortable long-sleeve design, breathable linen fabric, minimalist aesthetic.',
+  },
+  21: {
+    name: 'Pants',
+    sold: true,
+    sex: 'Unisex',
+    description: 'Sustainable pants crafted from organic linen with attention to detail.',
+    features: 'Comfortable fit, durable construction, timeless design.',
+  },
+  22: {
+    name: 'Tank Kimono',
+    sold: true,
+    sex: 'Unisex',
+    description: 'Unique tank kimono hybrid design combining comfort and style.',
+    features: 'Innovative design, lightweight feel, perfect for layering.',
+  },
+  23: {
+    name: 'Apron',
+    sold: true,
+    sex: 'Unisex',
+    description: 'Functional apron made from sustainable materials with Raw Fiction aesthetic.',
+    features: 'Practical design, durable construction, sustainable materials.',
+  },
+};
+
 // Generate product images for Garbage Planet collection
 const generateGarbagePlanetProducts = (): ProductItem[] => {
   const products: ProductItem[] = [];
 
-  // GB1-GB15 (without descriptions)
+  // GB1-GB15 (shirts without descriptions, 3 variants each)
   for (let i = 1; i <= 15; i++) {
     for (let variant = 1; variant <= 3; variant++) {
       products.push({
         id: `gb${i}-${variant}`,
         src: `/projects/raw-fiction-content/collections/garbage-planet-1/GB${i}-${variant}.jpg`,
-        alt: `Garbage Planet Product GB${i} Variant ${variant}`,
-        title: `GB${i}`,
+        alt: `Garbage Planet Shirt GB${i} Variant ${variant}`,
+        title: `GB${i} - Shirt`,
         collection: 'Garbage Planet',
-        category: 'Fashion',
+        category: 'T-Shirts',
         productCode: `GB${i}`,
         hasDescription: false,
+        description:
+          'Sustainable shirt from the Garbage Planet collection (no detailed description available)',
         fileSize: '2.1MB',
         resolution: '4K',
+        sold: false,
+        specifications: {
+          sex: 'Unisex',
+          color: 'Black',
+          origin: 'Handmade in Austria',
+          content: '100% organic materials',
+          emissions: 'CO2 offset included',
+          shipping: 'Made-to-order, 2 weeks delivery',
+        },
       });
     }
   }
 
-  // GP16-GP23 (with descriptions)
-  const productNames = {
-    16: 'Crop-top',
-    17: 'Hotpants',
-    18: 'Turtleneck',
-    19: 'Kimono',
-    20: 'LongT',
-    21: 'Pants',
-    22: 'Tank Kimono',
-    23: 'Apron',
-  };
-
+  // GP16-GP23 (products with detailed descriptions, 4 variants each)
   for (let i = 16; i <= 23; i++) {
+    const productInfo = GP_PRODUCT_INFO[i as keyof typeof GP_PRODUCT_INFO];
     for (let variant = 1; variant <= 4; variant++) {
       products.push({
         id: `gp${i}-${variant}`,
         src: `/projects/raw-fiction-content/collections/garbage-planet-1/GP${i}-${variant}.jpg`,
-        alt: `${productNames[i as keyof typeof productNames]} - Variant ${variant}`,
-        title: `GP${i} - ${productNames[i as keyof typeof productNames]}`,
+        alt: `${productInfo.name} - Variant ${variant}`,
+        title: `GP${i} - ${productInfo.name}`,
         collection: 'Garbage Planet',
         category: 'Fashion',
         productCode: `GP${i}`,
         hasDescription: true,
-        description: 'Handcrafted sustainable fashion piece made from organic materials',
+        description: productInfo.description,
         fileSize: '2.3MB',
         resolution: '4K',
+        sold: productInfo.sold,
         specifications: {
-          sex: 'Unisex',
+          sex: productInfo.sex,
           color: 'Black',
           origin: 'Handmade in Austria',
           content: '100% organic linen',
           emissions: 'CO2 offset included',
           shipping: 'Made-to-order, 2 weeks delivery',
+          features: productInfo.features,
+          donations: '10% donated to Pure Earth',
+          badge: 'Agent-Badge included (handmade tin)',
         },
       });
     }
@@ -319,7 +392,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
       case 'vintage':
         return Array.from({ length: 34 }, (_, i) => ({
           id: `vintage-${i + 1}`,
-          src: `/projects/raw-fiction-content/vintage-site/rawfiction${i + 1}.png`,
+          src: `/projects/raw-fiction-content/website-archive/rawfiction${i + 1}.png`,
           alt: `Vintage Raw Fiction Website Screenshot ${i + 1}`,
           title: `Vintage Site ${i + 1}`,
           collection: 'Vintage Website',
@@ -550,11 +623,11 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
                 className="border border-gray-700/50 rounded-lg overflow-hidden bg-gray-800/30 cursor-pointer hover:border-gray-600/70 transition-colors"
                 onClick={() => setSelectedImage(image)}
               >
-                <LazyImage
+                <img
                   src={image.src}
                   alt={image.alt}
                   className="w-full h-auto object-contain"
-                  componentId={componentId}
+                  loading="lazy"
                 />
               </div>
             </div>
@@ -568,11 +641,10 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
             onClick={() => setSelectedImage(null)}
           >
             <div className="max-w-7xl max-h-full overflow-auto">
-              <LazyImage
+              <img
                 src={selectedImage.src}
                 alt={selectedImage.alt}
                 className="w-full h-auto max-h-[90vh] object-contain rounded-lg"
-                componentId={`${componentId}-modal`}
               />
               <div className="text-center mt-4">
                 <button
@@ -634,14 +706,14 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
               />
 
               {/* Product indicators */}
-              {'hasDescription' in image && !image.hasDescription && (
-                <div className="absolute top-2 right-2 bg-red-600/80 text-white text-xs px-2 py-1 rounded">
-                  No Description
+              {'sold' in image && image.sold && (
+                <div className="absolute top-2 left-2 bg-red-500/90 text-white text-xs px-2 py-1 rounded font-semibold">
+                  SOLD OUT
                 </div>
               )}
-              {'sold' in image && image.sold && (
-                <div className="absolute top-2 left-2 bg-gray-800/80 text-white text-xs px-2 py-1 rounded">
-                  Sold Out
+              {'hasDescription' in image && !image.hasDescription && (
+                <div className="absolute top-2 right-2 bg-orange-600/80 text-white text-xs px-2 py-1 rounded">
+                  Limited Info
                 </div>
               )}
 
@@ -725,16 +797,25 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
                 {/* Product Specifications */}
                 {'specifications' in selectedImage && selectedImage.specifications && (
                   <div className="bg-gray-800/50 rounded-lg p-4">
-                    <h4 className="font-semibold text-white mb-2">Specifications</h4>
+                    <h4 className="font-semibold text-white mb-2">Product Details</h4>
                     <div className="space-y-1 text-sm">
-                      {Object.entries(selectedImage.specifications).map(([key, value]) => (
-                        <div key={key} className="flex justify-between">
-                          <span className="text-gray-400 capitalize">
-                            {key.replace(/([A-Z])/g, ' $1')}:
-                          </span>
-                          <span className="text-white">{value}</span>
-                        </div>
-                      ))}
+                      {Object.entries(selectedImage.specifications).map(([key, value]) => {
+                        if (!value) return null;
+                        const displayKey =
+                          key === 'sex'
+                            ? 'Fit'
+                            : key === 'content'
+                              ? 'Material'
+                              : key === 'emissions'
+                                ? 'Sustainability'
+                                : key.replace(/([A-Z])/g, ' $1');
+                        return (
+                          <div key={key} className="flex justify-between">
+                            <span className="text-gray-400 capitalize">{displayKey}:</span>
+                            <span className="text-white text-right max-w-xs">{value}</span>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 )}

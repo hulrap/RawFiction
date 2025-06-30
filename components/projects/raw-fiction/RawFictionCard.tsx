@@ -301,8 +301,8 @@ export const RawFictionCard: React.FC<ProjectProps> = ({ isActive: _isActive = t
       ),
     },
     {
-      id: 'vintage-site',
-      title: 'Vintage Site',
+      id: 'website-archive',
+      title: 'Website Archive',
       content: (
         <div className="h-full w-full p-8 overflow-y-auto">
           <div className="max-w-4xl mx-auto space-y-6">
@@ -315,7 +315,7 @@ export const RawFictionCard: React.FC<ProjectProps> = ({ isActive: _isActive = t
             <div className="bg-gray-800/50 border border-gray-700/50 rounded-lg p-8">
               <div className="aspect-video bg-gray-900 rounded-lg overflow-hidden border border-gray-600/30 relative mb-6">
                 <Image
-                  src="/placeholder/vintage-fashion-website.jpg"
+                  src="/projects/raw-fiction-content/website-archive/rawfiction1.png"
                   alt="Vintage Raw Fiction Website Screenshot"
                   width={800}
                   height={450}
@@ -324,9 +324,7 @@ export const RawFictionCard: React.FC<ProjectProps> = ({ isActive: _isActive = t
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-6">
                   <div>
                     <h3 className="text-lg font-semibold text-white mb-2">Raw Fiction v1.0</h3>
-                    <p className="text-sm text-gray-300">
-                      Archived: 2023 • Original Design Platform
-                    </p>
+                    <p className="text-sm text-gray-300">Archived: 2019-2022 • Shopify Website</p>
                   </div>
                 </div>
               </div>
@@ -393,43 +391,118 @@ export const RawFictionCard: React.FC<ProjectProps> = ({ isActive: _isActive = t
         priority: 'lazy' as const,
       },
       {
-        id: 'vintage-site',
-        title: 'Vintage Site',
+        id: 'website-archive',
+        title: 'Website Archive',
         hasGallery: true,
         imageCount: 34,
         priority: 'lazy' as const,
       },
     ],
     images: [
-      // Garbage Planet Collection
-      ...Array.from({ length: 72 }, (_, i) => ({
-        id: `garbage-planet-${i + 1}`,
-        src: `/projects/raw-fiction-content/collections/garbage-planet-1/${i <= 45 ? 'GB' : 'GP'}${Math.ceil((i + 1) / 3)}-${(i % 3) + 1}.jpg`,
-        alt: `Garbage Planet Product ${i + 1}`,
-        priority: 'high' as const,
-        tabId: 'garbage-planet',
-        galleryId: 'garbage-planet-main',
-      })),
+      // Garbage Planet Collection - GB1-GB15 (3 variants each) + GP16-GP23 (4 variants each)
+      // GB1-1, GB1-2, GB1-3, GB2-1, GB2-2, GB2-3, ..., GB15-1, GB15-2, GB15-3
+      ...Array.from({ length: 45 }, (_, i) => {
+        const productNum = Math.floor(i / 3) + 1;
+        const variant = (i % 3) + 1;
+        return {
+          id: `garbage-planet-gb${productNum}-${variant}`,
+          src: `/projects/raw-fiction-content/collections/garbage-planet-1/GB${productNum}-${variant}.jpg`,
+          alt: `Garbage Planet Product GB${productNum} Variant ${variant}`,
+          priority: 'high' as const,
+          tabId: 'garbage-planet',
+          galleryId: 'garbage-planet-main',
+        };
+      }),
+      // GP16-1, GP16-2, GP16-3, GP16-4, GP17-1, GP17-2, ..., GP23-1, GP23-2, GP23-3, GP23-4
+      ...Array.from({ length: 32 }, (_, i) => {
+        const productNum = Math.floor(i / 4) + 16;
+        const variant = (i % 4) + 1;
+        return {
+          id: `garbage-planet-gp${productNum}-${variant}`,
+          src: `/projects/raw-fiction-content/collections/garbage-planet-1/GP${productNum}-${variant}.jpg`,
+          alt: `Garbage Planet Product GP${productNum} Variant ${variant}`,
+          priority: 'high' as const,
+          tabId: 'garbage-planet',
+          galleryId: 'garbage-planet-main',
+        };
+      }),
 
-      // Pride Collection
-      ...Array.from({ length: 25 }, (_, i) => ({
-        id: `pride-${i + 1}`,
-        src: `/projects/raw-fiction-content/collections/pride/product-${i + 1}.jpg`,
-        alt: `Pride Collection ${i + 1}`,
+      // Pride Collection - actual file names
+      // crop-1 to crop-4
+      ...Array.from({ length: 4 }, (_, i) => ({
+        id: `pride-crop-${i + 1}`,
+        src: `/projects/raw-fiction-content/collections/pride/crop-${i + 1}.jpg`,
+        alt: `Pride Collection Crop ${i + 1}`,
+        priority: 'medium' as const,
+        tabId: 'pride',
+        galleryId: 'pride-main',
+      })),
+      // tee-1 to tee-4
+      ...Array.from({ length: 4 }, (_, i) => ({
+        id: `pride-tee-${i + 1}`,
+        src: `/projects/raw-fiction-content/collections/pride/tee-${i + 1}.jpg`,
+        alt: `Pride Collection Tee ${i + 1}`,
+        priority: 'medium' as const,
+        tabId: 'pride',
+        galleryId: 'pride-main',
+      })),
+      // harness1-1 to harness1-4
+      ...Array.from({ length: 4 }, (_, i) => ({
+        id: `pride-harness1-${i + 1}`,
+        src: `/projects/raw-fiction-content/collections/pride/harness1-${i + 1}.jpg`,
+        alt: `Pride Collection Harness1 ${i + 1}`,
+        priority: 'medium' as const,
+        tabId: 'pride',
+        galleryId: 'pride-main',
+      })),
+      // harness2-1 to harness2-4
+      ...Array.from({ length: 4 }, (_, i) => ({
+        id: `pride-harness2-${i + 1}`,
+        src: `/projects/raw-fiction-content/collections/pride/harness2-${i + 1}.jpg`,
+        alt: `Pride Collection Harness2 ${i + 1}`,
+        priority: 'medium' as const,
+        tabId: 'pride',
+        galleryId: 'pride-main',
+      })),
+      // harness3-1 to harness3-2
+      ...Array.from({ length: 2 }, (_, i) => ({
+        id: `pride-harness3-${i + 1}`,
+        src: `/projects/raw-fiction-content/collections/pride/harness3-${i + 1}.jpg`,
+        alt: `Pride Collection Harness3 ${i + 1}`,
+        priority: 'medium' as const,
+        tabId: 'pride',
+        galleryId: 'pride-main',
+      })),
+      // belt-1
+      {
+        id: 'pride-belt-1',
+        src: '/projects/raw-fiction-content/collections/pride/belt-1.jpg',
+        alt: 'Pride Collection Belt 1',
+        priority: 'medium' as const,
+        tabId: 'pride',
+        galleryId: 'pride-main',
+      },
+      // painting1 to painting3
+      ...Array.from({ length: 3 }, (_, i) => ({
+        id: `pride-painting-${i + 1}`,
+        src: `/projects/raw-fiction-content/collections/pride/painting${i + 1}.jpg`,
+        alt: `Pride Collection Painting ${i + 1}`,
         priority: 'medium' as const,
         tabId: 'pride',
         galleryId: 'pride-main',
       })),
 
-      // Racism Collection
-      ...Array.from({ length: 32 }, (_, i) => ({
-        id: `racism-${i + 1}`,
-        src: `/projects/raw-fiction-content/collections/racism/R${Math.ceil((i + 1) / 4)}-${(i % 4) + 1}.jpg`,
-        alt: `Racism Collection ${i + 1}`,
-        priority: 'medium' as const,
-        tabId: 'racism',
-        galleryId: 'racism-main',
-      })),
+      // Racism Collection - R1-1 to R1-4, R2-1 to R2-4, etc.
+      ...['R1', 'R2', 'R4', 'R7', 'R9', 'R10', 'R11', 'R12'].flatMap(code =>
+        Array.from({ length: 4 }, (_, i) => ({
+          id: `racism-${code.toLowerCase()}-${i + 1}`,
+          src: `/projects/raw-fiction-content/collections/racism/${code}-${i + 1}.jpg`,
+          alt: `Racism Collection ${code} Variant ${i + 1}`,
+          priority: 'medium' as const,
+          tabId: 'racism',
+          galleryId: 'racism-main',
+        }))
+      ),
 
       // Editorial Images
       ...Array.from({ length: 148 }, (_, i) => ({
@@ -444,10 +517,10 @@ export const RawFictionCard: React.FC<ProjectProps> = ({ isActive: _isActive = t
       // Vintage Images
       ...Array.from({ length: 34 }, (_, i) => ({
         id: `vintage-${i + 1}`,
-        src: `/projects/raw-fiction-content/vintage-site/rawfiction${i + 1}.png`,
+        src: `/projects/raw-fiction-content/website-archive/rawfiction${i + 1}.png`,
         alt: `Vintage Raw Fiction Website Screenshot ${i + 1}`,
         priority: 'low' as const,
-        tabId: 'vintage-site',
+        tabId: 'website-archive',
         galleryId: 'vintage-main',
       })),
     ],
