@@ -120,67 +120,114 @@ const fragmentShader = `
   varying float vCubeId;
   varying float vElevation;
 
+  // Hash function for procedural noise
+  float hash(vec2 p) {
+    vec3 p3 = fract(vec3(p.xyx) * 0.1031);
+    p3 += dot(p3, p3.yzx + 33.33);
+    return fract((p3.x + p3.y) * p3.z);
+  }
+
+  // Smooth noise function
+  float noise(vec2 p) {
+    vec2 i = floor(p);
+    vec2 f = fract(p);
+    f = f * f * (3.0 - 2.0 * f);
+    return mix(
+      mix(hash(i + vec2(0.0, 0.0)), hash(i + vec2(1.0, 0.0)), f.x),
+      mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x),
+      f.y
+    );
+  }
+
   void main() {
-    // Enhanced lighting for better 3D perception
-    vec3 lightDir1 = normalize(vec3(0.7, 0.9, 1.5));  // Main top light
-    vec3 lightDir2 = normalize(vec3(-0.4, 0.6, 1.0)); // Fill light
-    vec3 lightDir3 = normalize(vec3(0.2, -0.3, 0.8)); // Bottom fill
+    vec3 normal = normalize(vNormal);
+    vec3 viewDir = normalize(-vPosition);
 
-    float NdotL1 = dot(normalize(vNormal), lightDir1);
-    float NdotL2 = dot(normalize(vNormal), lightDir2);
-    float NdotL3 = dot(normalize(vNormal), lightDir3);
+    // Cool lighting setup for anthracite enamel
+    vec3 lightDir1 = normalize(vec3(0.5, 1.0, 1.2));   // Cool main light
+    vec3 lightDir2 = normalize(vec3(-0.8, 0.4, 0.6));  // Cool fill light
+    vec3 lightDir3 = normalize(vec3(0.3, -0.2, 0.8));  // Cool rim light
 
-         float lighting = 0.4 + 0.6 * max(0.0, NdotL1) + 0.3 * max(0.0, NdotL2) + 0.2 * max(0.0, NdotL3);
+    // Calculate diffuse lighting with cool tones
+    float NdotL1 = max(0.0, dot(normal, lightDir1));
+    float NdotL2 = max(0.0, dot(normal, lightDir2));
+    float NdotL3 = max(0.0, dot(normal, lightDir3));
+    float diffuse = 0.3 + 0.6 * NdotL1 + 0.4 * NdotL2 + 0.3 * NdotL3;
 
-    // Hover glow with proper intensity
+    // Fresnel effect for enamel reflections
+    float fresnel = pow(1.0 - max(0.0, dot(normal, viewDir)), 2.0);
+
+    // Specular highlights for enamel shine
+    vec3 reflectDir1 = reflect(-lightDir1, normal);
+    vec3 reflectDir2 = reflect(-lightDir2, normal);
+    float specular1 = pow(max(0.0, dot(viewDir, reflectDir1)), 80.0);
+    float specular2 = pow(max(0.0, dot(viewDir, reflectDir2)), 40.0);
+    float specular = specular1 + specular2 * 0.6;
+
+    // Anthracite grey enamel base colors
+    vec3 anthraciteBase = vec3(0.15, 0.16, 0.18);       // Deep anthracite
+    vec3 anthraciteHighlight = vec3(0.35, 0.38, 0.42);  // Lighter anthracite
+    vec3 anthraciteShadow = vec3(0.08, 0.09, 0.11);     // Dark anthracite
+
+    // Off-white hover color
+    vec3 offWhite = vec3(0.92, 0.94, 0.96);
+    vec3 offWhiteHighlight = vec3(0.98, 0.99, 1.0);
+
+    // Hover detection and color mixing
     float hoverGlow = 1.0 - smoothstep(0.0, uHoverRadius, vDistanceFromMouse);
-    hoverGlow = hoverGlow * hoverGlow; // Smooth squared falloff
+    hoverGlow = hoverGlow * hoverGlow * hoverGlow; // Smooth cubic falloff
 
-    // Enhanced ripple visualization
-    float ripple = sin(vDistanceFromMouse * 12.0 - uTime * 5.0) * 0.5 + 0.5;
-    ripple *= exp(-vDistanceFromMouse * 2.0);
-    ripple *= hoverGlow; // Only show ripples in hover area
+    // Base color mixing (anthracite to off-white based on hover)
+    vec3 baseColor = mix(anthraciteBase, offWhite, hoverGlow);
+    vec3 highlightColor = mix(anthraciteHighlight, offWhiteHighlight, hoverGlow);
+    vec3 shadowColor = mix(anthraciteShadow, offWhite * 0.7, hoverGlow);
 
-         // Base colors - brighter for better visibility
-     vec3 baseColor = vec3(0.95, 0.96, 0.98);    // Very light neutral
-     vec3 shadowColor = vec3(0.6, 0.65, 0.7);    // Medium neutral
-    vec3 hoverColor = vec3(0.3, 0.6, 1.0);      // Blue hover
-    vec3 rippleColor = vec3(0.5, 0.8, 1.0);     // Light blue ripple
+    // Build enamel appearance
+    vec3 color = baseColor * diffuse;
 
-    // Apply lighting to base colors
-    vec3 litBase = baseColor * lighting;
-    vec3 litShadow = shadowColor * lighting;
+    // Add enamel highlights based on fresnel
+    color = mix(color, highlightColor, fresnel * 0.5);
 
-    // Mix base with shadows for depth
-    vec3 color = mix(litShadow, litBase, lighting);
+    // Cool-toned specular reflections
+    vec3 coolSpecular = vec3(0.8, 0.9, 1.0); // Cool white specular
+    color += coolSpecular * specular * (0.8 + hoverGlow * 0.4);
 
-    // Add subtle per-cube variation
-    float cubeVariation = vCubeId * 0.08 - 0.04; // -0.04 to +0.04
-    color += cubeVariation;
+    // Subtle enamel texture variation
+    vec2 stablePos = vPosition.xy * 0.1;
+    float enamelTexture = noise(stablePos * 8.0) * 0.1;
+    color += vec3(enamelTexture) * (1.0 - hoverGlow * 0.5);
 
-    // Hover effects
-    color += hoverColor * hoverGlow * 0.3;
-    color += rippleColor * ripple * 0.25;
+    // Enhanced ripple effect for hover
+    float ripple = sin(vDistanceFromMouse * 10.0 - uTime * 6.0) * 0.5 + 0.5;
+    ripple *= exp(-vDistanceFromMouse * 3.0) * hoverGlow;
+    vec3 rippleColor = mix(vec3(0.4, 0.5, 0.7), vec3(0.9, 0.95, 1.0), hoverGlow);
+    color += rippleColor * ripple * 0.15;
 
-    // Elevation-based brightness (cubes get brighter as they rise)
-    color += vec3(0.1, 0.15, 0.2) * vElevation;
+    // Elevation effects - higher cubes get more shine
+    float elevationEffect = vElevation * 1.5;
+    color += highlightColor * elevationEffect * 0.2;
+    color += coolSpecular * elevationEffect * specular * 0.3;
 
-    // Ambient pulsing (very subtle)
-    float pulse = sin(vPosition.x * 1.2 + vPosition.y * 0.9 + uTime * 1.2) * 0.5 + 0.5;
-    color += vec3(0.02, 0.03, 0.04) * pulse * lighting;
+    // Cool ambient lighting variation
+    float ambientCool = sin(stablePos.x * 1.5 + stablePos.y * 1.2) * 0.5 + 0.5;
+    vec3 coolAmbient = vec3(0.7, 0.8, 1.0); // Cool ambient tone
+    color += coolAmbient * ambientCool * 0.02 * (1.0 - hoverGlow);
 
-    // Special flowing effect
+    // Flowing effect with enhanced enamel properties
     if (uIsFlowing > 0.5) {
-      vec3 flowColor = vec3(0.7, 0.85, 1.0);
+      vec3 flowColor = mix(vec3(0.6, 0.7, 0.8), offWhiteHighlight, hoverGlow);
       color += flowColor * uFlowProgress * 0.4;
       color *= (1.0 + uFlowProgress * 0.3);
+      color += coolSpecular * uFlowProgress * 0.5;
     }
 
-    // Edge highlighting for 3D pop
-    float fresnel = 1.0 - abs(dot(normalize(vNormal), vec3(0.0, 0.0, 1.0)));
-    color += vec3(0.15, 0.2, 0.25) * fresnel * 0.2;
+    // Final enamel edge enhancement
+    float edgeFresnel = pow(fresnel, 1.2);
+    color += highlightColor * edgeFresnel * 0.15;
 
-    // Ensure proper opacity and visibility
+    // Ensure proper contrast and depth
+    color = max(color, shadowColor);
+
     gl_FragColor = vec4(color, 1.0);
   }
 `;
@@ -205,14 +252,14 @@ const CubeGrid: React.FC<{
   const visibleHeight = 2 * CAMERA_DISTANCE * Math.tan(fovRad / 2);
   const visibleWidth = visibleHeight * (16 / 9); // Force 16:9 aspect ratio
 
-  // Fixed dimensions for consistent cube grid across all cards
-  const BORDER_COMPENSATION = 0.15;
+  // Fixed dimensions for consistent cube grid across all cards (fill entire canvas)
+  const BORDER_COMPENSATION = 0.0; // No border - fill completely
   const EFFECTIVE_WIDTH = visibleWidth - BORDER_COMPENSATION * 2;
   const EFFECTIVE_HEIGHT = visibleHeight - BORDER_COMPENSATION * 2;
 
-  // Fixed cube configuration - identical for all cards
-  const CUBE_SIZE = 0.08;
-  const CUBE_SPACING = 0.01;
+  // Fixed cube configuration - larger cubes, fewer total cubes
+  const CUBE_SIZE = 0.16; // Doubled size = quarter the total cubes
+  const CUBE_SPACING = 0.0; // No gaps - continuous surface
   const CUBE_PITCH = CUBE_SIZE + CUBE_SPACING;
 
   // Fixed grid dimensions - same grid size for all cards
@@ -290,12 +337,13 @@ const CubeGrid: React.FC<{
           }
         }
       } else {
-        // Original calculation logic
+        // Seamless stone wall positioning
         for (let x = 0; x < CUBES_X; x++) {
           for (let y = 0; y < CUBES_Y; y++) {
             const posX = startX + x * CUBE_PITCH + CUBE_SIZE / 2;
             const posY = startY + y * CUBE_PITCH + CUBE_SIZE / 2;
-            const randomHeight = hash(x * 50, y * 50) * 0.4 + 0.2;
+            // Subtle height variation for organic stone wall effect
+            const randomHeight = hash(x * 30, y * 30) * 0.1 + 0.05;
             const posZ = randomHeight;
 
             const instanceMatrix = new THREE.Matrix4();
@@ -347,6 +395,7 @@ const CubeGrid: React.FC<{
     }
   }, [isInitialized, onReady]);
 
+  // Create rounded cube geometry for enamel effect (adjusted for larger cubes)
   return (
     <instancedMesh ref={meshRef} args={[undefined, undefined, TOTAL_CUBES]}>
       <boxGeometry args={[CUBE_SIZE, CUBE_SIZE, CUBE_SIZE]} />
@@ -356,7 +405,7 @@ const CubeGrid: React.FC<{
         uniforms={uniforms}
         transparent={false}
         depthWrite={true}
-        side={THREE.DoubleSide}
+        side={THREE.FrontSide}
       />
     </instancedMesh>
   );
