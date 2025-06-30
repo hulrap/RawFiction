@@ -18,6 +18,7 @@ interface ProductItem extends ImageItem {
   productCode: string;
   sold?: boolean;
   price?: string;
+  imageVariants?: string[];
   specifications?: {
     sex: string;
     color: string;
@@ -56,7 +57,7 @@ const COLLECTIONS_DATA = {
     name: 'Garbage Planet',
     description:
       'Sustainable fashion collection featuring handcrafted pieces made from 100% organic linen. Each garment is produced in Vienna, Austria with high environmental and social standards. The collection includes shirts (GB1-GB15) and detailed fashion pieces (GP16-GP23) with complete sustainability features.',
-    productCount: 77, // 15 shirts × 3 variants + 8 fashion pieces × 4 variants = 45 + 32 = 77
+    productCount: 23, // GP1-GP23 (23 products total)
     hasProductDescriptions: (productNum: number) => productNum >= 16, // GB1-15 don't have descriptions
     getProductCode: (productNum: number) =>
       productNum <= 15 ? `GB${productNum}` : `GP${productNum}`,
@@ -193,65 +194,77 @@ const GP_PRODUCT_INFO = {
 const generateGarbagePlanetProducts = (): ProductItem[] => {
   const products: ProductItem[] = [];
 
-  // GB1-GB15 (shirts without descriptions, 3 variants each)
+  // GP1-GP15 (shirts without descriptions, using GB image files)
   for (let i = 1; i <= 15; i++) {
+    const imageVariants = [];
     for (let variant = 1; variant <= 3; variant++) {
-      products.push({
-        id: `gb${i}-${variant}`,
-        src: `/projects/raw-fiction-content/collections/garbage-planet-1/GB${i}-${variant}.jpg`,
-        alt: `Garbage Planet Shirt GB${i} Variant ${variant}`,
-        title: `GB${i} - Shirt`,
-        collection: 'Garbage Planet',
-        category: 'T-Shirts',
-        productCode: `GB${i}`,
-        hasDescription: false,
-        description:
-          'Sustainable shirt from the Garbage Planet collection (no detailed description available)',
-        fileSize: '2.1MB',
-        resolution: '4K',
-        sold: false,
-        specifications: {
-          sex: 'Unisex',
-          color: 'Black',
-          origin: 'Handmade in Austria',
-          content: '100% organic materials',
-          emissions: 'CO2 offset included',
-          shipping: 'Made-to-order, 2 weeks delivery',
-        },
-      });
+      imageVariants.push(
+        `/projects/raw-fiction-content/collections/garbage-planet-1/GB${i}-${variant}.jpg`
+      );
     }
+
+    products.push({
+      id: `gp${i}`,
+      src: imageVariants[0] || '', // Main image
+      alt: `Garbage Planet Shirt GP${i}`,
+      title: `GP${i} - Shirt`,
+      collection: 'Garbage Planet',
+      category: 'T-Shirts',
+      productCode: `GP${i}`,
+      hasDescription: false,
+      description:
+        'Sustainable shirt from the Garbage Planet collection (no detailed description available)',
+      fileSize: '2.1MB',
+      resolution: '4K',
+      sold: false,
+      imageVariants, // Store all variant images
+      specifications: {
+        sex: 'Unisex',
+        color: 'Black',
+        origin: 'Handmade in Austria',
+        content: '100% organic materials',
+        emissions: 'CO2 offset included',
+        shipping: 'Made-to-order, 2 weeks delivery',
+      },
+    });
   }
 
-  // GP16-GP23 (products with detailed descriptions, 4 variants each)
+  // GP16-GP23 (products with detailed descriptions)
   for (let i = 16; i <= 23; i++) {
     const productInfo = GP_PRODUCT_INFO[i as keyof typeof GP_PRODUCT_INFO];
+    const imageVariants = [];
     for (let variant = 1; variant <= 4; variant++) {
-      products.push({
-        id: `gp${i}-${variant}`,
-        src: `/projects/raw-fiction-content/collections/garbage-planet-1/GP${i}-${variant}.jpg`,
-        alt: `${productInfo.name} - Variant ${variant}`,
-        title: `GP${i} - ${productInfo.name}`,
-        collection: 'Garbage Planet',
-        category: 'Fashion',
-        productCode: `GP${i}`,
-        hasDescription: true,
-        description: productInfo.description,
-        fileSize: '2.3MB',
-        resolution: '4K',
-        sold: productInfo.sold,
-        specifications: {
-          sex: productInfo.sex,
-          color: 'Black',
-          origin: 'Handmade in Austria',
-          content: '100% organic linen',
-          emissions: 'CO2 offset included',
-          shipping: 'Made-to-order, 2 weeks delivery',
-          features: productInfo.features,
-          donations: '10% donated to Pure Earth',
-          badge: 'Agent-Badge included (handmade tin)',
-        },
-      });
+      imageVariants.push(
+        `/projects/raw-fiction-content/collections/garbage-planet-1/GP${i}-${variant}.jpg`
+      );
     }
+
+    products.push({
+      id: `gp${i}`,
+      src: imageVariants[0] || '', // Main image
+      alt: `${productInfo.name}`,
+      title: `GP${i} - ${productInfo.name}`,
+      collection: 'Garbage Planet',
+      category: 'Fashion',
+      productCode: `GP${i}`,
+      hasDescription: true,
+      description: productInfo.description,
+      fileSize: '2.3MB',
+      resolution: '4K',
+      sold: productInfo.sold,
+      imageVariants, // Store all variant images
+      specifications: {
+        sex: productInfo.sex,
+        color: 'Black',
+        origin: 'Handmade in Austria',
+        content: '100% organic linen',
+        emissions: 'CO2 offset included',
+        shipping: 'Made-to-order, 2 weeks delivery',
+        features: productInfo.features,
+        donations: '10% donated to Pure Earth',
+        badge: 'Agent-Badge included (handmade tin)',
+      },
+    });
   }
 
   return products;
@@ -757,9 +770,31 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
             <LazyImage
               src={selectedImage.src}
               alt={selectedImage.alt}
-              className="w-full h-auto max-h-[60vh] object-contain mb-6 rounded-lg shadow-2xl"
+              className="w-full h-auto max-h-[60vh] object-contain mb-4 rounded-lg shadow-2xl"
               componentId={`${componentId}-modal`}
             />
+
+            {/* Image Variants Gallery */}
+            {'imageVariants' in selectedImage &&
+              selectedImage.imageVariants &&
+              selectedImage.imageVariants.length > 1 && (
+                <div className="mb-6">
+                  <h4 className="text-sm font-semibold text-gray-300 mb-2">
+                    Product Variants ({selectedImage.imageVariants.length} images)
+                  </h4>
+                  <div className="flex gap-2 overflow-x-auto pb-2">
+                    {selectedImage.imageVariants.map((variant, index) => (
+                      <img
+                        key={index}
+                        src={variant}
+                        alt={`${selectedImage.title} variant ${index + 1}`}
+                        className="w-16 h-16 object-cover rounded border border-gray-600 hover:border-gray-400 cursor-pointer flex-shrink-0"
+                        onClick={() => setSelectedImage({ ...selectedImage, src: variant })}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
 
             <div className="grid md:grid-cols-2 gap-6">
               <div>
