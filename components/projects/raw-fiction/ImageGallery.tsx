@@ -1,5 +1,11 @@
 import React, { useState, useCallback } from 'react';
 import { LazyImage } from '../../shared/LazyImage';
+import { generateGarbagePlanetProducts } from './collections/GarbagePlanetCollection';
+import { generatePrideProducts } from './collections/PrideCollection';
+import { generateRacismProducts } from './collections/RacismCollection';
+import { generateEditorialImages } from './collections/EditorialCollection';
+import type { ProductItem } from './collections/GarbagePlanetCollection';
+import type { EditorialItem } from './collections/EditorialCollection';
 
 interface ImageItem {
   id: string;
@@ -12,32 +18,6 @@ interface ImageItem {
   fileSize?: string;
   resolution?: string;
   hasDescription?: boolean;
-}
-
-interface ProductItem extends ImageItem {
-  productCode: string;
-  sold?: boolean;
-  price?: string;
-  imageVariants?: string[];
-  specifications?: {
-    sex: string;
-    color: string;
-    origin: string;
-    content: string;
-    emissions: string;
-    shipping: string;
-    features?: string;
-    donations?: string;
-    badge?: string;
-  };
-}
-
-interface EditorialItem extends ImageItem {
-  credits?: {
-    photographer: string;
-    models: string[];
-  };
-  editorialDescription?: string;
 }
 
 interface FolderItem {
@@ -57,46 +37,29 @@ const COLLECTIONS_DATA = {
     name: 'Garbage Planet',
     description:
       'Sustainable fashion collection featuring handcrafted pieces made from 100% organic linen. Each garment is produced in Vienna, Austria with high environmental and social standards. The collection includes shirts (GB1-GB15) and detailed fashion pieces (GP16-GP23) with complete sustainability features.',
-    productCount: 23, // GP1-GP23 (23 products total)
-    hasProductDescriptions: (productNum: number) => productNum >= 16, // GB1-15 don't have descriptions
-    getProductCode: (productNum: number) =>
-      productNum <= 15 ? `GB${productNum}` : `GP${productNum}`,
+    productCount: 23,
   },
   'garbage-planet-2': {
     name: 'Garbage Planet 2.0',
     description:
       'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam, quis nostrud exercitation.',
-    productCount: 0, // To be added
+    productCount: 0,
   },
   pride: {
     name: 'Pride',
     description:
       'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis aute irure dolor in reprehenderit in voluptate.',
-    productTypes: ['crop', 'tee', 'harness1', 'harness2', 'harness3', 'belt', 'painting'],
-    getProductImages: (type: string) => {
-      const counts = {
-        crop: 4,
-        tee: 4,
-        harness1: 4,
-        harness2: 4,
-        harness3: 2,
-        belt: 1,
-        painting: 3,
-      };
-      return counts[type as keyof typeof counts] || 0;
-    },
   },
   'pure-chlorine': {
     name: 'Pure Chlorine (Capsule)',
     description:
       'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Excepteur sint occaecat cupidatat non proident.',
-    productCount: 0, // To be added
+    productCount: 0,
   },
   racism: {
     name: 'Racism',
     description:
       'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sunt in culpa qui officia deserunt mollit anim.',
-    products: ['R1', 'R2', 'R4', 'R7', 'R9', 'R10', 'R11', 'R12'],
   },
 };
 
@@ -113,7 +76,7 @@ const ARCHIVE_FOLDERS: FolderItem[] = [
     id: 'backstage',
     name: 'Behind the Scenes',
     type: 'folder',
-    itemCount: 0, // To be populated
+    itemCount: 0,
     size: '1.2GB',
   },
   {
@@ -124,239 +87,6 @@ const ARCHIVE_FOLDERS: FolderItem[] = [
     size: '3.1GB',
   },
 ];
-
-// Product information for Garbage Planet collection
-const GP_PRODUCT_INFO = {
-  16: {
-    name: 'Crop-top',
-    sold: true,
-    sex: 'Unisex/Feminine (Model size M)',
-    description:
-      'Our crop-top is handcrafted in Vienna, Austria with love. The fabric consists of pure GOTS certified linen. Our crop-top is Unisex, but with a feminine touch. Besides the cotton yarn they are 100% made out of woven black linen fabric, featuring a steel button on the backside of the neck.',
-    features:
-      'Unisex design with feminine touch, 100% woven black linen fabric, steel button on neck backside, very airy and cooling due to linen fabric - perfect for warm summer days.',
-  },
-  17: {
-    name: 'Hotpants',
-    sold: true,
-    sex: 'Unisex/Feminine',
-    description: 'Handcrafted sustainable hotpants made from 100% organic GOTS certified linen.',
-    features:
-      'Comfortable fit, sustainable materials, handmade in Vienna with high social standards.',
-  },
-  18: {
-    name: 'Turtleneck',
-    sold: true,
-    sex: 'Feminine (Model size M)',
-    description:
-      'Our turtleneck is handcrafted in Vienna, Austria with love. The fabric consists of pure GOTS certified linen. Our turtleneck is feminine. Besides the cotton yarn it is 100% made out of woven black linen fabric, featuring steel buttons on the collar.',
-    features:
-      'Feminine design, 100% woven black linen fabric, steel buttons on collar, can be worn with buttons in front or back.',
-  },
-  19: {
-    name: 'Kimono',
-    sold: true,
-    sex: 'Unisex',
-    description: 'Elegant kimono design handcrafted from sustainable materials.',
-    features: 'Flowing kimono silhouette, versatile styling options, made from organic linen.',
-  },
-  20: {
-    name: 'LongT',
-    sold: true,
-    sex: 'Unisex',
-    description: 'Long-sleeved sustainable t-shirt made from organic materials.',
-    features: 'Comfortable long-sleeve design, breathable linen fabric, minimalist aesthetic.',
-  },
-  21: {
-    name: 'Pants',
-    sold: true,
-    sex: 'Unisex',
-    description: 'Sustainable pants crafted from organic linen with attention to detail.',
-    features: 'Comfortable fit, durable construction, timeless design.',
-  },
-  22: {
-    name: 'Tank Kimono',
-    sold: true,
-    sex: 'Unisex',
-    description: 'Unique tank kimono hybrid design combining comfort and style.',
-    features: 'Innovative design, lightweight feel, perfect for layering.',
-  },
-  23: {
-    name: 'Apron',
-    sold: true,
-    sex: 'Unisex',
-    description: 'Functional apron made from sustainable materials with Raw Fiction aesthetic.',
-    features: 'Practical design, durable construction, sustainable materials.',
-  },
-};
-
-// Generate product images for Garbage Planet collection
-const generateGarbagePlanetProducts = (): ProductItem[] => {
-  const products: ProductItem[] = [];
-
-  // GP1-GP15 (shirts without descriptions, using GB image files)
-  for (let i = 1; i <= 15; i++) {
-    const imageVariants = [];
-    for (let variant = 1; variant <= 3; variant++) {
-      imageVariants.push(
-        `/projects/raw-fiction-content/collections/garbage-planet-1/GB${i}-${variant}.jpg`
-      );
-    }
-
-    products.push({
-      id: `gp${i}`,
-      src: imageVariants[0] || '', // Main image
-      alt: `Garbage Planet Shirt GP${i}`,
-      title: `GP${i} - Shirt`,
-      collection: 'Garbage Planet',
-      category: 'T-Shirts',
-      productCode: `GP${i}`,
-      hasDescription: false,
-      description:
-        'Sustainable shirt from the Garbage Planet collection (no detailed description available)',
-      fileSize: '2.1MB',
-      resolution: '4K',
-      sold: false,
-      imageVariants, // Store all variant images
-      specifications: {
-        sex: 'Unisex',
-        color: 'Black',
-        origin: 'Handmade in Austria',
-        content: '100% organic materials',
-        emissions: 'CO2 offset included',
-        shipping: 'Made-to-order, 2 weeks delivery',
-      },
-    });
-  }
-
-  // GP16-GP23 (products with detailed descriptions)
-  for (let i = 16; i <= 23; i++) {
-    const productInfo = GP_PRODUCT_INFO[i as keyof typeof GP_PRODUCT_INFO];
-    const imageVariants = [];
-    for (let variant = 1; variant <= 4; variant++) {
-      imageVariants.push(
-        `/projects/raw-fiction-content/collections/garbage-planet-1/GP${i}-${variant}.jpg`
-      );
-    }
-
-    products.push({
-      id: `gp${i}`,
-      src: imageVariants[0] || '', // Main image
-      alt: `${productInfo.name}`,
-      title: `GP${i} - ${productInfo.name}`,
-      collection: 'Garbage Planet',
-      category: 'Fashion',
-      productCode: `GP${i}`,
-      hasDescription: true,
-      description: productInfo.description,
-      fileSize: '2.3MB',
-      resolution: '4K',
-      sold: productInfo.sold,
-      imageVariants, // Store all variant images
-      specifications: {
-        sex: productInfo.sex,
-        color: 'Black',
-        origin: 'Handmade in Austria',
-        content: '100% organic linen',
-        emissions: 'CO2 offset included',
-        shipping: 'Made-to-order, 2 weeks delivery',
-        features: productInfo.features,
-        donations: '10% donated to Pure Earth',
-        badge: 'Agent-Badge included (handmade tin)',
-      },
-    });
-  }
-
-  return products;
-};
-
-// Generate Pride collection products
-const generatePrideProducts = (): ProductItem[] => {
-  const products: ProductItem[] = [];
-
-  Object.entries({
-    crop: 4,
-    tee: 4,
-    harness1: 4,
-    harness2: 4,
-    harness3: 2,
-    belt: 1,
-    painting: 3,
-  }).forEach(([type, count]) => {
-    for (let i = 1; i <= count; i++) {
-      products.push({
-        id: `pride-${type}-${i}`,
-        src: `/projects/raw-fiction-content/collections/pride/${type}-${i}.jpg`,
-        alt: `Pride Collection ${type} ${i}`,
-        title: `${type.charAt(0).toUpperCase() + type.slice(1)} ${i}`,
-        collection: 'Pride',
-        category: 'Fashion',
-        productCode: `PRIDE-${type.toUpperCase()}-${i}`,
-        hasDescription: false,
-        fileSize: '2.4MB',
-        resolution: '4K',
-      });
-    }
-  });
-
-  return products;
-};
-
-// Generate Racism collection products
-const generateRacismProducts = (): ProductItem[] => {
-  const products: ProductItem[] = [];
-  const productCodes = ['R1', 'R2', 'R4', 'R7', 'R9', 'R10', 'R11', 'R12'];
-
-  productCodes.forEach(code => {
-    for (let variant = 1; variant <= 4; variant++) {
-      products.push({
-        id: `racism-${code.toLowerCase()}-${variant}`,
-        src: `/projects/raw-fiction-content/collections/racism/${code}-${variant}.jpg`,
-        alt: `Racism Collection ${code} Variant ${variant}`,
-        title: `${code}`,
-        collection: 'Racism',
-        category: 'Fashion',
-        productCode: code,
-        hasDescription: true,
-        description: 'Powerful statement piece addressing social issues through fashion',
-        fileSize: '6.2MB',
-        resolution: '4K',
-      });
-    }
-  });
-
-  return products;
-};
-
-// Generate editorial images
-const generateEditorialImages = (collectionId: string): EditorialItem[] => {
-  const editorialCounts = {
-    'garbage-planet-1': 148,
-    'garbage-planet-2': 0,
-    pride: 0,
-    'pure-chlorine': 0,
-    racism: 0,
-  };
-
-  const count = editorialCounts[collectionId as keyof typeof editorialCounts] || 0;
-  if (count === 0) return [];
-
-  return Array.from({ length: count }, (_, i) => ({
-    id: `editorial-${collectionId}-${i + 1}`,
-    src: `/projects/raw-fiction-content/archive/editorial/${collectionId}/Editorial_${i + 1}.jpg`,
-    alt: `Editorial ${collectionId} ${i + 1}`,
-    title: `Editorial ${i + 1}`,
-    collection: collectionId,
-    category: 'Editorial',
-    credits: {
-      photographer: 'Marcel Bernard',
-      models: ['Romana Binder', 'Vladimir Cabak', 'Raphael Hulan'],
-    },
-    editorialDescription: 'Professional editorial photography showcasing Raw Fiction designs',
-    fileSize: '1.2MB',
-    resolution: '4K',
-  }));
-};
 
 interface ImageGalleryProps {
   componentId?: string;
@@ -711,50 +441,18 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
             onClick={() => setSelectedImage(image)}
           >
             <div className="relative">
-              <LazyImage
+              <img
                 src={image.src}
                 alt={image.alt}
                 className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
-                componentId={componentId}
+                loading="lazy"
               />
 
-              {/* Product indicators */}
-              {'sold' in image && image.sold && (
-                <div className="absolute top-2 left-2 bg-red-500/90 text-white text-xs px-2 py-1 rounded font-semibold">
-                  SOLD OUT
-                </div>
-              )}
-              {'hasDescription' in image && !image.hasDescription && (
-                <div className="absolute top-2 right-2 bg-orange-600/80 text-white text-xs px-2 py-1 rounded">
-                  Limited Info
-                </div>
-              )}
-
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <div className="absolute bottom-4 left-4 right-4 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <div className="text-xs font-medium">{image.collection}</div>
-                <div className="text-xs opacity-75">
-                  {image.fileSize} • {image.resolution}
-                </div>
-              </div>
             </div>
 
             <div className="p-4">
-              <div className="flex items-start justify-between mb-2">
-                <h3 className="font-semibold text-white text-sm">{image.title}</h3>
-                {'productCode' in image && (
-                  <span className="text-xs text-gray-400 font-mono">{image.productCode}</span>
-                )}
-              </div>
-
-              {image.description && (
-                <p className="text-xs text-gray-300 leading-relaxed mb-3">{image.description}</p>
-              )}
-
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-gray-400">{image.category}</span>
-                <span className="text-gray-500">{image.fileSize}</span>
-              </div>
+              <h3 className="font-semibold text-white text-sm text-center">{image.title}</h3>
             </div>
           </div>
         ))}
@@ -766,7 +464,10 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
           className="fixed inset-0 bg-black bg-opacity-95 flex items-center justify-center z-50 p-4"
           onClick={() => setSelectedImage(null)}
         >
-          <div className="bg-gray-900/95 border border-gray-700/50 rounded-xl p-8 max-w-6xl max-h-full overflow-auto backdrop-blur-lg">
+          <div
+            className="bg-gray-900/95 border border-gray-700/50 rounded-xl p-8 max-w-6xl max-h-full overflow-auto backdrop-blur-lg"
+            onClick={e => e.stopPropagation()}
+          >
             <LazyImage
               src={selectedImage.src}
               alt={selectedImage.alt}
@@ -789,7 +490,10 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
                         src={variant}
                         alt={`${selectedImage.title} variant ${index + 1}`}
                         className="w-16 h-16 object-cover rounded border border-gray-600 hover:border-gray-400 cursor-pointer flex-shrink-0"
-                        onClick={() => setSelectedImage({ ...selectedImage, src: variant })}
+                        onClick={e => {
+                          e.stopPropagation();
+                          setSelectedImage({ ...selectedImage, src: variant });
+                        }}
                       />
                     ))}
                   </div>
