@@ -1,5 +1,6 @@
-import { memo, useCallback } from 'react';
+import React, { memo } from 'react';
 import { EmbeddedWrapper } from './Wrapper';
+import type { SiteConfig } from '../../shared/types';
 
 interface AiAlignmentCardProps {
   id: string;
@@ -8,33 +9,51 @@ interface AiAlignmentCardProps {
 }
 
 export const AiAlignmentCard: React.FC<AiAlignmentCardProps> = memo(({ id, className, style }) => {
+  // Component mounted
+  React.useEffect(() => {
+    console.log('AI Alignment Space initialized');
+  }, [id]);
 
-  const handleSuccess = useCallback(() => {
-    // Could trigger analytics events here
-  }, []);
+  // Simple direct loading configuration for AI Alignment Space
+  const aiAlignmentConfig: SiteConfig = {
+    url: 'https://ai-alignment.space',
+    title: 'AI Alignment Space',
+    csp: {
+      frameAncestors: ['*'],
+      bypassCSP: false,
+    },
+    loading: {
+      method: 'direct', // Direct loading
+      timeout: 30000,
+      retryCount: 2,
+      retryDelay: 2000,
+      preloadDelay: 0,
+      enablePreconnect: true,
+      cacheBusting: false,
+      rateLimit: {
+        enabled: false,
+        delay: 0,
+        backoff: 'linear',
+      },
+    },
+    sandbox: {
+      allowScripts: true,
+      allowSameOrigin: true, // Allow same origin for full functionality
+      allowForms: true,
+      allowPopups: false,
+      allowDownloads: false,
+      allowModals: true,
+      allowTopNavigation: false,
+      strictMode: false,
+    },
+  };
 
   return (
     <EmbeddedWrapper
       id={id}
-      url="https://www.ai-alignment.space/"
-      title="AI Alignment Space"
-      className={className || 'h-full w-full'}
-      style={style || {}}
-      onSuccess={handleSuccess}
-      fallbackContent={
-        <div className="text-center">
-          <h3 className="text-lg font-semibold mb-4">AI Alignment Space Unavailable</h3>
-          <p className="text-sm text-gray-600 mb-6">
-            The AI safety research platform is temporarily unavailable.
-          </p>
-          <div className="space-y-2">
-            <p className="text-xs text-gray-500">
-              AI Alignment Space is dedicated to advancing AI safety research and fostering
-              collaboration in the AI alignment community.
-            </p>
-          </div>
-        </div>
-      }
+      siteConfig={aiAlignmentConfig}
+      className={`h-full w-full ${className}`}
+      {...(style && { style })}
     />
   );
 });

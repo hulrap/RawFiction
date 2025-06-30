@@ -196,106 +196,16 @@ export const useEmbeddedLoading = (config: EmbeddedLoadingConfig) => {
   };
 };
 
-// Space-themed loading indicator for embedded content
-export const ContentLoadingIndicator: React.FC<{
-  isLoading: boolean;
-  progress: number;
-  type: 'tab' | 'gallery' | 'general';
-  message?: string;
-}> = ({ isLoading, progress, type, message }) => {
-  if (!isLoading) return null;
-
-  const getSpaceIcon = () => {
-    switch (type) {
-      case 'tab':
-        return '🚀'; // Rocket for website loading
-      case 'gallery':
-        return '🌌'; // Galaxy for content loading
-      default:
-        return '⭐'; // Star for general loading
-    }
-  };
-
-  const getSpaceMessage = () => {
-    if (message) return message;
-
-    switch (type) {
-      case 'tab':
-        return 'Docking with space platform...';
-      case 'gallery':
-        return 'Loading cosmic marketplace...';
-      default:
-        return 'Establishing zero gravity connection...';
-    }
-  };
-
-  return (
-    <div className="absolute inset-0 bg-black bg-opacity-90 flex items-center justify-center z-10 backdrop-blur-sm">
-      <div className="text-center bg-gradient-to-br from-purple-900 to-indigo-900 border border-purple-400/50 rounded-xl p-8 shadow-2xl max-w-sm mx-4">
-        <div className="text-4xl mb-4 animate-pulse">{getSpaceIcon()}</div>
-        <div className="text-purple-100 text-sm font-medium mb-4">{getSpaceMessage()}</div>
-        <div className="w-48 bg-gradient-to-r from-purple-800 to-indigo-800 rounded-full h-3 overflow-hidden shadow-inner">
-          <div
-            className="bg-gradient-to-r from-purple-400 via-pink-400 to-purple-300 h-3 rounded-full transition-all duration-700 ease-out shadow-lg animate-pulse"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-        <div className="text-xs text-purple-300 mt-3 font-medium tracking-wider">
-          {progress}% LOADED
-        </div>
-        <div className="text-xs text-indigo-400 mt-1 opacity-75">Zero Grav • Space Platform</div>
-      </div>
-    </div>
-  );
-};
-
 export const EmbeddedLoadingIndicator: React.FC<{
   state: EmbeddedLoadingState;
   title: string;
   onRetry?: () => void;
-}> = ({ state, title, onRetry }) => {
-  if (state.isLoaded) return null;
-
-  if (state.hasError) {
-    return (
-      <div className="absolute inset-0 bg-black bg-opacity-95 flex items-center justify-center z-10">
-        <div className="text-center p-8 max-w-md bg-gradient-to-br from-red-900/80 to-purple-900/80 rounded-xl border border-red-400/50 shadow-2xl">
-          <div className="text-red-400 text-5xl mb-4">🛸</div>
-          <h3 className="text-lg font-semibold text-red-200 mb-2">Launch Failed</h3>
-          <p className="text-sm text-red-300 mb-6 leading-relaxed">{state.errorMessage}</p>
-          {onRetry && (
-            <button
-              onClick={onRetry}
-              className="px-6 py-3 bg-gradient-to-r from-red-600 to-purple-600 hover:from-red-700 hover:to-purple-700 text-white rounded-lg font-medium transition-all duration-200 shadow-lg"
-            >
-              🚀 Retry Launch
-            </button>
-          )}
-        </div>
-      </div>
-    );
-  }
-
+}> = ({ state }) => {
   if (state.isLoading) {
     return (
       <div className="absolute inset-0 bg-black bg-opacity-85 flex items-center justify-center z-10">
-        <div className="text-center bg-gradient-to-br from-purple-900/80 to-indigo-900/80 rounded-xl p-8 border border-purple-400/50 shadow-2xl">
-          <div className="relative mb-6">
-            <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-400/30 border-t-purple-400 mx-auto"></div>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-2xl animate-pulse">🌌</div>
-            </div>
-          </div>
-          <h3 className="text-lg font-semibold text-purple-100 mb-4">Launching {title}</h3>
-          <div className="w-64 bg-gradient-to-r from-purple-800 to-indigo-800 rounded-full h-3 mb-3 overflow-hidden">
-            <div
-              className="bg-gradient-to-r from-purple-400 to-pink-400 h-3 rounded-full transition-all duration-500 animate-pulse"
-              style={{ width: `${state.loadingProgress}%` }}
-            />
-          </div>
-          <p className="text-xs text-purple-300 font-medium">
-            {Math.round(state.loadingProgress)}% LOADED
-          </p>
+        <div className="relative">
+          <div className="w-12 h-12 border-4 border-[var(--brand-glass)] border-t-[var(--brand-accent)] rounded-full animate-spin"></div>
         </div>
       </div>
     );

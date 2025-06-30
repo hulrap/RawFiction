@@ -6,28 +6,62 @@ import type { ProjectProps, TabItem, SiteConfig } from '../../shared/types';
 
 const logger = createComponentLogger('ZeroGrav');
 
+// Simple static OpenSea card
+const OpenSeaCollectionCard: React.FC = () => {
+  const openOpenSea = () => {
+    window.open('https://opensea.io/collection/zero-grav', '_blank', 'noopener,noreferrer');
+  };
+
+  return (
+    <div className="h-full w-full flex flex-col items-center justify-center p-4 sm:p-6 md:p-8 lg:p-12 overflow-auto">
+      <div className="card-glass w-full max-w-md mx-auto p-6 sm:p-8 md:p-10 text-center rounded-xl backdrop-blur-sm">
+        {/* OpenSea branding */}
+        <div className="mb-8">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 text-[var(--brand-fg)]">
+            1080 Zero Grav Collection
+          </h2>
+        </div>
+
+        {/* Main message */}
+        <div className="mb-8">
+          <p className="text-base sm:text-lg text-[var(--brand-fg)] opacity-80 leading-relaxed">
+            Explore the full interactive collection on OpenSea
+          </p>
+        </div>
+
+        {/* Explore button */}
+        <button
+          onClick={openOpenSea}
+          className="w-full max-w-xs mx-auto bg-white hover:bg-gray-100 text-gray-900 font-semibold py-4 px-8 rounded-lg transition-all duration-200 hover:scale-105 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50"
+        >
+          Explore
+        </button>
+      </div>
+    </div>
+  );
+};
+
 export const ZeroGravCard: React.FC<ProjectProps> = ({ isActive: _isActive = true }) => {
-  const handleLoadComplete = (site: 'primary' | 'secondary', success: boolean) => {
-    logger.log(`${site} site ${success ? 'loaded successfully' : 'failed to load'}`);
+  const handleLoadComplete = (success: boolean) => {
+    logger.log(`Zero Grav site ${success ? 'loaded successfully' : 'failed to load'}`);
   };
 
-  const handleError = (site: 'primary' | 'secondary', error: string) => {
-    logger.warn(`${site} site error:`, error);
+  const handleError = (error: string) => {
+    logger.warn(`Zero Grav site error:`, error);
   };
 
-  // Site-specific configurations
+  // Configuration for Zero Grav main site only
   const zeroGravConfig: SiteConfig = {
     url: 'https://zerograv.xyz',
     title: 'Zero Grav',
     csp: {
-      frameAncestors: ['*'], // More permissive for art sites
+      frameAncestors: ['*'],
       bypassCSP: false,
-      useProxy: false,
     },
     loading: {
       method: 'direct',
-      timeout: 15000,
-      retryCount: 2,
+      timeout: 20000,
+      retryCount: 3,
       retryDelay: 3000,
       enablePreconnect: true,
       cacheBusting: false,
@@ -39,54 +73,13 @@ export const ZeroGravCard: React.FC<ProjectProps> = ({ isActive: _isActive = tru
     },
     sandbox: {
       allowScripts: true,
-      allowSameOrigin: false, // Prevent sandbox escape - don't combine with allowScripts
+      allowSameOrigin: false,
       allowForms: true,
       allowPopups: true,
-      allowFullscreen: true,
       allowDownloads: false,
       allowModals: true,
       allowTopNavigation: false,
       strictMode: false,
-    },
-  };
-
-  const openSeaConfig: SiteConfig = {
-    url: 'https://opensea.io/collection/zero-grav',
-    title: 'OpenSea',
-    csp: {
-      frameAncestors: 'none', // OpenSea blocks framing
-      bypassCSP: true,
-      useProxy: true,
-      proxyEndpoint: '/api/proxy',
-    },
-    loading: {
-      method: 'proxy', // Start with proxy due to CSP restrictions
-      timeout: 20000,
-      retryCount: 3,
-      retryDelay: 5000,
-      enablePreconnect: false,
-      cacheBusting: true,
-      rateLimit: {
-        enabled: true,
-        delay: 5000,
-        backoff: 'exponential',
-      },
-    },
-    sandbox: {
-      allowScripts: true,
-      allowSameOrigin: false, // More restrictive for marketplace
-      allowForms: true,
-      allowPopups: false,
-      allowFullscreen: false,
-      allowDownloads: false,
-      allowModals: true,
-      allowTopNavigation: false,
-      strictMode: true,
-    },
-    fallbackContent: {
-      type: 'description',
-      content:
-        'OpenSea marketplace for Zero Grav NFT collection. Due to security restrictions, this content must be viewed directly on OpenSea.',
     },
   };
 
@@ -100,38 +93,15 @@ export const ZeroGravCard: React.FC<ProjectProps> = ({ isActive: _isActive = tru
           title={zeroGravConfig.title}
           className="h-full w-full"
           siteConfig={zeroGravConfig}
-          suppressLogs={true}
-          logSuppression={{
-            enabled: true,
-            keywords: ['zerograv', 'zero-grav'],
-            domains: ['zerograv.xyz'],
-            aggressive: true,
-          }}
-          onLoad={() => handleLoadComplete('primary', true)}
-          onError={error => handleError('primary', error)}
+          onLoad={() => handleLoadComplete(true)}
+          onError={error => handleError(error)}
         />
       ),
     },
     {
       id: 'opensea',
       title: 'OpenSea',
-      content: (
-        <EmbeddedWebsiteFrame
-          url={openSeaConfig.url}
-          title={openSeaConfig.title}
-          className="h-full w-full"
-          siteConfig={openSeaConfig}
-          suppressLogs={true}
-          logSuppression={{
-            enabled: true,
-            keywords: ['opensea', 'frame-ancestors', 'CSP'],
-            domains: ['opensea.io'],
-            aggressive: true,
-          }}
-          onLoad={() => handleLoadComplete('secondary', true)}
-          onError={error => handleError('secondary', error)}
-        />
-      ),
+      content: <OpenSeaCollectionCard />,
     },
   ];
 

@@ -119,14 +119,66 @@ export const useEmbeddedLoading = (config: EmbeddedLoadingConfig) => {
     }
     stopProgressSimulation();
 
-    setState(prev => ({
-      ...prev,
-      isLoading: false,
-      isLoaded: true,
-      hasError: false,
-      loadingProgress: 100,
-    }));
-  }, [stopProgressSimulation]);
+    // Check if this is actually a Cloudflare/Vercel protection page
+    setTimeout(() => {
+      try {
+        const iframe = document.querySelector(`iframe[title="${title}"]`) as HTMLIFrameElement;
+        if (iframe?.contentDocument) {
+          const content = iframe.contentDocument.body?.textContent || '';
+          const htmlContent = iframe.contentDocument.documentElement?.outerHTML || '';
+
+          // Detect various protection pages
+          if (
+            content.includes('Überprüfung') ||
+            content.includes('Browser') ||
+            content.includes('fehlgeschlagen') ||
+            content.includes('Vercel') ||
+            content.includes('DDoS') ||
+            content.includes('Cloudflare') ||
+            content.includes('Ray ID') ||
+            content.includes('challenge') ||
+            content.includes('checking your browser') ||
+            htmlContent.includes('cf-browser-verification') ||
+            htmlContent.includes('challenge-platform') ||
+            htmlContent.includes('__CF$cv$params')
+          ) {
+            console.log('🛡️ Security protection detected for:', title);
+
+            // Check if we're in localhost (dev) vs production
+            const isLocalhost =
+              window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+            const errorMessage = isLocalhost
+              ? 'Site blocked due to localhost. Will work in production when your domain is added to Cloudflare allowlist.'
+              : 'Site protected by security checkpoint';
+
+            // Treat as error - this is not the real website
+            setState(prev => ({
+              ...prev,
+              isLoading: false,
+              isLoaded: false,
+              hasError: true,
+              errorMessage,
+              loadingProgress: 0,
+            }));
+            return;
+          }
+        }
+      } catch (e) {
+        // Can't access iframe content due to CORS - assume it's loading correctly
+        console.log('✅', title, 'loaded (CORS protected)');
+      }
+
+      // If we get here, it's likely the real content
+      setState(prev => ({
+        ...prev,
+        isLoading: false,
+        isLoaded: true,
+        hasError: false,
+        loadingProgress: 100,
+      }));
+    }, 1000); // Wait 1 second for content to settle
+  }, [stopProgressSimulation, title]);
 
   const handleLoadError = useCallback(
     (error: string) => {
@@ -201,7 +253,7 @@ export const EmbeddedLoadingIndicator: React.FC<{
   state: EmbeddedLoadingState;
   title: string;
   onRetry?: () => void;
-}> = ({ state, title, onRetry }) => {
+}> = ({ state, onRetry }) => {
   if (state.isLoaded) return null;
 
   if (state.hasError) {
@@ -209,10 +261,16 @@ export const EmbeddedLoadingIndicator: React.FC<{
       <div className="absolute inset-0 bg-black bg-opacity-90 flex items-center justify-center z-10">
         <div className="text-center p-6 max-w-md">
           <div className="text-purple-400 text-2xl mb-4">🏳️‍🌈</div>
-          <h3 className="text-lg font-semibold text-white mb-2">Queer Alliance Unavailable</h3>
+          <h3 className="text-lg font-semibold text-white mb-2">
+            {state.errorMessage?.includes('localhost')
+              ? 'Development Limitation'
+              : 'Queer Alliance Protected'}
+          </h3>
           <p className="text-sm text-gray-300 mb-4">{state.errorMessage}</p>
           <p className="text-xs text-gray-400 mb-6">
-            The LGBTQ+ community platform may be experiencing high traffic or maintenance.
+            {state.errorMessage?.includes('localhost')
+              ? 'This site blocks localhost for security. Add your production domain to the Cloudflare allowlist.'
+              : 'The LGBTQ+ community platform uses security protection that prevents embedding.'}
           </p>
           {onRetry && (
             <button
@@ -234,22 +292,8 @@ export const EmbeddedLoadingIndicator: React.FC<{
   if (state.isLoading) {
     return (
       <div className="absolute inset-0 bg-black bg-opacity-75 flex items-center justify-center z-10">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-400 mx-auto mb-4"></div>
-          <h3 className="text-lg font-semibold text-white mb-2">Connecting to Community</h3>
-          <p className="text-sm text-gray-300 mb-3">{title}</p>
-          <div className="w-64 bg-gray-700 rounded-full h-2 mb-2">
-            <div
-              className="h-2 rounded-full transition-all duration-300"
-              style={{
-                width: `${state.loadingProgress}%`,
-                background:
-                  'linear-gradient(90deg, #e40303, #ff8c00, #ffed00, #008018, #0066cc, #732982)',
-              }}
-            />
-          </div>
-          <p className="text-xs text-gray-400">{Math.round(state.loadingProgress)}%</p>
-          <p className="text-xs text-gray-500 mt-2">Building inclusive spaces together...</p>
+        <div className="relative">
+          <div className="w-12 h-12 border-4 border-[var(--brand-glass)] border-t-[var(--brand-accent)] rounded-full animate-spin"></div>
         </div>
       </div>
     );

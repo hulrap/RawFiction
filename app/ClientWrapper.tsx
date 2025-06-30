@@ -23,6 +23,7 @@ const PortfolioCarousel = dynamic(
 export default function ClientWrapper() {
   const [isLoading, setIsLoading] = useState(true);
   const [isClient, setIsClient] = useState(false);
+  const [showContent, setShowContent] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
@@ -30,6 +31,11 @@ export default function ClientWrapper() {
 
   const handleLoadingComplete = () => {
     setIsLoading(false);
+
+    // Small delay to ensure smooth transition, then fade in content
+    setTimeout(() => {
+      setShowContent(true);
+    }, 100);
   };
 
   if (!isClient) {
@@ -43,18 +49,22 @@ export default function ClientWrapper() {
         enableWebGPU={false}
         enablePathTracing={false}
         enableSmartSwarm={true}
-        enableNeuralParticles={true}
-        quality="medium"
-        enableMouseInteraction={true}
+        enableNeuralParticles={false}
+        quality="low"
+        enableMouseInteraction={false}
         className="fixed inset-0 -z-10"
       />
 
       {isLoading ? (
         <SimpleLoadingScreen onComplete={handleLoadingComplete} />
       ) : (
-        <Suspense fallback={<SimpleLoadingScreen onComplete={() => {}} />}>
-          <PortfolioCarousel />
-        </Suspense>
+        <div
+          className={`transition-opacity duration-700 ${showContent ? 'opacity-100' : 'opacity-0'}`}
+        >
+          <Suspense fallback={<SimpleLoadingScreen onComplete={() => {}} />}>
+            <PortfolioCarousel />
+          </Suspense>
+        </div>
       )}
     </>
   );

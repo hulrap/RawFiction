@@ -33,7 +33,7 @@ const nextConfig = {
               "manifest-src 'self'",
               "base-uri 'self'",
               "form-action 'self'",
-              "frame-ancestors 'none'",
+              "frame-ancestors 'self' localhost:* 127.0.0.1:*",
               "object-src 'none'",
               'upgrade-insecure-requests',
             ].join('; '),
@@ -71,7 +71,7 @@ const nextConfig = {
           // Security headers
           {
             key: 'X-Frame-Options',
-            value: 'DENY',
+            value: 'SAMEORIGIN',
           },
           {
             key: 'X-Content-Type-Options',

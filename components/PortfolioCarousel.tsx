@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import { NavigationControls } from './NavigationControls';
+import { CardWithOverlay } from './CardWithOverlay';
 
 // Lazy load all project components for better performance
 const WelcomeCard = lazy(() =>
@@ -160,28 +161,28 @@ const PORTFOLIO_PROJECTS: PortfolioProject[] = [
     title: 'Raw Fiction',
     component: RawFictionCard,
     description: 'Fashion brand with images and videos',
-    websiteUrl: 'https://raw-fiction.com',
+    websiteUrl: 'https://rawfiction.xyz',
   },
   {
     id: 'ai-instructor',
     title: 'AI Instructor',
     component: AiInstructorCard,
     description: 'Personal AI mentor website',
-    websiteUrl: 'https://ai-instructor.com',
+    websiteUrl: 'https://ai-instructor.me',
   },
   {
     id: 'ai-alignment-space',
     title: 'AI Alignment Space',
     component: AiAlignmentCard,
     description: 'AI safety research platform',
-    websiteUrl: 'https://ai-alignment-space.com',
+    websiteUrl: 'https://ai-alignment.space',
   },
   {
     id: 'daswallenstein',
     title: 'Das Wallenstein',
     component: DaswallensteinCard,
     description: 'Vienna-based website',
-    websiteUrl: 'https://daswallenstein.at',
+    websiteUrl: 'https://daswallenstein.wien',
   },
   {
     id: 'real-eyes',
@@ -219,10 +220,10 @@ const PORTFOLIO_PROJECTS: PortfolioProject[] = [
   },
   {
     id: 'zero-grav',
-    title: '1080 Zero Grav',
+    title: 'Zero Grav',
     component: ZeroGravCard,
     description: 'NFT collection with dual websites',
-    websiteUrl: 'https://1080-zero-grav.com',
+    websiteUrl: 'https://zerograv.xyz',
   },
   {
     id: 'social-media-consulting',
@@ -245,6 +246,7 @@ export const PortfolioCarousel: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [wheelEnabled, setWheelEnabled] = useState(true);
+  const [shatteredCards, setShatteredCards] = useState<Set<number>>(new Set());
   // Zero latency initialization - preload critical cards immediately
   const [loadedCards, setLoadedCards] = useState<Set<number>>(() => {
     const initialCards = new Set<number>();
@@ -360,22 +362,16 @@ export const PortfolioCarousel: React.FC = () => {
     processAllQueued();
   }, [loadingQueue]);
 
-  // Background preloader - load all remaining cards immediately after mount
+  // IMMEDIATE preloader - load ALL cards instantly for consistent cube grid quality
   useEffect(() => {
-    const backgroundLoad = () => {
-      setLoadedCards(prev => {
-        const allCards = new Set(prev);
-        // Load ALL cards for zero latency navigation
-        for (let i = 0; i < totalProjects; i++) {
-          allCards.add(i);
-        }
-        return allCards;
-      });
-    };
-
-    // Load everything in the background immediately
-    const timer = setTimeout(backgroundLoad, 0);
-    return () => clearTimeout(timer);
+    // Load ALL cards immediately to prevent any rendering quality differences
+    setLoadedCards(prev => {
+      const allCards = new Set(prev);
+      for (let i = 0; i < totalProjects; i++) {
+        allCards.add(i);
+      }
+      return allCards;
+    });
   }, [totalProjects]);
 
   // 3-Card positioning system: always show exactly 3 cards (previous, current, next)
@@ -416,25 +412,25 @@ export const PortfolioCarousel: React.FC = () => {
           cursor: 'default',
         },
         left: {
-          x: -320,
-          y: 20,
-          z: -100,
-          rotX: 5,
-          rotY: 25,
-          scale: 0.85,
-          opacity: 0.8,
+          x: -500,
+          y: 30,
+          z: -200,
+          rotX: 8,
+          rotY: 35,
+          scale: 0.75,
+          opacity: 1,
           zIndex: 50,
           pointerEvents: 'auto',
           cursor: 'pointer',
         },
         right: {
-          x: 320,
-          y: 20,
-          z: -100,
-          rotX: 5,
-          rotY: -25,
-          scale: 0.85,
-          opacity: 0.8,
+          x: 500,
+          y: 30,
+          z: -200,
+          rotX: 8,
+          rotY: -35,
+          scale: 0.75,
+          opacity: 1,
           zIndex: 50,
           pointerEvents: 'auto',
           cursor: 'pointer',
@@ -467,7 +463,13 @@ export const PortfolioCarousel: React.FC = () => {
         pointerEvents: transform.pointerEvents as 'auto' | 'none',
         zIndex: transform.zIndex,
         cursor: transform.cursor,
-      } as React.CSSProperties;
+        // Expose transform data for WebGL compensation
+        carouselPosition: position,
+        carouselTransform: transform,
+      } as React.CSSProperties & {
+        carouselPosition: string;
+        carouselTransform: typeof transform;
+      };
     },
     [currentIndex, totalProjects]
   );
@@ -478,7 +480,7 @@ export const PortfolioCarousel: React.FC = () => {
       if (isTransitioning) return;
       setIsTransitioning(true);
       setCurrentIndex(prev => (prev + 1) % totalProjects);
-      setTimeout(() => setIsTransitioning(false), 800);
+      setTimeout(() => setIsTransitioning(false), 100);
     } catch (error) {
       // Handle navigation errors silently
       setIsTransitioning(false);
@@ -490,7 +492,7 @@ export const PortfolioCarousel: React.FC = () => {
       if (isTransitioning) return;
       setIsTransitioning(true);
       setCurrentIndex(prev => (prev - 1 + totalProjects) % totalProjects);
-      setTimeout(() => setIsTransitioning(false), 800);
+      setTimeout(() => setIsTransitioning(false), 100);
     } catch (error) {
       // Handle navigation errors silently
       setIsTransitioning(false);
@@ -510,7 +512,7 @@ export const PortfolioCarousel: React.FC = () => {
         setLoadedCards(prev => new Set([...prev, index]));
 
         // Match the CSS transition duration
-        setTimeout(() => setIsTransitioning(false), 900);
+        setTimeout(() => setIsTransitioning(false), 50);
       } catch (error) {
         // Handle navigation errors silently
         setIsTransitioning(false);
@@ -539,7 +541,7 @@ export const PortfolioCarousel: React.FC = () => {
         e.preventDefault();
 
         setWheelEnabled(false);
-        setTimeout(() => setWheelEnabled(true), 900);
+        setTimeout(() => setWheelEnabled(true), 400);
 
         if (e.deltaY > 0) {
           goToNext();
@@ -654,12 +656,15 @@ export const PortfolioCarousel: React.FC = () => {
             const Component = project.component;
             const shouldLoad = loadedCards.has(index);
             const isLightweight = isLightweightCard(index);
+            const cardTransform = getCardTransform(index);
 
             return (
               <ErrorBoundary key={project.id} id={project.id}>
                 <div
-                  className="portfolio-card space-card performance-optimized"
-                  style={getCardTransform(index)}
+                  className={`portfolio-card space-card performance-optimized ${
+                    index === currentIndex ? 'active-card' : ''
+                  }`}
+                  style={cardTransform}
                   onClick={e => {
                     // Only allow navigation clicks on non-active cards
                     if (index !== currentIndex && !isTransitioning) {
@@ -675,8 +680,17 @@ export const PortfolioCarousel: React.FC = () => {
                     }
                   }}
                 >
-                  <div className="glass-overlay" />
-                  <div className="card-content-container lazy-container">
+                  {/* ALWAYS render CardWithOverlay for consistent cube grid quality */}
+                  <CardWithOverlay
+                    title={project.title}
+                    isOverlayVisible={!shatteredCards.has(index)}
+                    onShatter={() => {
+                      setShatteredCards(prev => new Set([...prev, index]));
+                    }}
+                    carouselPosition={cardTransform.carouselPosition}
+                    carouselTransform={cardTransform.carouselTransform}
+                    forceHighQuality={true} // Force high quality for all cards
+                  >
                     {shouldLoad || isLightweight ? (
                       // Zero latency rendering - no loading states for preloaded components
                       shouldLoad ? (
@@ -691,7 +705,7 @@ export const PortfolioCarousel: React.FC = () => {
                         <div className="text-sm text-[var(--brand-accent)]">Loading...</div>
                       </div>
                     )}
-                  </div>
+                  </CardWithOverlay>
                 </div>
               </ErrorBoundary>
             );

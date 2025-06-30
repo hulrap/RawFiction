@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { EmbeddedWebsiteFrame } from '../../shared/EmbeddedWebsiteFrame';
+import { EmbeddedWrapper } from './Wrapper';
 import type { SiteConfig } from '../../shared/types';
 
 interface AiInstructorCardProps {
@@ -10,34 +10,38 @@ interface AiInstructorCardProps {
 
 export const AiInstructorCard: React.FC<AiInstructorCardProps> = memo(
   ({ id, className, style }) => {
-    // Enhanced configuration for AI Instructor to handle TypewriterOverlay spam
+    // Component mounted
+    React.useEffect(() => {
+      console.log('AI Instructor initialized');
+    }, [id]);
+
+    // Simple direct loading configuration for AI Instructor
     const aiInstructorConfig: SiteConfig = {
-      url: 'https://www.ai-instructor.me/',
+      url: 'https://ai-instructor.me',
       title: 'AI Instructor',
       csp: {
-        frameAncestors: ['*'], // AI Instructor allows framing
+        frameAncestors: ['*'],
         bypassCSP: false,
-        useProxy: false,
       },
       loading: {
-        method: 'direct',
-        timeout: 20000,
+        method: 'direct', // Direct loading
+        timeout: 30000,
         retryCount: 2,
-        retryDelay: 3000,
+        retryDelay: 2000,
+        preloadDelay: 0,
         enablePreconnect: true,
         cacheBusting: false,
         rateLimit: {
-          enabled: true,
-          delay: 2000,
-          backoff: 'exponential',
+          enabled: false,
+          delay: 0,
+          backoff: 'linear',
         },
       },
       sandbox: {
         allowScripts: true,
-        allowSameOrigin: false, // Secure: prevent sandbox escape
+        allowSameOrigin: true, // Allow same origin for full functionality
         allowForms: true,
         allowPopups: false,
-        allowFullscreen: false,
         allowDownloads: false,
         allowModals: true,
         allowTopNavigation: false,
@@ -46,80 +50,12 @@ export const AiInstructorCard: React.FC<AiInstructorCardProps> = memo(
     };
 
     return (
-      <div id={id} className={`h-full w-full ${className}`} style={style}>
-        <EmbeddedWebsiteFrame
-          url={aiInstructorConfig.url}
-          title={aiInstructorConfig.title}
-          siteConfig={aiInstructorConfig}
-          suppressLogs={true}
-          logSuppression={{
-            enabled: true,
-            keywords: [
-              'ai-instructor',
-              // TypewriterOverlay spam - most comprehensive suppression
-              'typewriteroverlay',
-              'smoothtypewriter',
-              'useeffect',
-              'transitionstate',
-              'isactive',
-              'shouldshow',
-              'hascompletedtyping',
-              'autoseqcompleted',
-              'alreadycalled',
-              'window became inactive',
-              'resetting typewriter state',
-              'auto-sequence',
-              'processing auto-sequence',
-              'transitioning from',
-              'current window',
-              'next index',
-              'setting shouldshowtypewriter',
-              'not resetting completion state',
-              'calling oncomplete',
-              'typing completed',
-              'ignoring duplicate',
-              'showing completed content',
-              'hascompletedautosequencetyping',
-              // All the specific state transitions
-              'transitionstate=idle',
-              'transitionstate=typing',
-              'transitionstate=minimizing',
-              'isactive=true',
-              'isactive=false',
-              'shouldshow=true',
-              'shouldshow=false',
-              'hascompleted=true',
-              'hascompleted=false',
-              'autoseqcompleted=true',
-              'autoseqcompleted=false',
-              // Page-specific spam
-              'for contact',
-              'for packages',
-              'for experience',
-              'for ai-instructor',
-              'for problem',
-              'for first',
-              'for imprint',
-              // State management spam
-              'void 0',
-              '.concat(',
-              'null == e',
-              'starting initial auto-sequence',
-              'only happen once',
-              // Page build artifacts
-              'page-3bcca4894a50cba5.js',
-              'main.js',
-              'polyfills.js',
-              // General AI instructor domain patterns
-              'localstorage is not enabled',
-              "failed to read the 'localstorage' property",
-              'the document is sandboxed',
-            ],
-            domains: ['ai-instructor.me', 'www.ai-instructor.me'],
-            aggressive: true,
-          }}
-        />
-      </div>
+      <EmbeddedWrapper
+        id={id}
+        siteConfig={aiInstructorConfig}
+        className={`h-full w-full ${className}`}
+        {...(style && { style })}
+      />
     );
   }
 );

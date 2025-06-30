@@ -185,35 +185,14 @@ export const ContentLoadingIndicator: React.FC<{
   progress: number;
   type: 'tab' | 'gallery' | 'general';
   message?: string;
-}> = ({ isLoading, progress, type, message }) => {
+}> = ({ isLoading }) => {
   if (!isLoading) return null;
 
-  const getLoadingIcon = () => {
-    switch (type) {
-      case 'tab':
-        return '👁️';
-      case 'gallery':
-        return '🎭';
-      default:
-        return '🚀';
-    }
-  };
 
   return (
     <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10">
-      <div className="text-center bg-gray-800 rounded-lg p-4">
-        <div className="text-2xl mb-2">{getLoadingIcon()}</div>
-        <div className="text-white text-sm mb-2">{message || `Loading ${type}...`}</div>
-        <div className="w-32 bg-gray-700 rounded-full h-1">
-          <div
-            className="h-1 rounded-full transition-all duration-300"
-            style={{
-              width: `${progress}%`,
-              background: 'linear-gradient(90deg, #ef4444, #dc2626, #b91c1c, #991b1b)',
-            }}
-          />
-        </div>
-        <div className="text-xs text-gray-400 mt-1">{progress}%</div>
+      <div className="relative">
+        <div className="w-12 h-12 border-4 border-[var(--brand-glass)] border-t-[var(--brand-accent)] rounded-full animate-spin"></div>
       </div>
     </div>
   );

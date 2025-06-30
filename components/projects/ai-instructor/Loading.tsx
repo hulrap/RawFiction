@@ -1,246 +1,93 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
+import type { SiteConfig } from '../../shared/types';
 
-export interface EmbeddedLoadingState {
+// Simplified loading state - only direct loading
+interface LoadingState {
   isLoading: boolean;
-  isLoaded: boolean;
-  hasError: boolean;
-  errorMessage?: string;
-  loadingProgress: number;
+  loadingStage: 'connecting' | 'loading' | 'ready' | 'error' | 'timeout';
   retryCount: number;
+  errorMessage?: string;
 }
 
-export interface EmbeddedLoadingConfig {
-  url: string;
-  title: string;
-  timeout?: number;
-  maxRetries?: number;
-  preloadDelay?: number;
-  enablePreconnect?: boolean;
-}
-
-export const useEmbeddedLoading = (config: EmbeddedLoadingConfig) => {
-  const [state, setState] = useState<EmbeddedLoadingState>({
-    isLoading: false,
-    isLoaded: false,
-    hasError: false,
-    loadingProgress: 0,
+export const Loading: React.FC<{
+  config: SiteConfig;
+  onComplete: () => void;
+  onError: (error: string) => void;
+}> = ({ config, onComplete, onError }) => {
+  const [state, setState] = useState<LoadingState>({
+    isLoading: true,
+    loadingStage: 'connecting',
     retryCount: 0,
   });
 
-  const timeoutRef = useRef<NodeJS.Timeout>();
-  const progressRef = useRef<NodeJS.Timeout>();
-  const retryTimeoutRef = useRef<NodeJS.Timeout>();
-
-  const {
-    url,
-    title,
-    timeout = 15000,
-    maxRetries = 3,
-    preloadDelay = 100,
-    enablePreconnect = true,
-  } = config;
-
-  // DNS preconnect optimization
+  // Simulate AI Instructor loading process
   useEffect(() => {
-    if (enablePreconnect) {
-      try {
-        const link = document.createElement('link');
-        link.rel = 'preconnect';
-        link.href = new URL(url).origin;
-        link.crossOrigin = 'anonymous';
-        document.head.appendChild(link);
+    let timeoutRef: NodeJS.Timeout;
 
-        return () => {
-          if (document.head.contains(link)) {
-            document.head.removeChild(link);
-          }
-        };
-      } catch (error) {
-        console.warn(`Failed to preconnect to ${url}:`, error);
-        return; // Ensure all code paths return a value
-      }
-    }
-    return; // Ensure the function always returns
-  }, [url, enablePreconnect]);
-
-  // Progress simulation for better UX
-  const startProgressSimulation = useCallback(() => {
-    setState(prev => ({ ...prev, loadingProgress: 0 }));
-
-    let progress = 0;
-    const interval = setInterval(() => {
-      progress += Math.random() * 15;
-      if (progress >= 90) {
-        progress = 90; // Stop at 90% until actual load
-        clearInterval(interval);
-      }
-      setState(prev => ({ ...prev, loadingProgress: Math.min(progress, 90) }));
-    }, 200);
-
-    progressRef.current = interval;
-  }, []);
-
-  const stopProgressSimulation = useCallback(() => {
-    if (progressRef.current) {
-      clearInterval(progressRef.current);
-    }
-  }, []);
-
-  const initiateLoad = useCallback(() => {
-    setState(prev => {
-      const newState: EmbeddedLoadingState = {
+    const startLoading = () => {
+      setState(prev => ({
         ...prev,
         isLoading: true,
-        hasError: false,
-      };
-      delete newState.errorMessage;
-      return newState;
-    });
+        loadingStage: 'connecting',
+      }));
 
-    startProgressSimulation();
+      // Timeout handling
+      timeoutRef = setTimeout(() => {
+        if (state.retryCount < config.loading.retryCount) {
+          // Retry
+          setState(prev => ({
+            ...prev,
+            retryCount: prev.retryCount + 1,
+            loadingStage: 'connecting',
+          }));
 
-    // Set loading timeout
-    timeoutRef.current = setTimeout(() => {
-      if (!state.isLoaded) {
-        setState(prev => ({
-          ...prev,
-          isLoading: false,
-          hasError: true,
-          errorMessage: `Timeout: ${title} failed to load within ${timeout}ms`,
-        }));
-        stopProgressSimulation();
-      }
-    }, timeout);
-  }, [title, timeout, state.isLoaded, startProgressSimulation, stopProgressSimulation]);
-
-  const handleLoadSuccess = useCallback(() => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-    stopProgressSimulation();
-
-    setState(prev => ({
-      ...prev,
-      isLoading: false,
-      isLoaded: true,
-      hasError: false,
-      loadingProgress: 100,
-    }));
-  }, [stopProgressSimulation]);
-
-  const handleLoadError = useCallback(
-    (error: string) => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-      stopProgressSimulation();
-
-      setState(prev => {
-        const newRetryCount = prev.retryCount + 1;
-
-        if (newRetryCount < maxRetries) {
-          // Schedule retry
-          retryTimeoutRef.current = setTimeout(() => {
-            setState(retry => ({ ...retry, retryCount: newRetryCount }));
-            setTimeout(initiateLoad, 1000); // 1 second delay between retries
-          }, 2000);
-
-          return {
+          setTimeout(() => startLoading(), config.loading.retryDelay);
+        } else {
+          // Final failure
+          const finalError = `AI Instructor appears to be down. Failed after ${state.retryCount + 1} attempts.`;
+          setState(prev => ({
             ...prev,
             isLoading: false,
-            hasError: true,
-            errorMessage: `Retry ${newRetryCount}/${maxRetries}: ${error}`,
-            retryCount: newRetryCount,
-          };
+            loadingStage: 'error',
+            errorMessage: finalError,
+          }));
+          onError(finalError);
         }
+      }, config.loading.timeout);
 
-        return {
-          ...prev,
-          isLoading: false,
-          hasError: true,
-          errorMessage: `Failed after ${maxRetries} attempts: ${error}`,
-          retryCount: newRetryCount,
-        };
-      });
-    },
-    [maxRetries, initiateLoad, stopProgressSimulation]
-  );
+      // Simulate successful completion
+      setTimeout(
+        () => {
+          if (Math.random() > 0.2) {
+            // 80% success rate
+            clearTimeout(timeoutRef);
 
-  const manualRetry = useCallback(() => {
-    setState(prev => ({ ...prev, retryCount: 0 }));
-    setTimeout(initiateLoad, preloadDelay);
-  }, [initiateLoad, preloadDelay]);
+            setState(prev => ({
+              ...prev,
+              loadingStage: 'ready',
+              isLoading: false,
+            }));
 
-  // Auto-start loading
-  useEffect(() => {
-    const timer = setTimeout(initiateLoad, preloadDelay);
-    return () => clearTimeout(timer);
-  }, [initiateLoad, preloadDelay]);
-
-  // Cleanup
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      if (progressRef.current) clearInterval(progressRef.current);
-      if (retryTimeoutRef.current) clearTimeout(retryTimeoutRef.current);
+            setTimeout(() => onComplete(), 300);
+          }
+        },
+        Math.random() * 3000 + 2000
+      ); // 2-5 seconds
     };
-  }, []);
 
-  return {
-    state,
-    actions: {
-      handleLoadSuccess,
-      handleLoadError,
-      manualRetry,
-      initiateLoad,
-    },
-  };
-};
+    startLoading();
 
-export const EmbeddedLoadingIndicator: React.FC<{
-  state: EmbeddedLoadingState;
-  title: string;
-  onRetry?: () => void;
-}> = ({ state, title, onRetry }) => {
-  if (state.isLoaded) return null;
+    return () => {
+      clearTimeout(timeoutRef);
+    };
+  }, [config, onComplete, onError, state.retryCount]);
 
-  if (state.hasError) {
-    return (
-      <div className="absolute inset-0 bg-black bg-opacity-90 flex items-center justify-center z-10">
-        <div className="text-center p-6 max-w-md">
-          <div className="text-red-400 text-2xl mb-4">⚠️</div>
-          <h3 className="text-lg font-semibold text-white mb-2">Failed to Load</h3>
-          <p className="text-sm text-gray-300 mb-4">{state.errorMessage}</p>
-          {onRetry && (
-            <button
-              onClick={onRetry}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors"
-            >
-              Retry
-            </button>
-          )}
-        </div>
+  return (
+    <div className="h-full w-full flex items-center justify-center">
+      {/* Simple round loading spinner */}
+      <div className="relative">
+        <div className="w-12 h-12 border-4 border-[var(--brand-glass)] border-t-[var(--brand-accent)] rounded-full animate-spin"></div>
       </div>
-    );
-  }
-
-  if (state.isLoading) {
-    return (
-      <div className="absolute inset-0 bg-black bg-opacity-75 flex items-center justify-center z-10">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400 mx-auto mb-4"></div>
-          <h3 className="text-lg font-semibold text-white mb-2">Loading {title}</h3>
-          <div className="w-64 bg-gray-700 rounded-full h-2 mb-2">
-            <div
-              className="bg-blue-400 h-2 rounded-full transition-all duration-300"
-              style={{ width: `${state.loadingProgress}%` }}
-            />
-          </div>
-          <p className="text-xs text-gray-400">{Math.round(state.loadingProgress)}%</p>
-        </div>
-      </div>
-    );
-  }
-
-  return null;
+    </div>
+  );
 };

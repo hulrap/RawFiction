@@ -7,6 +7,7 @@ interface SimpleLoadingScreenProps {
 export const SimpleLoadingScreen: React.FC<SimpleLoadingScreenProps> = ({ onComplete }) => {
   const [progress, setProgress] = useState(0);
   const [showCursor, setShowCursor] = useState(true);
+  const [isCompleting, setIsCompleting] = useState(false);
 
   useEffect(() => {
     // Cursor blinking animation
@@ -14,21 +15,26 @@ export const SimpleLoadingScreen: React.FC<SimpleLoadingScreenProps> = ({ onComp
       setShowCursor(prev => !prev);
     }, 500);
 
-    // Progress animation over 3 seconds
+    // Progress animation over 2.5 seconds (leaving 0.5s for fade-out)
     const progressInterval = setInterval(() => {
       setProgress(prev => {
         if (prev >= 100) {
           clearInterval(progressInterval);
           return 100;
         }
-        return prev + 100 / 30; // 30 updates over 3 seconds
+        return prev + 100 / 25; // 25 updates over 2.5 seconds
       });
     }, 100);
 
-    // Complete loading after 3 seconds
+    // Start completing at 2.5 seconds
     const completeTimer = setTimeout(() => {
-      onComplete();
-    }, 3000);
+      setIsCompleting(true);
+
+      // Actually complete after fade-out transition (0.5s)
+      setTimeout(() => {
+        onComplete();
+      }, 500);
+    }, 2500);
 
     return () => {
       clearInterval(cursorInterval);
@@ -38,7 +44,11 @@ export const SimpleLoadingScreen: React.FC<SimpleLoadingScreenProps> = ({ onComp
   }, [onComplete]);
 
   return (
-    <div className="fixed inset-0 bg-black text-green-400 font-mono flex items-center justify-center">
+    <div
+      className={`fixed inset-0 bg-black text-green-400 font-mono flex items-center justify-center z-[9999] transition-opacity duration-500 ${
+        isCompleting ? 'opacity-0' : 'opacity-100'
+      }`}
+    >
       <div className="text-center">
         <div className="text-green-500 text-lg mb-8 whitespace-pre font-mono">
           {`██████╗  ██████╗ ██████╗ ████████╗███████╗ ██████╗ ██╗     ██╗ ██████╗
@@ -51,12 +61,14 @@ export const SimpleLoadingScreen: React.FC<SimpleLoadingScreenProps> = ({ onComp
 
         <div className="mb-6">
           <div className="text-green-400 text-xl mb-2">
-            Loading Portfolio
+            {isCompleting ? 'Loading Complete' : 'Loading Portfolio'}
             <span className={`inline-block ml-1 ${showCursor ? 'opacity-100' : 'opacity-0'}`}>
               █
             </span>
           </div>
-          <div className="text-green-600 text-sm">Please wait...</div>
+          <div className="text-green-600 text-sm">
+            {isCompleting ? 'Launching...' : 'Please wait...'}
+          </div>
         </div>
 
         <div className="w-80 mx-auto">

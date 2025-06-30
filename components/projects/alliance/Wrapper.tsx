@@ -18,7 +18,6 @@ interface ErrorBoundaryState {
   errorInfo?: string;
   errorId: string;
   retryCount: number;
-  isCSPError?: boolean;
 }
 
 export const EmbeddedWrapper: React.FC<EmbeddedWrapperProps> = ({
@@ -30,6 +29,7 @@ export const EmbeddedWrapper: React.FC<EmbeddedWrapperProps> = ({
   onError,
   onSuccess,
 }) => {
+  // Wrapper initialized
   const [errorState, setErrorState] = useState<ErrorBoundaryState>({
     hasError: false,
     errorId: '',
@@ -45,7 +45,7 @@ export const EmbeddedWrapper: React.FC<EmbeddedWrapperProps> = ({
     title: siteConfig.title,
     timeout: siteConfig.loading.timeout,
     maxRetries: siteConfig.loading.retryCount,
-    preloadDelay: 200,
+    preloadDelay: siteConfig.loading.preloadDelay || 0,
     enablePreconnect: siteConfig.loading.enablePreconnect,
   });
 
@@ -54,7 +54,6 @@ export const EmbeddedWrapper: React.FC<EmbeddedWrapperProps> = ({
       hasError: false,
       errorId: '',
       retryCount: prev.retryCount,
-      isCSPError: false,
     }));
 
     // Re-initialize loading
@@ -68,38 +67,14 @@ export const EmbeddedWrapper: React.FC<EmbeddedWrapperProps> = ({
       const errorId = `${id}-${Date.now()}`;
       const errorMessage = `${errorType}: ${error.message}`;
 
-      // Detect CSP errors
-      const isCSPError =
-        errorMessage.includes('Content Security Policy') ||
-        errorMessage.includes('frame-ancestors') ||
-        errorMessage.includes('Refused to frame') ||
-        siteConfig.csp.frameAncestors === 'none';
-
       setErrorState(prev => {
         const newRetryCount = prev.retryCount + 1;
 
-        // For CSP errors, don't retry - show fallback immediately
-        if (isCSPError) {
-          return {
-            hasError: true,
-            errorInfo: 'CSP restriction detected',
-            errorId,
-            retryCount: newRetryCount,
-            isCSPError: true,
-          };
-        }
-
-        // Auto-recovery attempt after delay for non-CSP errors
-        if (newRetryCount < siteConfig.loading.retryCount) {
-          const delay =
-            siteConfig.loading.retryDelay *
-            (siteConfig.loading.rateLimit?.backoff === 'exponential'
-              ? Math.pow(2, newRetryCount - 1)
-              : 1);
-
+        // Auto-recovery attempt after 5 seconds
+        if (newRetryCount < 3) {
           errorTimeoutRef.current = setTimeout(() => {
             handleRecovery();
-          }, delay);
+          }, 5000);
         }
 
         return {
@@ -107,13 +82,12 @@ export const EmbeddedWrapper: React.FC<EmbeddedWrapperProps> = ({
           errorInfo: errorMessage,
           errorId,
           retryCount: newRetryCount,
-          isCSPError: false,
         };
       });
 
       onError?.(errorMessage);
     },
-    [id, onError, handleRecovery, siteConfig]
+    [id, onError, handleRecovery]
   );
 
   // Health check for embedded content
@@ -149,7 +123,6 @@ export const EmbeddedWrapper: React.FC<EmbeddedWrapperProps> = ({
       hasError: false,
       errorId: '',
       retryCount: 0,
-      isCSPError: false,
     });
 
     actions.handleLoadSuccess();
@@ -158,10 +131,22 @@ export const EmbeddedWrapper: React.FC<EmbeddedWrapperProps> = ({
 
   const handleLoadError = useCallback(
     (error: string) => {
+      // For Cloudflare protection, skip retries and show fallback immediately
+      if (error.includes('Cloudflare') || error.includes('security')) {
+        setErrorState({
+          hasError: true,
+          errorInfo: 'Site protected by security measures',
+          errorId: `${id}-security-${Date.now()}`,
+          retryCount: 999, // Force immediate fallback
+        });
+        onError?.(error);
+        return;
+      }
+
       handleComponentError('Load Error', new Error(error));
       actions.handleLoadError(error);
     },
-    [handleComponentError, actions]
+    [handleComponentError, actions, id, onError]
   );
 
   const manualRetry = useCallback(() => {
@@ -183,27 +168,18 @@ export const EmbeddedWrapper: React.FC<EmbeddedWrapperProps> = ({
     };
   }, []);
 
-  // CSP error or critical error boundary
-  if (
-    errorState.hasError &&
-    (errorState.isCSPError || errorState.retryCount >= siteConfig.loading.retryCount)
-  ) {
+  // Critical error boundary - prevents crash propagation
+  if (errorState.hasError && errorState.retryCount >= 3) {
     return (
       <div id={id} className={`relative ${className}`} style={style}>
         <div className="absolute inset-0 bg-gray-900 border border-purple-500 flex items-center justify-center">
           <div className="text-center p-8">
             <div className="text-purple-500 text-4xl mb-4">🏳️‍🌈</div>
-            <h3 className="text-lg font-semibold text-white mb-2">
-              {errorState.isCSPError ? 'Queer Alliance Protected' : 'Connection Issues'}
-            </h3>
+            <h3 className="text-lg font-semibold text-white mb-2">Component Isolated</h3>
             <p className="text-sm text-gray-300 mb-4">
-              {errorState.isCSPError
-                ? 'This community platform prevents embedding for security.'
-                : 'The community platform is experiencing connection issues.'}
+              {siteConfig.title} has been isolated to prevent system impact
             </p>
-            {!errorState.isCSPError && (
-              <p className="text-xs text-gray-500 mb-6">Error ID: {errorState.errorId}</p>
-            )}
+            <p className="text-xs text-gray-500 mb-6">Error ID: {errorState.errorId}</p>
 
             {/* Use fallback content or default actions */}
             {fallbackContent || (
@@ -212,18 +188,16 @@ export const EmbeddedWrapper: React.FC<EmbeddedWrapperProps> = ({
                   Queer Alliance builds inclusive communities and supports LGBTQ+ individuals
                   worldwide.
                 </p>
-                {!errorState.isCSPError && (
-                  <button
-                    onClick={manualRetry}
-                    className="px-4 py-2 text-white rounded mr-2 transition-colors"
-                    style={{
-                      background:
-                        'linear-gradient(45deg, #e40303, #ff8c00, #ffed00, #008018, #0066cc, #732982)',
-                    }}
-                  >
-                    Reconnect
-                  </button>
-                )}
+                <button
+                  onClick={manualRetry}
+                  className="px-4 py-2 text-white rounded mr-2 transition-colors"
+                  style={{
+                    background:
+                      'linear-gradient(45deg, #e40303, #ff8c00, #ffed00, #008018, #0066cc, #732982)',
+                  }}
+                >
+                  Force Retry
+                </button>
                 <a
                   href={siteConfig.url}
                   target="_blank"
@@ -242,13 +216,17 @@ export const EmbeddedWrapper: React.FC<EmbeddedWrapperProps> = ({
 
   return (
     <div id={id} className={`relative ${className}`} style={style} ref={containerRef}>
-      <EmbeddedWebsiteFrame
-        url={siteConfig.url}
-        title={siteConfig.title}
-        siteConfig={siteConfig}
-        onLoad={handleLoadSuccess}
-        onError={handleLoadError}
-      />
+      {/* Direct iframe loading */}
+      <div className={`absolute inset-0 ${loadingState.isLoaded ? 'opacity-100' : 'opacity-0'}`}>
+        <EmbeddedWebsiteFrame
+          key={`${id}-direct`}
+          url={siteConfig.url}
+          title={siteConfig.title}
+          onLoad={handleLoadSuccess}
+          onError={handleLoadError}
+          siteConfig={siteConfig}
+        />
+      </div>
 
       <EmbeddedLoadingIndicator
         state={loadingState}
@@ -256,13 +234,11 @@ export const EmbeddedWrapper: React.FC<EmbeddedWrapperProps> = ({
         onRetry={actions.manualRetry}
       />
 
-      {errorState.hasError &&
-        errorState.retryCount < siteConfig.loading.retryCount &&
-        !errorState.isCSPError && (
-          <div className="absolute top-4 right-4 bg-purple-600 text-white px-3 py-1 rounded text-sm z-20">
-            Reconnecting... ({errorState.retryCount}/{siteConfig.loading.retryCount})
-          </div>
-        )}
+      {errorState.hasError && errorState.retryCount < 3 && (
+        <div className="absolute top-4 right-4 bg-purple-600 text-white px-3 py-1 rounded text-sm z-20">
+          Recovering... ({errorState.retryCount}/3)
+        </div>
+      )}
     </div>
   );
 };

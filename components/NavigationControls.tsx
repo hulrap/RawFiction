@@ -28,29 +28,32 @@ export const NavigationControls: React.FC<NavigationControlsProps> = ({
   return (
     <div className="nav-controls">
       <button
-        className="nav-button"
+        className="nav-button w-16 h-16 flex items-center justify-center"
         onClick={onPrevious}
         disabled={isTransitioning}
         aria-label="Previous project"
       >
-        <ChevronLeftIcon className="w-5 h-5" />
+        <ChevronLeftIcon className="w-6 h-6" />
       </button>
 
-      <div className="flex items-center gap-4 px-6">
-        <span className="text-sm font-medium text-metallic">
-          {currentIndex + 1} / {projects.length}
-        </span>
-
-        <span className="text-sm text-gradient font-medium">{projects[currentIndex]?.title}</span>
+      <div className="flex items-center justify-center px-6 min-w-0 flex-1 max-w-md mx-auto">
+        <div className="text-center">
+          <span className="text-sm font-medium text-metallic block">
+            {currentIndex + 1} / {projects.length}
+          </span>
+          <span className="text-sm text-gradient font-medium block truncate max-w-xs">
+            {projects[currentIndex]?.title}
+          </span>
+        </div>
       </div>
 
       <button
-        className="nav-button"
+        className="nav-button w-16 h-16 flex items-center justify-center shrink-0"
         onClick={onNext}
         disabled={isTransitioning}
         aria-label="Next project"
       >
-        <ChevronRightIcon className="w-5 h-5" />
+        <ChevronRightIcon className="w-6 h-6" />
       </button>
     </div>
   );

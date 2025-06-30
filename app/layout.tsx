@@ -29,10 +29,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://zerograv.xyz" />
-        <link rel="preconnect" href="https://opensea.io" />
-        <link rel="dns-prefetch" href="https://ai-instructor.com" />
+        <link rel="dns-prefetch" href="https://ai-instructor.me" />
         <link rel="dns-prefetch" href="https://queer-alliance.com" />
-        <link rel="dns-prefetch" href="https://raw-fiction.com" />
+        <link rel="dns-prefetch" href="https://rawfiction.xyz" />
       </head>
       <body className={`${inter.className} bg-[var(--brand-bg)] text-[var(--brand-fg)]`}>
         {children}

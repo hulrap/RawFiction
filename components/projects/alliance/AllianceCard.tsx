@@ -10,47 +10,40 @@ interface AllianceCardProps {
 
 export const AllianceCard: React.FC<AllianceCardProps> = memo(({ id, className, style }) => {
   const handleSuccess = useCallback(() => {
-    // Could trigger analytics events here
+    console.log('Queer Alliance loaded');
   }, []);
 
-  // Site-specific configuration for queer-alliance.com
+  // Simple direct loading configuration for Queer Alliance
   const queerAllianceConfig: SiteConfig = {
     url: 'https://www.queer-alliance.com/',
     title: 'Queer Alliance',
     csp: {
-      frameAncestors: 'none', // Site blocks all framing
-      bypassCSP: true,
-      useProxy: true,
-      proxyEndpoint: '/api/proxy',
+      frameAncestors: ['*'],
+      bypassCSP: false,
     },
     loading: {
-      method: 'proxy', // Start with proxy due to strict CSP
-      timeout: 25000,
-      retryCount: 3,
-      retryDelay: 5000,
-      enablePreconnect: false, // Skip preconnect since we're using proxy
-      cacheBusting: true,
+      method: 'direct', // Direct loading
+      timeout: 30000,
+      retryCount: 2,
+      retryDelay: 2000,
+      preloadDelay: 0,
+      enablePreconnect: true,
+      cacheBusting: false,
       rateLimit: {
-        enabled: true,
-        delay: 3000,
-        backoff: 'exponential',
+        enabled: false,
+        delay: 0,
+        backoff: 'linear',
       },
     },
     sandbox: {
       allowScripts: true,
-      allowSameOrigin: false, // More restrictive for community sites
+      allowSameOrigin: false, // Security: prevent sandbox escape (Cloudflare blocks anyway)
       allowForms: true,
       allowPopups: false,
-      allowFullscreen: false,
       allowDownloads: false,
       allowModals: true,
       allowTopNavigation: false,
-      strictMode: true,
-    },
-    fallbackContent: {
-      type: 'description',
-      content:
-        'Queer Alliance is dedicated to building inclusive communities and supporting LGBTQ+ individuals worldwide. Due to security restrictions, this content must be viewed directly on their website.',
+      strictMode: false,
     },
   };
 

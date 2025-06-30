@@ -402,16 +402,15 @@ export interface SiteCSPConfig {
   frameAncestors?: string[] | 'none' | 'self' | '*';
   allowedOrigins?: string[];
   bypassCSP?: boolean;
-  useProxy?: boolean;
-  proxyEndpoint?: string;
   customHeaders?: Record<string, string>;
 }
 
 export interface SiteLoadingStrategy {
-  method: 'direct' | 'proxy' | 'fallback' | 'screenshot';
+  method: 'direct' | 'fallback' | 'screenshot';
   timeout: number;
   retryCount: number;
   retryDelay: number;
+  preloadDelay?: number;
   enablePreconnect: boolean;
   cacheBusting?: boolean;
   rateLimit?: {
@@ -426,7 +425,6 @@ export interface SiteSandboxConfig {
   allowSameOrigin: boolean;
   allowForms: boolean;
   allowPopups: boolean;
-  allowFullscreen: boolean;
   allowDownloads: boolean;
   allowModals: boolean;
   allowTopNavigation: boolean;
