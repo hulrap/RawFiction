@@ -531,7 +531,65 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
     );
   }
 
-  // Standard Collection/Editorial/Vintage Mode
+  // Vintage Mode - Simple vertical image layout
+  if (mode === 'vintage') {
+    return (
+      <div className="space-y-6">
+        <div className="text-center">
+          <h2 className="text-3xl font-bold text-white mb-4">{title}</h2>
+          <p className="text-gray-300 mb-6">{images.length} archived website screenshots</p>
+        </div>
+
+        <div className="space-y-8">
+          {images.map((image, index) => (
+            <div key={image.id} className="space-y-4">
+              <div className="text-sm text-gray-400 font-mono">
+                Screenshot {index + 1} of {images.length}
+              </div>
+              <div
+                className="border border-gray-700/50 rounded-lg overflow-hidden bg-gray-800/30 cursor-pointer hover:border-gray-600/70 transition-colors"
+                onClick={() => setSelectedImage(image)}
+              >
+                <LazyImage
+                  src={image.src}
+                  alt={image.alt}
+                  className="w-full h-auto object-contain"
+                  componentId={componentId}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Image Modal for vintage */}
+        {selectedImage && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-95 flex items-center justify-center z-50 p-4"
+            onClick={() => setSelectedImage(null)}
+          >
+            <div className="max-w-7xl max-h-full overflow-auto">
+              <LazyImage
+                src={selectedImage.src}
+                alt={selectedImage.alt}
+                className="w-full h-auto max-h-[90vh] object-contain rounded-lg"
+                componentId={`${componentId}-modal`}
+              />
+              <div className="text-center mt-4">
+                <button
+                  className="px-6 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
+                  onClick={() => setSelectedImage(null)}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Standard Collection/Editorial Mode
   return (
     <div className="space-y-8">
       <div className="text-center">
