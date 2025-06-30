@@ -19,6 +19,7 @@ interface CarouselTransform {
 interface CardWithOverlayProps {
   title: string;
   isOverlayVisible: boolean;
+  needsImmediateOverlay?: boolean;
   onShatter: () => void;
   children: React.ReactNode;
   carouselPosition: string;
@@ -87,19 +88,17 @@ const vertexShader = `
     ripple *= hoverInfluence; // Only apply ripple in hover area
     pos.z += ripple;
 
-         // More prominent ambient wave across entire field
-     float ambientWave = sin(cubeGridPos.x * 2.0 + cubeGridPos.y * 1.5 + uTime * 0.5) * 0.1;
-     pos.z += ambientWave;
+     // Perfect flat grid - no ambient wave variations
 
-    // Cascade flowing effect during shatter
+    // Cascade flowing effect during shatter - symmetrical top to bottom
     if (uIsFlowing > 0.5) {
       float cascade = uFlowProgress * uFlowProgress;
-      float fallDelay = (cubeGridPos.x + cubeGridPos.y) * 0.05;
+      float fallDelay = cubeGridPos.y * 0.05; // Only Y coordinate for pure vertical flow
       float adjustedProgress = max(0.0, uFlowProgress - fallDelay);
 
-      pos.y -= adjustedProgress * adjustedProgress * 5.0;
-      pos.x += sin(cubeGridPos.y * 4.0 + uTime * 2.0) * adjustedProgress * 0.3;
-      pos.z += sin(cubeGridPos.x * 3.0 + uTime * 1.8) * adjustedProgress * 0.2;
+      pos.y -= adjustedProgress * adjustedProgress * 8.0; // Increased fall distance to go completely off-screen
+      // Remove sideways movement for symmetrical effect
+      pos.z += sin(cubeGridPos.x * 3.0 + uTime * 1.8) * adjustedProgress * 0.15;
     }
 
     gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
@@ -143,26 +142,58 @@ const fragmentShader = `
     vec3 normal = normalize(vNormal);
     vec3 viewDir = normalize(-vPosition);
 
-    // Cool lighting setup for anthracite enamel
-    vec3 lightDir1 = normalize(vec3(0.5, 1.0, 1.2));   // Cool main light
-    vec3 lightDir2 = normalize(vec3(-0.8, 0.4, 0.6));  // Cool fill light
-    vec3 lightDir3 = normalize(vec3(0.3, -0.2, 0.8));  // Cool rim light
+    // Enhanced hyperrealistic lighting setup
+    vec3 keyLight = normalize(vec3(0.7, 1.5, 1.8));      // Strong key light from top-right
+    vec3 fillLight = normalize(vec3(-1.2, 0.8, 0.9));    // Softer fill light from left
+    vec3 rimLight = normalize(vec3(0.4, -0.3, 1.2));     // Rim light for edge definition
+    vec3 envLight = normalize(vec3(0.0, 1.0, 0.0));      // Environmental top light
 
-    // Calculate diffuse lighting with cool tones
-    float NdotL1 = max(0.0, dot(normal, lightDir1));
-    float NdotL2 = max(0.0, dot(normal, lightDir2));
-    float NdotL3 = max(0.0, dot(normal, lightDir3));
-    float diffuse = 0.3 + 0.6 * NdotL1 + 0.4 * NdotL2 + 0.3 * NdotL3;
+    // Light colors for realistic scene lighting
+    vec3 keyColor = vec3(1.0, 0.98, 0.95);      // Warm key light
+    vec3 fillColor = vec3(0.7, 0.8, 1.0);       // Cool fill light
+    vec3 rimColor = vec3(0.9, 0.95, 1.0);       // Cool rim light
+    vec3 envColor = vec3(0.8, 0.85, 1.0);       // Cool environmental light
 
-    // Fresnel effect for enamel reflections
-    float fresnel = pow(1.0 - max(0.0, dot(normal, viewDir)), 2.0);
+    // Calculate diffuse lighting with proper light colors
+    float NdotL_key = max(0.0, dot(normal, keyLight));
+    float NdotL_fill = max(0.0, dot(normal, fillLight));
+    float NdotL_rim = max(0.0, dot(normal, rimLight));
+    float NdotL_env = max(0.0, dot(normal, envLight));
 
-    // Specular highlights for enamel shine
-    vec3 reflectDir1 = reflect(-lightDir1, normal);
-    vec3 reflectDir2 = reflect(-lightDir2, normal);
-    float specular1 = pow(max(0.0, dot(viewDir, reflectDir1)), 80.0);
-    float specular2 = pow(max(0.0, dot(viewDir, reflectDir2)), 40.0);
-    float specular = specular1 + specular2 * 0.6;
+    // Wrap lighting for subsurface scattering effect
+    float wrap = 0.3;
+    NdotL_key = (NdotL_key + wrap) / (1.0 + wrap);
+    NdotL_fill = (NdotL_fill + wrap) / (1.0 + wrap);
+
+    // Combine diffuse lighting
+    vec3 diffuse = 0.2 * envColor * NdotL_env +           // Ambient environmental
+                   0.8 * keyColor * NdotL_key +           // Primary key light
+                   0.5 * fillColor * NdotL_fill +         // Secondary fill
+                   0.3 * rimColor * NdotL_rim;            // Rim lighting
+
+    // Advanced fresnel with realistic falloff
+    float fresnel = pow(1.0 - max(0.0, dot(normal, viewDir)), 1.8);
+    float fresnelSharp = pow(1.0 - max(0.0, dot(normal, viewDir)), 4.0);
+
+    // Multi-layer specular for enamel surface
+    vec3 reflectDir_key = reflect(-keyLight, normal);
+    vec3 reflectDir_fill = reflect(-fillLight, normal);
+    vec3 reflectDir_rim = reflect(-rimLight, normal);
+
+    // Primary specular (sharp enamel surface)
+    float specular1 = pow(max(0.0, dot(viewDir, reflectDir_key)), 120.0);
+    float specular2 = pow(max(0.0, dot(viewDir, reflectDir_fill)), 60.0);
+    float specular3 = pow(max(0.0, dot(viewDir, reflectDir_rim)), 80.0);
+
+    // Secondary specular (broader reflection)
+    float specularBroad1 = pow(max(0.0, dot(viewDir, reflectDir_key)), 20.0);
+    float specularBroad2 = pow(max(0.0, dot(viewDir, reflectDir_fill)), 15.0);
+
+    vec3 specular = keyColor * specular1 * 0.9 +
+                    fillColor * specular2 * 0.6 +
+                    rimColor * specular3 * 0.7 +
+                    keyColor * specularBroad1 * 0.3 +
+                    fillColor * specularBroad2 * 0.2;
 
     // Anthracite grey enamel base colors
     vec3 anthraciteBase = vec3(0.15, 0.16, 0.18);       // Deep anthracite
@@ -182,53 +213,108 @@ const fragmentShader = `
     vec3 highlightColor = mix(anthraciteHighlight, offWhiteHighlight, hoverGlow);
     vec3 shadowColor = mix(anthraciteShadow, offWhite * 0.7, hoverGlow);
 
-    // Build enamel appearance
+        // Build solid colored glass appearance
     vec3 color = baseColor * diffuse;
 
-    // Add enamel highlights based on fresnel
-    color = mix(color, highlightColor, fresnel * 0.5);
+    // Glass refraction simulation
+    vec3 refractDir = refract(-viewDir, normal, 0.85); // Glass IOR approximation
+    float glassThickness = 0.3; // Solid glass thickness effect
+    vec3 glassColor = baseColor * (1.0 + glassThickness);
 
-    // Cool-toned specular reflections
-    vec3 coolSpecular = vec3(0.8, 0.9, 1.0); // Cool white specular
-    color += coolSpecular * specular * (0.8 + hoverGlow * 0.4);
+    // Environment reflection simulation
+    vec3 reflectDir = reflect(-viewDir, normal);
+    float skyReflection = max(0.0, reflectDir.y);
+    vec3 envReflection = mix(vec3(0.3, 0.4, 0.6), vec3(0.7, 0.8, 1.0), skyReflection);
 
-    // Subtle enamel texture variation
+    // Glass fresnel - stronger than enamel
+    float glassFresnel = pow(1.0 - max(0.0, dot(normal, viewDir)), 1.2);
+    float glassFresnelSharp = pow(1.0 - max(0.0, dot(normal, viewDir)), 3.0);
+
+    // Multi-layer glass effects
+    color = mix(glassColor, highlightColor, glassFresnel * 0.4);
+    color = mix(color, envReflection, glassFresnelSharp * 0.5 * (1.0 + hoverGlow * 0.3));
+
+    // Glass internal reflections
+    float internalReflection = pow(max(0.0, dot(refractDir, normal)), 2.0);
+    color += baseColor * internalReflection * 0.3;
+
+    // Add specular reflections with glass intensity
+    color += specular * (0.8 + hoverGlow * 0.5);
+
+    // Glass surface imperfections and thickness variations
     vec2 stablePos = vPosition.xy * 0.1;
-    float enamelTexture = noise(stablePos * 8.0) * 0.1;
-    color += vec3(enamelTexture) * (1.0 - hoverGlow * 0.5);
+    float glassImperfections = noise(stablePos * 15.0) * 0.05;
+    float glassThicknessVar = noise(stablePos * 6.0) * 0.1;
+    color += vec3(glassImperfections) * (1.0 - hoverGlow * 0.4);
+    color *= (1.0 + glassThicknessVar * 0.15);
 
-    // Enhanced ripple effect for hover
-    float ripple = sin(vDistanceFromMouse * 10.0 - uTime * 6.0) * 0.5 + 0.5;
-    ripple *= exp(-vDistanceFromMouse * 3.0) * hoverGlow;
-    vec3 rippleColor = mix(vec3(0.4, 0.5, 0.7), vec3(0.9, 0.95, 1.0), hoverGlow);
-    color += rippleColor * ripple * 0.15;
+    // Glass caustics and light refraction patterns
+    float caustics = sin(vDistanceFromMouse * 15.0 - uTime * 10.0) * 0.5 + 0.5;
+    caustics *= exp(-vDistanceFromMouse * 5.0) * hoverGlow;
+    vec3 causticsColor = mix(baseColor, vec3(0.9, 0.95, 1.0), hoverGlow);
+    color += causticsColor * caustics * 0.15;
 
-    // Elevation effects - higher cubes get more shine
-    float elevationEffect = vElevation * 1.5;
-    color += highlightColor * elevationEffect * 0.2;
-    color += coolSpecular * elevationEffect * specular * 0.3;
+    // Elevation effects with glass light transmission
+    float elevationEffect = vElevation * 2.5;
+    color += highlightColor * elevationEffect * 0.4;
+    color += envReflection * elevationEffect * glassFresnel * 0.5;
 
-    // Cool ambient lighting variation
-    float ambientCool = sin(stablePos.x * 1.5 + stablePos.y * 1.2) * 0.5 + 0.5;
-    vec3 coolAmbient = vec3(0.7, 0.8, 1.0); // Cool ambient tone
-    color += coolAmbient * ambientCool * 0.02 * (1.0 - hoverGlow);
+    // Glass depth perception - no harsh ambient occlusion
+    float glassDepth = 1.0 - (noise(stablePos * 3.0) * 0.1);
+    color *= glassDepth;
 
-    // Flowing effect with enhanced enamel properties
+    // Subsurface light transmission through glass
+    float transmission = pow(max(0.0, dot(-viewDir, keyLight)), 2.0) * 0.6;
+    color += glassColor * transmission * (1.0 + hoverGlow * 0.5);
+
+    // Flowing effect with glass properties
     if (uIsFlowing > 0.5) {
-      vec3 flowColor = mix(vec3(0.6, 0.7, 0.8), offWhiteHighlight, hoverGlow);
-      color += flowColor * uFlowProgress * 0.4;
-      color *= (1.0 + uFlowProgress * 0.3);
-      color += coolSpecular * uFlowProgress * 0.5;
+      vec3 flowColor = mix(envReflection, offWhiteHighlight, hoverGlow);
+      color += flowColor * uFlowProgress * 0.6;
+      color *= (1.0 + uFlowProgress * 0.5);
+      // Add glass energy and refraction during flow
+      color += keyColor * specular * uFlowProgress * 0.9;
+      color += envReflection * glassFresnelSharp * uFlowProgress * 0.7;
     }
 
-    // Final enamel edge enhancement
-    float edgeFresnel = pow(fresnel, 1.2);
-    color += highlightColor * edgeFresnel * 0.15;
+    // Final glass edge enhancement
+    float edgeGlassFresnel = pow(glassFresnel, 1.3);
+    float sharpGlassEdge = pow(glassFresnelSharp, 0.9);
+    color += highlightColor * edgeGlassFresnel * 0.25;
+    color += envReflection * sharpGlassEdge * 0.2;
+
+    // Tone mapping for realistic glass brightness
+    color = color / (color + vec3(1.0));
+    color = pow(color, vec3(0.85)); // Glass-appropriate gamma
 
     // Ensure proper contrast and depth
-    color = max(color, shadowColor);
+    color = max(color, shadowColor * 0.9);
 
-    gl_FragColor = vec4(color, 1.0);
+        // Crystal clear glass with internal depth structure
+    // Calculate depth-based inner core effect
+    vec3 cubeCenter = vec3(0.0, 0.0, 0.0);
+    float depthFromCenter = length(vPosition - cubeCenter);
+    float maxDepth = 0.08; // Cube half-size
+    float normalizedDepth = clamp(depthFromCenter / maxDepth, 0.0, 1.0);
+
+    // Inner core density - more material in the center
+    float coreDensity = 1.0 - smoothstep(0.3, 0.8, normalizedDepth);
+
+    // Crystal clear glass base with depth-based coloring
+    vec3 clearGlass = vec3(0.98, 0.99, 1.0); // Almost colorless
+    vec3 finalColor = mix(clearGlass, color, coreDensity * 0.4); // Core gets more color
+
+    // Ultra-transparent glass with realistic thickness
+    float glassAlpha = 0.08 + glassFresnel * 0.4; // Very transparent with strong fresnel
+    glassAlpha += coreDensity * 0.3; // Inner core more visible
+    glassAlpha += hoverGlow * 0.25; // Hover makes it more visible
+    glassAlpha *= (1.0 - uFlowProgress * 0.7); // Very transparent during flow
+
+    // Enhanced glass refractions and reflections
+    finalColor += envReflection * glassFresnelSharp * 0.6;
+    finalColor += specular * (0.9 + hoverGlow * 0.4);
+
+    gl_FragColor = vec4(finalColor, glassAlpha);
   }
 `;
 
@@ -257,8 +343,8 @@ const CubeGrid: React.FC<{
   const EFFECTIVE_WIDTH = visibleWidth - BORDER_COMPENSATION * 2;
   const EFFECTIVE_HEIGHT = visibleHeight - BORDER_COMPENSATION * 2;
 
-  // Fixed cube configuration - larger cubes, fewer total cubes
-  const CUBE_SIZE = 0.16; // Doubled size = quarter the total cubes
+  // Fixed cube configuration - much larger glass cubes, fewer total cubes
+  const CUBE_SIZE = 0.16; // Quadrupled size = 1/16th the total cubes (perfect for glass effect)
   const CUBE_SPACING = 0.0; // No gaps - continuous surface
   const CUBE_PITCH = CUBE_SIZE + CUBE_SPACING;
 
@@ -293,12 +379,6 @@ const CubeGrid: React.FC<{
   useLayoutEffect(() => {
     if (meshRef.current) {
       let index = 0;
-
-      // Simple hash function for consistent randomization
-      const hash = (x: number, y: number) => {
-        const h = Math.sin(x * 127.1 + y * 311.7) * 43758.5453;
-        return h - Math.floor(h);
-      };
 
       // Calculate starting positions to center the grid within effective area
       const totalGridWidth = CUBES_X * CUBE_PITCH - CUBE_SPACING;
@@ -337,14 +417,13 @@ const CubeGrid: React.FC<{
           }
         }
       } else {
-        // Seamless stone wall positioning
+        // Perfect 2D symmetrical grid positioning
         for (let x = 0; x < CUBES_X; x++) {
           for (let y = 0; y < CUBES_Y; y++) {
             const posX = startX + x * CUBE_PITCH + CUBE_SIZE / 2;
             const posY = startY + y * CUBE_PITCH + CUBE_SIZE / 2;
-            // Subtle height variation for organic stone wall effect
-            const randomHeight = hash(x * 30, y * 30) * 0.1 + 0.05;
-            const posZ = randomHeight;
+            // Perfect flat alignment - all cubes at exact same Z level
+            const posZ = 0.0; // Perfectly flat, symmetrical grid
 
             const instanceMatrix = new THREE.Matrix4();
             instanceMatrix.setPosition(posX, posY, posZ);
@@ -403,9 +482,12 @@ const CubeGrid: React.FC<{
         vertexShader={vertexShader}
         fragmentShader={fragmentShader}
         uniforms={uniforms}
-        transparent={false}
-        depthWrite={true}
-        side={THREE.FrontSide}
+        transparent={true}
+        depthWrite={false}
+        side={THREE.DoubleSide}
+        blending={THREE.NormalBlending}
+        alphaTest={0.005}
+        opacity={1.0}
       />
     </instancedMesh>
   );
@@ -414,6 +496,7 @@ const CubeGrid: React.FC<{
 export const CardWithOverlay: React.FC<CardWithOverlayProps> = ({
   title,
   isOverlayVisible,
+  needsImmediateOverlay = false,
   onShatter,
   children,
   carouselPosition,
@@ -437,24 +520,38 @@ export const CardWithOverlay: React.FC<CardWithOverlayProps> = ({
 
   // Initialize ALL overlays immediately - regardless of visibility
   useEffect(() => {
-    if (isOverlayVisible && isContentReady && isWebGLReady && !isAtomicReady) {
-      const timer = setTimeout(() => {
+    if (isOverlayVisible && !isAtomicReady) {
+      if (needsImmediateOverlay) {
+        // Immediate overlay for non-center cards - no waiting
         setIsAtomicReady(true);
         invalidate();
-        // Notify parent that overlay is ready
         onOverlayReady?.();
-      }, 50);
-      return () => clearTimeout(timer);
+      } else if (isContentReady && isWebGLReady) {
+        // Normal loading sequence for center cards
+        const timer = setTimeout(() => {
+          setIsAtomicReady(true);
+          invalidate();
+          onOverlayReady?.();
+        }, 50);
+        return () => clearTimeout(timer);
+      }
     }
     return undefined;
-  }, [isOverlayVisible, isContentReady, isWebGLReady, isAtomicReady, onOverlayReady]);
+  }, [
+    isOverlayVisible,
+    isContentReady,
+    isWebGLReady,
+    isAtomicReady,
+    onOverlayReady,
+    needsImmediateOverlay,
+  ]);
 
   // Track when card becomes visible to force Canvas re-mount
   const [canvasKey, setCanvasKey] = useState(0);
   const prevPositionRef = useRef(carouselPosition);
 
   useEffect(() => {
-    // Force Canvas re-mount when card transitions from hidden to visible
+    // Only force Canvas re-mount when card transitions from hidden to visible (not on position changes)
     if (prevPositionRef.current === 'hidden' && carouselPosition !== 'hidden') {
       setCanvasKey(prev => prev + 1);
       setIsWebGLReady(false);
@@ -462,6 +559,21 @@ export const CardWithOverlay: React.FC<CardWithOverlayProps> = ({
     }
     prevPositionRef.current = carouselPosition;
   }, [carouselPosition]);
+
+  // Reset overlay state when position changes to ensure clean transitions
+  useEffect(() => {
+    if (carouselPosition !== 'center') {
+      // Immediately reset any flowing/shattered state for non-center cards
+      setIsShattered(false);
+      setIsFlowing(false);
+      setOpacity(1);
+      setFlowProgress(0);
+      // Force immediate overlay readiness for non-center cards
+      if (isOverlayVisible) {
+        setIsAtomicReady(true);
+      }
+    }
+  }, [carouselPosition, isOverlayVisible]);
 
   // Content ready detection
   useEffect(() => {
@@ -507,7 +619,7 @@ export const CardWithOverlay: React.FC<CardWithOverlayProps> = ({
     setIsFlowing(true);
 
     const startTime = Date.now();
-    const duration = 1800; // Slightly longer for better effect
+    const duration = 1800;
 
     const animateFlow = () => {
       const elapsed = Date.now() - startTime;
@@ -519,9 +631,16 @@ export const CardWithOverlay: React.FC<CardWithOverlayProps> = ({
       if (progress < 1) {
         requestAnimationFrame(animateFlow);
       } else {
-        setIsShattered(true);
-        setOpacity(0);
-        setTimeout(onShatter, 100);
+        // Smooth completion - let the final frame render
+        setFlowProgress(1);
+        setOpacity(0.7);
+
+        // Complete the animation smoothly
+        requestAnimationFrame(() => {
+          setIsShattered(true);
+          setOpacity(0);
+          setTimeout(onShatter, 50);
+        });
       }
     };
 
@@ -533,113 +652,126 @@ export const CardWithOverlay: React.FC<CardWithOverlayProps> = ({
       {/* Card Content */}
       <div
         ref={contentRef}
-        className={`transition-opacity duration-200 ${isAtomicReady ? 'opacity-100' : 'opacity-0'}`}
-        style={{ position: 'relative', width: '100%', height: '100%' }}
+        className={`transition-opacity duration-200`}
+        style={{
+          position: 'relative',
+          width: '100%',
+          height: '100%',
+          // Content is always loaded and rendered, but hidden behind overlay when needed
+          opacity: 1, // Always visible for loading/rendering
+          visibility: 'visible', // Always visible for loading/rendering
+          zIndex: isOverlayVisible ? 1 : 10, // Put behind overlay when overlay is visible
+        }}
       >
         {children}
       </div>
 
       {/* Enhanced 3D Cube Grid Overlay */}
-      {isOverlayVisible && (
-        <AnimatePresence>
-          {!isShattered && (
-            <motion.div
-              ref={overlayRef}
-              className="glass-overlay-container"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: isAtomicReady ? 1 : 0 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              onMouseMove={handleMouseMove}
-              onMouseLeave={() => !isFlowing && setMouse(new THREE.Vector2(0.5, 0.5))}
-              onClick={handleClick}
-              style={{ cursor: isFlowing ? 'default' : 'pointer' }}
+      <AnimatePresence>
+        {isOverlayVisible && !isShattered && (
+          <motion.div
+            ref={overlayRef}
+            className="glass-overlay-container"
+            initial={{ opacity: needsImmediateOverlay ? 1 : 0 }}
+            animate={{ opacity: needsImmediateOverlay ? 1 : isAtomicReady ? 1 : 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: needsImmediateOverlay ? 0 : 0.3 }}
+            style={{
+              cursor: isFlowing ? 'default' : 'pointer',
+              zIndex: 20, // Always above content to ensure proper coverage
+            }}
+            onMouseMove={handleMouseMove}
+            onMouseLeave={() => !isFlowing && setMouse(new THREE.Vector2(0.5, 0.5))}
+            onClick={handleClick}
+          >
+            {/* 3D Cube Grid Canvas */}
+            <div
+              className="glass-overlay-webgl"
+              style={{
+                // Force maximum quality regardless of card position
+                imageRendering: 'crisp-edges',
+                opacity: 1,
+                filter: 'none',
+                transform: 'translateZ(0)',
+              }}
             >
-              {/* 3D Cube Grid Canvas */}
-              <div
-                className="glass-overlay-webgl"
-                style={{
-                  // Force maximum quality regardless of card position
-                  imageRendering: 'crisp-edges',
-                  opacity: 1,
-                  filter: 'none',
-                  transform: 'translateZ(0)',
+              <Canvas
+                key={canvasKey} // Force re-mount when transitioning from hidden to visible
+                camera={{
+                  position: [0, 0, 4.0],
+                  fov: 60,
+                  near: 0.1,
+                  far: 20,
                 }}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: '100%',
+                  transform: 'translateZ(0)', // Force new layer
+                }}
+                gl={{
+                  alpha: true,
+                  antialias: true,
+                  powerPreference: forceHighQuality ? 'high-performance' : 'default',
+                  stencil: false,
+                  depth: true,
+                  preserveDrawingBuffer: false,
+                  premultipliedAlpha: false,
+                }}
+                dpr={
+                  forceHighQuality
+                    ? window.devicePixelRatio * (carouselTransform?.scale || 1.0)
+                    : Math.min(window.devicePixelRatio, 2) * (carouselTransform?.scale || 1.0)
+                }
+                frameloop="always"
               >
-                <Canvas
-                  key={canvasKey} // Force re-mount when transitioning from hidden to visible
-                  camera={{
-                    position: [0, 0, 4.0],
-                    fov: 60,
-                    near: 0.1,
-                    far: 20,
-                  }}
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: '100%',
-                    transform: 'translateZ(0)', // Force new layer
-                  }}
-                  gl={{
-                    alpha: true,
-                    antialias: true,
-                    powerPreference: forceHighQuality ? 'high-performance' : 'default',
-                    stencil: false,
-                    depth: true,
-                    preserveDrawingBuffer: false,
-                  }}
-                  dpr={
-                    forceHighQuality
-                      ? window.devicePixelRatio * (carouselTransform?.scale || 1.0)
-                      : Math.min(window.devicePixelRatio, 2) * (carouselTransform?.scale || 1.0)
-                  }
-                  frameloop="always"
-                >
-                  <CubeGrid
-                    mouse={mouse}
-                    opacity={opacity}
-                    flowProgress={flowProgress}
-                    isFlowing={isFlowing}
-                    onReady={handleWebGLReady}
-                  />
-                </Canvas>
-              </div>
+                <CubeGrid
+                  mouse={mouse}
+                  opacity={opacity}
+                  flowProgress={flowProgress}
+                  isFlowing={isFlowing}
+                  onReady={handleWebGLReady}
+                />
+              </Canvas>
+            </div>
 
-              {/* Content overlay with enhanced styling */}
-              {!isFlowing && isAtomicReady && (
-                <motion.div
-                  className="glass-overlay-content"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.5 }}
-                >
-                  <div className="glass-overlay-text">
-                    <motion.h2
-                      className="glass-overlay-title uppercase"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 0.1, duration: 0.5 }}
-                    >
-                      {title}
-                    </motion.h2>
-                    <motion.div
-                      className="glass-overlay-subtitle"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 0.2, duration: 0.5 }}
-                    >
-                      Click to reveal
-                    </motion.div>
-                  </div>
-                </motion.div>
-              )}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      )}
+            {/* Content overlay with enhanced styling */}
+            {!isFlowing && (needsImmediateOverlay ? true : isAtomicReady) && (
+              <motion.div
+                className="glass-overlay-content"
+                initial={{
+                  opacity: needsImmediateOverlay ? 1 : 0,
+                  y: needsImmediateOverlay ? 0 : 20,
+                }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: needsImmediateOverlay ? 0 : 0.5 }}
+              >
+                <div className="glass-overlay-text">
+                  <motion.h2
+                    className="glass-overlay-title uppercase"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.1, duration: 0.5 }}
+                  >
+                    {title}
+                  </motion.h2>
+                  <motion.div
+                    className="glass-overlay-subtitle"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.2, duration: 0.5 }}
+                  >
+                    Click to reveal
+                  </motion.div>
+                </div>
+              </motion.div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

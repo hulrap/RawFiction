@@ -247,19 +247,21 @@ export const PortfolioCarousel: React.FC = () => {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [wheelEnabled, setWheelEnabled] = useState(true);
   const [shatteredCards, setShatteredCards] = useState<Set<number>>(new Set());
+  const [visitedCards, setVisitedCards] = useState<Set<number>>(new Set([0])); // Track visited cards
 
   // Global loading state - wait for ALL card overlays to be ready
   const [allCardsReady, setAllCardsReady] = useState(false);
   const [readyCards, setReadyCards] = useState<Set<number>>(new Set());
 
-  // Load all cards immediately - no lazy loading or priorities
-  const [loadedCards, setLoadedCards] = useState<Set<number>>(() => {
-    const allCards = new Set<number>();
-    for (let i = 0; i < totalProjects; i++) {
-      allCards.add(i);
-    }
-    return allCards;
-  });
+  // All cards are loaded immediately now - no selective loading needed
+
+  // Mark current card as visited when it changes
+  useEffect(() => {
+    setVisitedCards(prev => new Set([...prev, currentIndex]));
+  }, [currentIndex]);
+
+  // Persistent shattered state: once a card is revealed, it stays revealed
+  // No cleanup based on currentIndex - let cards stay revealed after being shattered
 
   // Track card overlay readiness for global loading screen
   const handleCardReady = useCallback(
@@ -413,8 +415,8 @@ export const PortfolioCarousel: React.FC = () => {
         setIsTransitioning(true);
         setCurrentIndex(index);
 
-        // Prioritize loading the target card immediately
-        setLoadedCards(prev => new Set([...prev, index]));
+        // Mark card as visited when navigating to it
+        setVisitedCards(prev => new Set([...prev, index]));
 
         // Match the CSS transition duration
         setTimeout(() => setIsTransitioning(false), 50);
@@ -568,10 +570,15 @@ export const PortfolioCarousel: React.FC = () => {
         <div className="carousel-wrapper">
           {PORTFOLIO_PROJECTS.map((project, index) => {
             const Component = project.component;
-            const shouldLoad = loadedCards.has(index);
-            const lightweightIds = ['welcome', 'confidential', 'legal'];
-            const isLightweight = lightweightIds.includes(project.id);
             const cardTransform = getCardTransform(index);
+            const isVisited = visitedCards.has(index);
+            const isCenter = cardTransform.carouselPosition === 'center';
+
+            // Fixed rule: once a card is shattered (revealed), it stays revealed regardless of position
+            const wasShattered = shatteredCards.has(index);
+            const shouldShowOverlay = !wasShattered;
+            // Non-center cards get immediate overlay for smooth transitions (only if they need overlay)
+            const needsImmediateOverlay = !isCenter && shouldShowOverlay;
 
             return (
               <ErrorBoundary key={project.id} id={project.id}>
@@ -581,8 +588,13 @@ export const PortfolioCarousel: React.FC = () => {
                   }`}
                   style={cardTransform}
                   onClick={e => {
-                    // Only allow navigation clicks on non-active cards
-                    if (index !== currentIndex && !isTransitioning) {
+                    // Allow navigation to visited cards or adjacent cards
+                    const canNavigate =
+                      index !== currentIndex &&
+                      !isTransitioning &&
+                      (isVisited || cardTransform.carouselPosition !== 'hidden');
+
+                    if (canNavigate) {
                       // Navigate unless clicking on buttons or links
                       const target = e.target as HTMLElement;
                       const isButton = target.closest('button, a, [role="button"]');
@@ -598,7 +610,8 @@ export const PortfolioCarousel: React.FC = () => {
                   {/* ALWAYS render CardWithOverlay for consistent cube grid quality */}
                   <CardWithOverlay
                     title={project.title}
-                    isOverlayVisible={!shatteredCards.has(index)}
+                    isOverlayVisible={shouldShowOverlay}
+                    needsImmediateOverlay={needsImmediateOverlay}
                     onShatter={() => {
                       setShatteredCards(prev => new Set([...prev, index]));
                     }}
@@ -607,20 +620,16 @@ export const PortfolioCarousel: React.FC = () => {
                     forceHighQuality={true} // Force high quality for all cards
                     onOverlayReady={() => handleCardReady(index)}
                   >
-                    {shouldLoad || isLightweight ? (
-                      // Zero latency rendering - no loading states for preloaded components
-                      shouldLoad ? (
-                        <Component id={project.id} />
-                      ) : (
-                        <Suspense fallback={null}>
-                          <Component id={project.id} />
-                        </Suspense>
-                      )
-                    ) : (
-                      <div className="card-glass p-8 flex items-center justify-center opacity-50">
-                        <div className="text-sm text-[var(--brand-accent)]">Loading...</div>
-                      </div>
-                    )}
+                    {/* Always load all content immediately for instant reveal */}
+                    <Suspense
+                      fallback={
+                        <div className="card-glass p-8 flex items-center justify-center opacity-50">
+                          <div className="text-sm text-[var(--brand-accent)]">Loading...</div>
+                        </div>
+                      }
+                    >
+                      <Component id={project.id} />
+                    </Suspense>
                   </CardWithOverlay>
                 </div>
               </ErrorBoundary>
