@@ -44,7 +44,7 @@ export const RawFictionCard: React.FC<ProjectProps> = ({ isActive: _isActive = t
                 contemporary design. Our collections blend raw materials with sophisticated
                 craftsmanship to create pieces that tell stories.
               </p>
-              <div className="inline-block mt-6 px-6 py-2 bg-gradient-to-r from-gray-600 to-gray-800 rounded-full text-sm font-medium text-white">
+              <div className="inline-block mt-6 px-6 py-2 bg-gradient-to-r from-zinc-700 to-zinc-900 rounded-full text-sm font-medium text-white">
                 eco - fair - handmade - vegan
               </div>
             </div>
@@ -117,7 +117,7 @@ export const RawFictionCard: React.FC<ProjectProps> = ({ isActive: _isActive = t
             </div>
 
             <div className="grid md:grid-cols-2 gap-8">
-              <div className="bg-gray-800/50 border border-gray-700/50 rounded-lg p-8">
+              <div className="bg-zinc-900/50 border border-zinc-800/50 rounded-lg p-8">
                 <h3 className="text-xl font-bold text-white mb-4">Brand Philosophy</h3>
                 <p className="text-sm text-gray-300 leading-relaxed">
                   We believe fashion should be a form of artistic expression that challenges
@@ -126,7 +126,7 @@ export const RawFictionCard: React.FC<ProjectProps> = ({ isActive: _isActive = t
                 </p>
               </div>
 
-              <div className="bg-gray-800/50 border border-gray-700/50 rounded-lg p-8">
+              <div className="bg-zinc-900/50 border border-zinc-800/50 rounded-lg p-8">
                 <h3 className="text-xl font-bold text-white mb-4">Digital Collections</h3>
                 <p className="text-sm text-gray-300 leading-relaxed">
                   Our extensive digital archives contain hundreds of high-resolution fashion images,
@@ -150,7 +150,7 @@ export const RawFictionCard: React.FC<ProjectProps> = ({ isActive: _isActive = t
               <p className="text-lg text-gray-300 mb-8">
                 Sustainability • Environmental Awareness • Ethical Fashion
               </p>
-              <div className="bg-gray-800/50 border border-gray-700/50 rounded-lg p-6 mb-8 text-center">
+              <div className="bg-zinc-900/50 border border-zinc-800/50 rounded-lg p-6 mb-8 text-center">
                 <h3 className="text-lg font-semibold text-white mb-3">Collection Story</h3>
                 <p className="text-sm text-gray-300 leading-relaxed">
                   Humanity as a whole has become garbage. Through the greed of few and the
@@ -186,7 +186,7 @@ export const RawFictionCard: React.FC<ProjectProps> = ({ isActive: _isActive = t
               <p className="text-lg text-gray-300 mb-8">
                 Identity • Expression • Celebration of Diversity
               </p>
-              <div className="bg-gray-800/50 border border-gray-700/50 rounded-lg p-6 mb-8 text-center">
+              <div className="bg-zinc-900/50 border border-zinc-800/50 rounded-lg p-6 mb-8 text-center">
                 <h3 className="text-lg font-semibold text-white mb-3">Collection Story</h3>
                 <p className="text-sm text-gray-300 leading-relaxed">
                   Until this day, many LGBTQIA+ individuals around the globe are being cast aside
@@ -223,7 +223,7 @@ export const RawFictionCard: React.FC<ProjectProps> = ({ isActive: _isActive = t
                 Limited Edition • Exclusive Design • Premium Materials
               </p>
             </div>
-            <div className="bg-gray-800/50 border border-gray-700/50 rounded-lg p-6 mb-8 text-center">
+            <div className="bg-zinc-900/50 border border-zinc-800/50 rounded-lg p-6 mb-8 text-center">
               <h3 className="text-lg font-semibold text-white mb-3">Brand Collaboration</h3>
               <p className="text-sm text-gray-300 leading-relaxed">
                 We did a lovely brand collaboration with Pure Chlorine, an alt-pop band that creates
@@ -255,7 +255,7 @@ export const RawFictionCard: React.FC<ProjectProps> = ({ isActive: _isActive = t
               <p className="text-lg text-gray-300 mb-8">
                 Social Commentary • Awareness • Change Through Fashion
               </p>
-              <div className="bg-gray-800/50 border border-gray-700/50 rounded-lg p-6 mb-8 text-center">
+              <div className="bg-zinc-900/50 border border-zinc-800/50 rounded-lg p-6 mb-8 text-center">
                 <h3 className="text-lg font-semibold text-white mb-3">Collection Story</h3>
                 <p className="text-sm text-gray-300 leading-relaxed">
                   This collection addresses one of the most persistent social issues of our time.
@@ -289,7 +289,7 @@ export const RawFictionCard: React.FC<ProjectProps> = ({ isActive: _isActive = t
               <p className="text-lg text-gray-300 mb-8">
                 Evolution • Next Chapter • Advanced Sustainability
               </p>
-              <div className="bg-gray-800/50 border border-gray-700/50 rounded-lg p-6 mb-8 text-center">
+              <div className="bg-zinc-900/50 border border-zinc-800/50 rounded-lg p-6 mb-8 text-center">
                 <h3 className="text-lg font-semibold text-white mb-3">Collection Story</h3>
                 <p className="text-sm text-gray-300 leading-relaxed">
                   The evolution of sustainable fashion. Featuring advanced materials like European
@@ -301,7 +301,7 @@ export const RawFictionCard: React.FC<ProjectProps> = ({ isActive: _isActive = t
               </div>
 
               {/* Credits Section */}
-              <div className="bg-gray-800/30 border border-gray-700/30 rounded-lg p-6 mb-8">
+              <div className="bg-zinc-900/30 border border-zinc-800/30 rounded-lg p-6 mb-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-center">
                   <div>
                     <h4 className="font-semibold text-gray-300 mb-3">Photography</h4>
@@ -355,8 +355,8 @@ export const RawFictionCard: React.FC<ProjectProps> = ({ isActive: _isActive = t
                 Archived from our early days - a snapshot of fashion history
               </p>
             </div>
-            <div className="bg-gray-800/50 border border-gray-700/50 rounded-lg p-8">
-              <div className="aspect-video bg-gray-900 rounded-lg overflow-hidden border border-gray-600/30 relative mb-6">
+            <div className="bg-zinc-900/50 border border-zinc-800/50 rounded-lg p-8">
+              <div className="aspect-video bg-zinc-950 rounded-lg overflow-hidden border border-zinc-700/30 relative mb-6">
                 <Image
                   src="/projects/raw-fiction-content/website-archive/rawfiction1.png"
                   alt="Vintage Raw Fiction Website Screenshot"
