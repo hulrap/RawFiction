@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, memo } from 'react';
 import { generateGarbagePlanetProducts } from './collections/GarbagePlanetCollection';
 import { generateGarbagePlanet2Products } from './collections/GarbagePlanet2Collection';
 import { generatePrideProducts } from './collections/PrideCollection';
@@ -227,6 +227,144 @@ const EDITORIAL_COLLECTIONS: FolderItem[] = [
   },
 ];
 
+// Optimized Product Card Component with performance improvements
+const ProductCard = memo<{
+  image: ImageItem | ProductItem | EditorialItem;
+  index: number;
+  onSelect: (image: ImageItem | ProductItem | EditorialItem, index?: number) => void;
+}>(({ image, index, onSelect }) => {
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
+
+  return (
+    <div
+      className="bg-gray-800/50 border border-gray-700/50 rounded-lg overflow-hidden cursor-pointer hover:scale-[1.02] transition-transform duration-200 will-change-transform"
+      onClick={() => onSelect(image, index)}
+    >
+      <div className="relative h-48 bg-gray-900">
+        {/* Loading Placeholder */}
+        {!imageLoaded && !imageError && (
+          <div className="absolute inset-0 bg-gray-800 animate-pulse flex items-center justify-center">
+            <div className="w-8 h-8 border-2 border-gray-600 border-t-gray-400 rounded-full animate-spin" />
+          </div>
+        )}
+
+        {/* Error Placeholder */}
+        {imageError && (
+          <div className="absolute inset-0 bg-gray-800 flex items-center justify-center">
+            <div className="text-gray-500 text-sm">Failed to load</div>
+          </div>
+        )}
+
+        {/* Optimized Image */}
+        <img
+          src={image.src}
+          alt={image.alt}
+          className={`w-full h-48 object-cover transition-opacity duration-300 ${
+            imageLoaded ? 'opacity-100' : 'opacity-0'
+          }`}
+          loading="lazy"
+          decoding="async"
+          onLoad={() => setImageLoaded(true)}
+          onError={() => setImageError(true)}
+          style={{ contentVisibility: 'auto' }}
+        />
+
+        {/* Optimized Hover Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity duration-200" />
+      </div>
+
+      <div className="p-4">
+        <h3 className="font-semibold text-white text-sm text-center truncate">{image.title}</h3>
+      </div>
+    </div>
+  );
+});
+
+ProductCard.displayName = 'ProductCard';
+
+// Optimized Archive Image Card for editorial collections
+const ArchiveImageCard = memo<{
+  image: ImageItem;
+  index: number;
+  viewMode: 'grid' | 'list';
+  onSelect: (image: ImageItem, index: number) => void;
+}>(({ image, index, viewMode, onSelect }) => {
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
+
+  if (viewMode === 'list') {
+    return (
+      <div
+        className="flex items-center space-x-4 p-3 rounded-lg hover:bg-gray-700/50 cursor-pointer transition-colors duration-150"
+        onClick={() => onSelect(image, index)}
+      >
+        <div className="relative w-12 h-12 bg-gray-900 rounded overflow-hidden flex-shrink-0">
+          {!imageLoaded && !imageError && (
+            <div className="absolute inset-0 bg-gray-800 animate-pulse" />
+          )}
+          {imageError && (
+            <div className="absolute inset-0 bg-gray-800 flex items-center justify-center">
+              <span className="text-gray-500 text-xs">✕</span>
+            </div>
+          )}
+          <img
+            src={image.src}
+            alt={image.alt}
+            className={`w-full h-full object-cover transition-opacity duration-200 ${
+              imageLoaded ? 'opacity-100' : 'opacity-0'
+            }`}
+            loading="lazy"
+            decoding="async"
+            onLoad={() => setImageLoaded(true)}
+            onError={() => setImageError(true)}
+          />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="text-sm font-medium text-gray-200 truncate">
+            Editorial Image {index + 1}
+          </div>
+        </div>
+        <div className="text-xs text-gray-500">Image</div>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="bg-gray-800/50 border border-gray-700/50 rounded-lg overflow-hidden cursor-pointer hover:scale-[1.01] transition-transform duration-150 will-change-transform"
+      onClick={() => onSelect(image, index)}
+    >
+      <div className="relative h-32 bg-gray-900">
+        {!imageLoaded && !imageError && (
+          <div className="absolute inset-0 bg-gray-800 animate-pulse flex items-center justify-center">
+            <div className="w-4 h-4 border border-gray-600 border-t-gray-400 rounded-full animate-spin" />
+          </div>
+        )}
+        {imageError && (
+          <div className="absolute inset-0 bg-gray-800 flex items-center justify-center">
+            <span className="text-gray-500 text-xs">Failed</span>
+          </div>
+        )}
+        <img
+          src={image.src}
+          alt={image.alt}
+          className={`w-full h-32 object-cover transition-opacity duration-200 ${
+            imageLoaded ? 'opacity-100' : 'opacity-0'
+          }`}
+          loading="lazy"
+          decoding="async"
+          onLoad={() => setImageLoaded(true)}
+          onError={() => setImageError(true)}
+          style={{ contentVisibility: 'auto' }}
+        />
+      </div>
+    </div>
+  );
+});
+
+ArchiveImageCard.displayName = 'ArchiveImageCard';
+
 interface ImageGalleryProps {
   componentId?: string;
   collectionId?: string;
@@ -374,11 +512,20 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
     [selectedImage, navigateToImage]
   );
 
-  // Add keyboard event listener when modal is open
+  // Add keyboard event listener and scroll management when modal is open
   React.useEffect(() => {
     if (selectedImage) {
       document.addEventListener('keydown', handleKeyPress);
-      return () => document.removeEventListener('keydown', handleKeyPress);
+
+      // Prevent body scrolling when modal is open
+      const originalStyle = window.getComputedStyle(document.body).overflow;
+      document.body.style.overflow = 'hidden';
+
+      return () => {
+        document.removeEventListener('keydown', handleKeyPress);
+        // Restore body scrolling
+        document.body.style.overflow = originalStyle;
+      };
     }
     return undefined;
   }, [selectedImage, handleKeyPress]);
@@ -457,6 +604,11 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
         {/* Folder/Image Grid */}
         <div
           className={`${viewMode === 'grid' ? 'grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4' : 'space-y-2'}`}
+          style={{
+            contentVisibility: 'auto',
+            containIntrinsicSize: viewMode === 'grid' ? '200px' : '60px',
+            contain: 'layout style paint',
+          }}
         >
           {!currentFolder
             ? // Main archive folders
@@ -527,60 +679,59 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
                   </div>
                 ))
               : // Image contents of selected collection
-                currentFolder.images?.map(image => (
-                  <div
+                currentFolder.images?.map((image, index) => (
+                  <ArchiveImageCard
                     key={image.id}
-                    className={`${viewMode === 'grid' ? 'bg-gray-800/50 border border-gray-700/50 rounded-lg p-0 overflow-hidden cursor-pointer hover:scale-105 transition-transform duration-300' : 'flex items-center space-x-4 p-3 rounded-lg hover:bg-gray-700/50 cursor-pointer transition-colors'}`}
-                    onClick={() => handleImageSelect(image, currentFolder?.images?.indexOf(image))}
-                  >
-                    {viewMode === 'grid' ? (
-                      <img
-                        src={image.src}
-                        alt={image.alt}
-                        className="w-full h-32 object-cover"
-                        loading="lazy"
-                      />
-                    ) : (
-                      <>
-                        <img
-                          src={image.src}
-                          alt={image.alt}
-                          className="w-12 h-12 object-cover rounded"
-                          loading="lazy"
-                        />
-                        <div className="flex-1">
-                          <div className="text-sm font-medium text-gray-200">Editorial Image</div>
-                        </div>
-                        <div className="text-xs text-gray-500">Image</div>
-                      </>
-                    )}
-                  </div>
+                    image={image}
+                    index={index}
+                    viewMode={viewMode}
+                    onSelect={(img: ImageItem, idx: number) => handleImageSelect(img, idx)}
+                  />
                 )) || []}
         </div>
 
         {/* Image Modal */}
         {selectedImage && (
           <div
-            className="fixed inset-0 bg-black bg-opacity-95 flex items-center justify-center z-50 p-4"
+            className="fixed inset-0 bg-black/95 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            style={{ margin: 0, padding: '1rem' }}
             onClick={() => {
               setSelectedImage(null);
               setCurrentVariantIndex(0);
             }}
           >
-            <div className="bg-gray-900/95 border border-gray-700/50 rounded-xl p-8 max-w-6xl max-h-full overflow-auto backdrop-blur-lg relative">
+            <div
+              className="bg-gray-900/95 border border-gray-700/50 rounded-xl backdrop-blur-lg relative"
+              style={{
+                padding: '1.5rem',
+                maxWidth: '90%',
+                maxHeight: '90%',
+                width: 'auto',
+                height: 'auto',
+                overflow: 'auto',
+                display: 'flex',
+                flexDirection: 'column',
+              }}
+            >
               {/* Navigation Arrows */}
               {getCurrentImages().length > 1 && (
                 <>
                   {/* Previous Arrow */}
                   {currentImageIndex > 0 && (
                     <button
-                      className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all duration-200 z-10"
+                      className="absolute left-2 md:left-4 top-1/3 transform -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white p-2 md:p-3 rounded-full transition-all duration-200 z-10 shadow-lg"
                       onClick={e => {
                         e.stopPropagation();
                         navigateToImage('prev');
                       }}
                     >
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        className="md:w-5 md:h-5"
+                      >
                         <path
                           d="M15 18L9 12L15 6"
                           stroke="currentColor"
@@ -595,13 +746,19 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
                   {/* Next Arrow */}
                   {currentImageIndex < getCurrentImages().length - 1 && (
                     <button
-                      className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all duration-200 z-10"
+                      className="absolute right-2 md:right-4 top-1/3 transform -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white p-2 md:p-3 rounded-full transition-all duration-200 z-10 shadow-lg"
                       onClick={e => {
                         e.stopPropagation();
                         navigateToImage('next');
                       }}
                     >
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        className="md:w-5 md:h-5"
+                      >
                         <path
                           d="M9 18L15 12L9 6"
                           stroke="currentColor"
@@ -622,7 +779,16 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
                     : selectedImage.src
                 }
                 alt={selectedImage.alt}
-                className="w-full h-auto max-h-[70vh] object-contain mb-6 rounded-lg"
+                className="rounded-lg"
+                style={{
+                  width: '100%',
+                  height: 'auto',
+                  maxWidth: '100%',
+                  maxHeight: '55%',
+                  objectFit: 'contain',
+                  marginBottom: '1rem',
+                  flexShrink: 0,
+                }}
                 loading="eager"
               />
               <div className="text-center">
@@ -680,26 +846,41 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
         {/* Image Modal for vintage */}
         {selectedImage && (
           <div
-            className="fixed inset-0 bg-black bg-opacity-95 flex items-center justify-center z-50 p-4"
+            className="fixed inset-0 bg-black/95 backdrop-blur-sm flex items-center justify-center z-50"
+            style={{ margin: 0, padding: '0.75rem' }}
             onClick={() => {
               setSelectedImage(null);
               setCurrentVariantIndex(0);
             }}
           >
-            <div className="max-w-7xl max-h-full overflow-auto relative">
+            <div
+              className="overflow-auto relative"
+              style={{
+                maxWidth: '95%',
+                maxHeight: '95%',
+                width: 'auto',
+                height: 'auto',
+              }}
+            >
               {/* Navigation Arrows */}
               {getCurrentImages().length > 1 && (
                 <>
                   {/* Previous Arrow */}
                   {currentImageIndex > 0 && (
                     <button
-                      className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all duration-200 z-10"
+                      className="absolute left-2 md:left-4 top-1/3 transform -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white p-2 md:p-3 rounded-full transition-all duration-200 z-10 shadow-lg"
                       onClick={e => {
                         e.stopPropagation();
                         navigateToImage('prev');
                       }}
                     >
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        className="md:w-5 md:h-5"
+                      >
                         <path
                           d="M15 18L9 12L15 6"
                           stroke="currentColor"
@@ -714,13 +895,19 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
                   {/* Next Arrow */}
                   {currentImageIndex < getCurrentImages().length - 1 && (
                     <button
-                      className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all duration-200 z-10"
+                      className="absolute right-2 md:right-4 top-1/3 transform -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white p-2 md:p-3 rounded-full transition-all duration-200 z-10 shadow-lg"
                       onClick={e => {
                         e.stopPropagation();
                         navigateToImage('next');
                       }}
                     >
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        className="md:w-5 md:h-5"
+                      >
                         <path
                           d="M9 18L15 12L9 6"
                           stroke="currentColor"
@@ -741,7 +928,14 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
                     : selectedImage.src
                 }
                 alt={selectedImage.alt}
-                className="w-full h-auto max-h-[90vh] object-contain rounded-lg"
+                className="rounded-lg"
+                style={{
+                  width: '100%',
+                  height: 'auto',
+                  maxWidth: '100%',
+                  maxHeight: '75%',
+                  objectFit: 'contain',
+                }}
               />
               <div className="text-center mt-4">
                 <button
@@ -781,42 +975,37 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+        style={{ contentVisibility: 'auto', containIntrinsicSize: '300px' }}
+      >
         {images.map((image, index) => (
-          <div
-            key={image.id}
-            className="bg-gray-800/50 border border-gray-700/50 rounded-lg overflow-hidden cursor-pointer hover:scale-105 transition-all duration-300 group"
-            onClick={() => handleImageSelect(image, index)}
-          >
-            <div className="relative">
-              <img
-                src={image.src}
-                alt={image.alt}
-                className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
-                loading="lazy"
-              />
-
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            </div>
-
-            <div className="p-4">
-              <h3 className="font-semibold text-white text-sm text-center">{image.title}</h3>
-            </div>
-          </div>
+          <ProductCard key={image.id} image={image} index={index} onSelect={handleImageSelect} />
         ))}
       </div>
 
       {/* Enhanced Image Modal */}
       {selectedImage && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-95 flex items-center justify-center z-50 p-4"
+          className="fixed inset-0 bg-black/95 backdrop-blur-sm flex items-center justify-center z-50"
+          style={{ margin: 0, padding: '0.75rem' }}
           onClick={() => {
             setSelectedImage(null);
             setCurrentVariantIndex(0);
           }}
         >
           <div
-            className="bg-gray-900/95 border border-gray-700/50 rounded-xl p-8 max-w-6xl max-h-full overflow-auto backdrop-blur-lg relative"
+            className="bg-gray-900/95 border border-gray-700/50 rounded-xl backdrop-blur-lg relative"
+            style={{
+              padding: '1.5rem',
+              maxWidth: '90%',
+              maxHeight: '90%',
+              width: 'auto',
+              height: 'auto',
+              overflow: 'auto',
+              display: 'flex',
+              flexDirection: 'column',
+            }}
             onClick={e => e.stopPropagation()}
           >
             {/* Navigation Arrows */}
@@ -841,13 +1030,19 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
                   {/* Previous Arrow */}
                   {canGoPrev && (
                     <button
-                      className="absolute left-4 top-1/3 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all duration-200 z-10"
+                      className="absolute left-2 md:left-4 top-1/4 transform -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white p-2 md:p-3 rounded-full transition-all duration-200 z-10 shadow-lg"
                       onClick={e => {
                         e.stopPropagation();
                         navigateToImage('prev');
                       }}
                     >
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        className="md:w-5 md:h-5"
+                      >
                         <path
                           d="M15 18L9 12L15 6"
                           stroke="currentColor"
@@ -862,13 +1057,19 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
                   {/* Next Arrow */}
                   {canGoNext && (
                     <button
-                      className="absolute right-4 top-1/3 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all duration-200 z-10"
+                      className="absolute right-2 md:right-4 top-1/4 transform -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white p-2 md:p-3 rounded-full transition-all duration-200 z-10 shadow-lg"
                       onClick={e => {
                         e.stopPropagation();
                         navigateToImage('next');
                       }}
                     >
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        className="md:w-5 md:h-5"
+                      >
                         <path
                           d="M9 18L15 12L9 6"
                           stroke="currentColor"
@@ -890,11 +1091,27 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
                   : selectedImage.src
               }
               alt={selectedImage.alt}
-              className="w-full h-auto max-h-[60vh] object-contain mb-4 rounded-lg shadow-2xl"
+              className="rounded-lg shadow-2xl"
+              style={{
+                width: '100%',
+                height: 'auto',
+                maxWidth: '100%',
+                maxHeight: '45%',
+                objectFit: 'contain',
+                marginBottom: '1rem',
+                flexShrink: 0,
+              }}
               loading="eager"
             />
 
-            <div className="grid md:grid-cols-2 gap-6">
+            <div
+              className="grid md:grid-cols-2 gap-6"
+              style={{
+                flex: '1 1 auto',
+                overflow: 'auto',
+                minHeight: 0,
+              }}
+            >
               {/* Left Side - Description and Product Details */}
               <div>
                 <h3 className="text-xl font-bold text-white mb-2">{selectedImage.title}</h3>

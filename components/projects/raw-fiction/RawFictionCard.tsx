@@ -4,6 +4,25 @@ import { ContentWrapper } from './Wrapper';
 import { ImageGallery } from './ImageGallery';
 import type { ProjectProps, TabItem } from '../../shared/types';
 
+// Background Video Component for the entire Raw Fiction window
+const BackgroundVideo: React.FC = () => (
+  <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+    <video
+      autoPlay
+      loop
+      muted
+      playsInline
+      className="absolute inset-0 w-full h-full object-cover blur-sm opacity-15 scale-125"
+      preload="auto"
+    >
+      <source src="/projects/raw-fiction-content/rawfiction-background.mp4" type="video/mp4" />
+    </video>
+
+    {/* Subtle overlay to blend with content */}
+    <div className="absolute inset-0 bg-black opacity-50"></div>
+  </div>
+);
+
 export const RawFictionCard: React.FC<ProjectProps> = ({ isActive: _isActive = true }) => {
   const handleError = useCallback((error: string, context: string) => {
     // Production-grade error logging for fashion brand
@@ -43,27 +62,53 @@ export const RawFictionCard: React.FC<ProjectProps> = ({ isActive: _isActive = t
                 craftsmanship to create pieces that tell stories.
               </p>
               <div className="inline-block mt-6 px-6 py-2 bg-gradient-to-r from-gray-600 to-gray-800 rounded-full text-sm font-medium text-white">
-                High Fashion • Digital Art • Luxury Collections
+                eco - fair - handmade - vegan
               </div>
             </div>
 
             <div className="grid md:grid-cols-5 gap-6">
               {[
-                { name: 'Garbage Planet', subtitle: 'Sustainability Focus' },
-                { name: 'Pride', subtitle: 'Identity & Expression' },
-                { name: 'Pure Chlorine', subtitle: 'Capsule Collection' },
-                { name: 'Racism', subtitle: 'Social Commentary' },
-                { name: 'Archive', subtitle: 'Digital Heritage' },
+                {
+                  name: 'GARBAGE PLANET',
+                  backgroundImage:
+                    '/projects/raw-fiction-content/archive/editorial/garbage-planet-1/Editorial_25.jpg',
+                },
+                {
+                  name: 'PRIDE',
+                  backgroundImage:
+                    '/projects/raw-fiction-content/archive/editorial/pride/IMG_9277.JPG',
+                },
+                {
+                  name: 'PURE CHLORINE',
+                  backgroundImage:
+                    '/projects/raw-fiction-content/archive/editorial/pure-chlorine/MG_7391 (15).jpg',
+                },
+                {
+                  name: 'RACISM',
+                  backgroundImage:
+                    '/projects/raw-fiction-content/archive/editorial/racism/BLICKWINKEL-2.jpg',
+                },
+                {
+                  name: 'ARCHIVE',
+                  backgroundImage:
+                    '/projects/raw-fiction-content/archive/editorial/garbage-planet-1/Editorial_87.jpg',
+                },
               ].map(collection => (
                 <div
                   key={collection.name}
-                  className="bg-gray-800/50 border border-gray-700/50 rounded-lg p-6 text-center hover:bg-gray-700/50 transition-colors group"
+                  className="relative rounded-lg overflow-hidden h-48 group cursor-pointer hover:scale-105 transition-transform duration-300"
+                  style={{
+                    backgroundImage: `url(${collection.backgroundImage})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                  }}
                 >
-                  <div className="w-12 h-12 bg-gradient-to-br from-gray-600 to-gray-700 rounded-lg flex items-center justify-center mb-3 mx-auto group-hover:scale-110 transition-transform">
-                    <span className="text-white font-semibold text-sm">RF</span>
+                  <div className="absolute inset-0 bg-black/40 group-hover:bg-black/60 transition-colors duration-300" />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <h3 className="text-xl font-bold text-white text-center px-4 drop-shadow-lg">
+                      {collection.name}
+                    </h3>
                   </div>
-                  <h3 className="text-lg font-bold text-white mb-2">{collection.name}</h3>
-                  <p className="text-xs text-gray-400">{collection.subtitle}</p>
                 </div>
               ))}
             </div>
@@ -250,6 +295,24 @@ export const RawFictionCard: React.FC<ProjectProps> = ({ isActive: _isActive = t
                   garments, each piece represents the next chapter in environmental awareness
                   through fashion.
                 </p>
+              </div>
+
+              {/* Credits Section */}
+              <div className="bg-gray-800/30 border border-gray-700/30 rounded-lg p-6 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-center">
+                  <div>
+                    <h4 className="font-semibold text-gray-300 mb-3">Photography</h4>
+                    <p className="text-white text-lg">Ivana Dzoic</p>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-300 mb-3">Models</h4>
+                    <div className="space-y-1">
+                      <p className="text-white">Nabé Begle</p>
+                      <p className="text-white">Celina Abaez</p>
+                      <p className="text-white">Liam Solbjerg</p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
             <ImageGallery
@@ -508,13 +571,21 @@ export const RawFictionCard: React.FC<ProjectProps> = ({ isActive: _isActive = t
   };
 
   return (
-    <ContentWrapper
-      id="raw-fiction"
-      tabs={tabs}
-      className="h-full w-full"
-      onError={handleError}
-      onSuccess={handleSuccess}
-      loadingConfig={loadingConfig}
-    />
+    <div className="h-full w-full relative">
+      {/* Background Video */}
+      <BackgroundVideo />
+
+      {/* Main Content */}
+      <div className="relative z-10 h-full">
+        <ContentWrapper
+          id="raw-fiction"
+          tabs={tabs}
+          className="h-full w-full"
+          onError={handleError}
+          onSuccess={handleSuccess}
+          loadingConfig={loadingConfig}
+        />
+      </div>
+    </div>
   );
 };
