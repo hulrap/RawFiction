@@ -13,6 +13,10 @@ export interface ProductItem {
   sold?: boolean;
   price?: string;
   imageVariants?: string[];
+  credits?: {
+    photographer: string;
+    models: string[];
+  };
   specifications?: {
     sex: string;
     color: string;

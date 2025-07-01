@@ -1,7 +1,28 @@
 import type { ProductItem } from './GarbagePlanetCollection';
 
+// Product information types
+interface BaseProductInfo {
+  name: string;
+  price: string;
+  sizes: string;
+  sex: string;
+  color: string;
+  donations: string;
+  description: string;
+}
+
+interface LimitedProductInfo extends BaseProductInfo {
+  limited: string;
+}
+
+interface MadeToOrderProductInfo extends BaseProductInfo {
+  madeToOrder: true;
+}
+
+type ProductInfo = BaseProductInfo | LimitedProductInfo | MadeToOrderProductInfo;
+
 // Product information for Racism collection extracted from ProductDescriptions.txt
-const RACISM_PRODUCT_INFO = {
+const RACISM_PRODUCT_INFO: Record<string, ProductInfo> = {
   R1: {
     name: 'R1',
     price: '65€',
@@ -89,7 +110,8 @@ export const generateRacismProducts = (): ProductItem[] => {
   const productCodes = ['R12', 'R11', 'R10', 'R9', 'R7', 'R4', 'R2', 'R1'];
 
   productCodes.forEach(code => {
-    const productInfo = RACISM_PRODUCT_INFO[code as keyof typeof RACISM_PRODUCT_INFO];
+    const productInfo = RACISM_PRODUCT_INFO[code];
+    if (!productInfo) return;
 
     // Generate image variants for each product (R1-1.jpg as main image following same pattern as shirts)
     const mainImage = `/projects/raw-fiction-content/collections/racism/${code}-1.jpg`;
@@ -125,7 +147,7 @@ export const generateRacismProducts = (): ProductItem[] => {
         content: '100% organic cotton (GOTS certified)',
         emissions: 'We plant 1 tree for every piece sold',
         shipping: 'madeToOrder' in productInfo ? 'Made-to-order' : 'In stock',
-        features: `Sizes: ${productInfo.sizes}${'limited' in productInfo ? `. ${(productInfo as any).limited}` : ''}`,
+        features: `Sizes: ${productInfo.sizes}${'limited' in productInfo ? `. ${(productInfo as LimitedProductInfo).limited}` : ''}`,
         donations: productInfo.donations,
       },
     });

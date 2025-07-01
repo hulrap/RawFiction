@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 import React, { useState, useCallback } from 'react';
 import { generateGarbagePlanetProducts } from './collections/GarbagePlanetCollection';
+import { generateGarbagePlanet2Products } from './collections/GarbagePlanet2Collection';
 import { generatePrideProducts } from './collections/PrideCollection';
 import { generateRacismProducts } from './collections/RacismCollection';
 import { generatePureChlorineProducts } from './collections/PureChlorineCollection';
@@ -18,6 +19,10 @@ interface ImageItem {
   fileSize?: string;
   resolution?: string;
   hasDescription?: boolean;
+  credits?: {
+    photographer: string;
+    models: string[];
+  };
 }
 
 interface FolderItem {
@@ -37,8 +42,8 @@ const ARCHIVE_FOLDERS: FolderItem[] = [
     id: 'editorials',
     name: 'Editorials',
     type: 'folder',
-    itemCount: 3,
-    size: '2.1GB',
+    itemCount: 4,
+    size: '2.3GB',
   },
   {
     id: 'backstage',
@@ -81,7 +86,7 @@ const EDITORIAL_COLLECTIONS: FolderItem[] = [
       description: 'Marcel Bernard',
       credits: {
         photographer: 'Marcel Bernard',
-        models: ['Vladimir Cabak', 'Romana Binder', 'Raphael Hulan'],
+        models: ['Vladimir Cabak', 'Romana Binder', 'Sophie Mann', 'Raphael Hulan'],
       },
     })),
   },
@@ -111,7 +116,7 @@ const EDITORIAL_COLLECTIONS: FolderItem[] = [
       description: 'Marcel Bernard',
       credits: {
         photographer: 'Marcel Bernard',
-        models: ['Vladimir Cabak', 'Romana Binder', 'Raphael Hulan'],
+        models: ['Dennis Bernard', 'Gamze'],
       },
     })),
   },
@@ -135,10 +140,90 @@ const EDITORIAL_COLLECTIONS: FolderItem[] = [
         description: 'Marcel Bernard',
         credits: {
           photographer: 'Marcel Bernard',
-          models: ['Pure Chlorine Artist'],
+          models: ['Pure Chlorine Artists'],
         },
       };
     }).filter(Boolean) as ImageItem[],
+  },
+  {
+    id: 'racism-editorial',
+    name: 'Racism Editorial',
+    type: 'folder',
+    itemCount: 100,
+    size: '156MB',
+    images: [
+      // BLICKWINKEL files first (14 files)
+      ...[
+        'BLICKWINKEL.jpg',
+        'BLICKWINKEL-2.jpg',
+        'BLICKWINKEL-3.jpg',
+        'BLICKWINKEL-4.jpg',
+        'BLICKWINKEL-5.jpg',
+        'BLICKWINKEL-6.jpg',
+        'BLICKWINKEL-7.jpg',
+        'BLICKWINKEL-8.jpg',
+        'BLICKWINKEL-9.jpg',
+        'BLICKWINKEL-12.jpg',
+        'BLICKWINKEL-12_guy.jpg',
+        'BLICKWINKEL-13.jpg',
+        'BLICKWINKEL-14.jpg',
+        'BLICKWINKEL-15.jpg',
+      ].map((filename, i) => ({
+        id: `racism-editorial-blickwinkel-${i + 1}`,
+        src: `/projects/raw-fiction-content/archive/editorial/racism/${filename}`,
+        alt: `Racism Editorial BLICKWINKEL ${i + 1}`,
+        title: `Photocredits`,
+        collection: 'Racism Editorial',
+        category: 'Editorial',
+        description: 'Marcel Bernard',
+        credits: {
+          photographer: 'Marcel Bernard',
+          models: ['Tom Gailer', 'Celina Abaez', 'Jide Zaïn', 'Lydia Uroko'],
+        },
+      })),
+      // MG_8433 series (based on folder contents - available numbers)
+      ...[1, 6, 8, 9, 10, 12, 14, 15, 19, 20, 22, 24, 26, 29, 33, 36, 38].map((num, i) => ({
+        id: `racism-editorial-mg8433-${i + 1}`,
+        src: `/projects/raw-fiction-content/archive/editorial/racism/MG_8433 (${num}).jpg`,
+        alt: `Racism Editorial MG_8433 ${num}`,
+        title: `Photocredits`,
+        collection: 'Racism Editorial',
+        category: 'Editorial',
+        description: 'Marcel Bernard',
+        credits: {
+          photographer: 'Marcel Bernard',
+          models: ['Tom Gailer', 'Celina Abaez', 'Jide Zaïn', 'Lydia Uroko'],
+        },
+      })),
+      // MG_8891 series (1-26)
+      ...Array.from({ length: 26 }, (_, i) => ({
+        id: `racism-editorial-mg8891-${i + 1}`,
+        src: `/projects/raw-fiction-content/archive/editorial/racism/MG_8891 (${i + 1}).jpg`,
+        alt: `Racism Editorial MG_8891 ${i + 1}`,
+        title: `Photocredits`,
+        collection: 'Racism Editorial',
+        category: 'Editorial',
+        description: 'Marcel Bernard',
+        credits: {
+          photographer: 'Marcel Bernard',
+          models: ['Tom Gailer', 'Celina Abaez', 'Jide Zaïn', 'Lydia Uroko'],
+        },
+      })),
+      // MG_8950 series (1-43)
+      ...Array.from({ length: 43 }, (_, i) => ({
+        id: `racism-editorial-mg8950-${i + 1}`,
+        src: `/projects/raw-fiction-content/archive/editorial/racism/MG_8950 (${i + 1}).jpg`,
+        alt: `Racism Editorial MG_8950 ${i + 1}`,
+        title: `Photocredits`,
+        collection: 'Racism Editorial',
+        category: 'Editorial',
+        description: 'Marcel Bernard',
+        credits: {
+          photographer: 'Marcel Bernard',
+          models: ['Tom Gailer', 'Celina Abaez', 'Jide Zaïn', 'Lydia Uroko'],
+        },
+      })),
+    ],
   },
 ];
 
@@ -161,6 +246,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
   const [currentFolder, setCurrentFolder] = useState<FolderItem | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
+  const [currentVariantIndex, setCurrentVariantIndex] = useState<number>(0);
 
   const openFolder = useCallback((folder: FolderItem) => {
     setCurrentFolder(folder);
@@ -177,6 +263,8 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
         switch (collectionId) {
           case 'garbage-planet':
             return generateGarbagePlanetProducts();
+          case 'garbage-planet-2':
+            return generateGarbagePlanet2Products();
           case 'pride':
             return generatePrideProducts();
           case 'racism':
@@ -216,6 +304,19 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
   // Navigation functions
   const navigateToImage = useCallback(
     (direction: 'prev' | 'next') => {
+      // Check if we're viewing a product with variants
+      if (selectedImage && 'imageVariants' in selectedImage && selectedImage.imageVariants) {
+        const variants = selectedImage.imageVariants;
+        const newVariantIndex =
+          direction === 'prev'
+            ? Math.max(0, currentVariantIndex - 1)
+            : Math.min(variants.length - 1, currentVariantIndex + 1);
+
+        setCurrentVariantIndex(newVariantIndex);
+        return;
+      }
+
+      // Default navigation for non-product items
       const currentImages = getCurrentImages();
       if (!currentImages.length) return;
 
@@ -230,7 +331,13 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
         setSelectedImage(nextImage);
       }
     },
-    [getCurrentImages, currentImageIndex]
+    [
+      getCurrentImages,
+      currentImageIndex,
+      selectedImage,
+      currentVariantIndex,
+      setCurrentVariantIndex,
+    ]
   );
 
   // Handle image selection with index tracking
@@ -241,8 +348,10 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
         index !== undefined ? index : currentImages.findIndex(img => img.id === image.id);
       setCurrentImageIndex(imageIndex);
       setSelectedImage(image);
+      // Reset variant index when selecting a new image
+      setCurrentVariantIndex(0);
     },
-    [getCurrentImages]
+    [getCurrentImages, setCurrentVariantIndex]
   );
 
   // Keyboard navigation
@@ -259,6 +368,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
       } else if (event.key === 'Escape') {
         event.preventDefault();
         setSelectedImage(null);
+        setCurrentVariantIndex(0);
       }
     },
     [selectedImage, navigateToImage]
@@ -316,6 +426,33 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
             <span className="text-gray-200">{currentFolder.name}</span>
           </div>
         )}
+
+        {/* Credits Section - Show when inside an editorial collection */}
+        {currentFolder &&
+          currentFolder.images &&
+          currentFolder.images.length > 0 &&
+          currentFolder.images[0]?.credits && (
+            <div className="mb-6 bg-gray-800/30 border border-gray-700/30 rounded-lg p-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <h4 className="font-semibold text-gray-300 mb-2">Photography</h4>
+                  <p className="text-white">{currentFolder.images[0]?.credits?.photographer}</p>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-gray-300 mb-2">Models</h4>
+                  <div className="space-y-1">
+                    {currentFolder.images[0]?.credits?.models.map(
+                      (model: string, index: number) => (
+                        <p key={index} className="text-white">
+                          {model}
+                        </p>
+                      )
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
         {/* Folder/Image Grid */}
         <div
@@ -425,7 +562,10 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
         {selectedImage && (
           <div
             className="fixed inset-0 bg-black bg-opacity-95 flex items-center justify-center z-50 p-4"
-            onClick={() => setSelectedImage(null)}
+            onClick={() => {
+              setSelectedImage(null);
+              setCurrentVariantIndex(0);
+            }}
           >
             <div className="bg-gray-900/95 border border-gray-700/50 rounded-xl p-8 max-w-6xl max-h-full overflow-auto backdrop-blur-lg relative">
               {/* Navigation Arrows */}
@@ -476,7 +616,11 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
               )}
 
               <img
-                src={selectedImage.src}
+                src={
+                  selectedImage && 'imageVariants' in selectedImage && selectedImage.imageVariants
+                    ? selectedImage.imageVariants[currentVariantIndex] || selectedImage.src
+                    : selectedImage.src
+                }
                 alt={selectedImage.alt}
                 className="w-full h-auto max-h-[70vh] object-contain mb-6 rounded-lg"
                 loading="eager"
@@ -489,7 +633,10 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
               </div>
               <button
                 className="mt-6 px-6 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
-                onClick={() => setSelectedImage(null)}
+                onClick={() => {
+                  setSelectedImage(null);
+                  setCurrentVariantIndex(0);
+                }}
               >
                 Close
               </button>
@@ -534,7 +681,10 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
         {selectedImage && (
           <div
             className="fixed inset-0 bg-black bg-opacity-95 flex items-center justify-center z-50 p-4"
-            onClick={() => setSelectedImage(null)}
+            onClick={() => {
+              setSelectedImage(null);
+              setCurrentVariantIndex(0);
+            }}
           >
             <div className="max-w-7xl max-h-full overflow-auto relative">
               {/* Navigation Arrows */}
@@ -585,14 +735,21 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
               )}
 
               <img
-                src={selectedImage.src}
+                src={
+                  selectedImage && 'imageVariants' in selectedImage && selectedImage.imageVariants
+                    ? selectedImage.imageVariants[currentVariantIndex] || selectedImage.src
+                    : selectedImage.src
+                }
                 alt={selectedImage.alt}
                 className="w-full h-auto max-h-[90vh] object-contain rounded-lg"
               />
               <div className="text-center mt-4">
                 <button
                   className="px-6 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
-                  onClick={() => setSelectedImage(null)}
+                  onClick={() => {
+                    setSelectedImage(null);
+                    setCurrentVariantIndex(0);
+                  }}
                 >
                   Close
                 </button>
@@ -653,61 +810,85 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
       {selectedImage && (
         <div
           className="fixed inset-0 bg-black bg-opacity-95 flex items-center justify-center z-50 p-4"
-          onClick={() => setSelectedImage(null)}
+          onClick={() => {
+            setSelectedImage(null);
+            setCurrentVariantIndex(0);
+          }}
         >
           <div
             className="bg-gray-900/95 border border-gray-700/50 rounded-xl p-8 max-w-6xl max-h-full overflow-auto backdrop-blur-lg relative"
             onClick={e => e.stopPropagation()}
           >
             {/* Navigation Arrows */}
-            {getCurrentImages().length > 1 && (
-              <>
-                {/* Previous Arrow */}
-                {currentImageIndex > 0 && (
-                  <button
-                    className="absolute left-4 top-1/3 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all duration-200 z-10"
-                    onClick={e => {
-                      e.stopPropagation();
-                      navigateToImage('prev');
-                    }}
-                  >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                      <path
-                        d="M15 18L9 12L15 6"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </button>
-                )}
+            {(() => {
+              // Check if we're viewing a product with variants
+              const hasVariants =
+                selectedImage &&
+                'imageVariants' in selectedImage &&
+                selectedImage.imageVariants &&
+                selectedImage.imageVariants.length > 1;
+              const canNavigate = hasVariants || getCurrentImages().length > 1;
 
-                {/* Next Arrow */}
-                {currentImageIndex < getCurrentImages().length - 1 && (
-                  <button
-                    className="absolute right-4 top-1/3 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all duration-200 z-10"
-                    onClick={e => {
-                      e.stopPropagation();
-                      navigateToImage('next');
-                    }}
-                  >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                      <path
-                        d="M9 18L15 12L9 6"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </button>
-                )}
-              </>
-            )}
+              if (!canNavigate) return null;
+
+              const canGoPrev = hasVariants ? currentVariantIndex > 0 : currentImageIndex > 0;
+              const canGoNext = hasVariants
+                ? currentVariantIndex < (selectedImage.imageVariants?.length || 0) - 1
+                : currentImageIndex < getCurrentImages().length - 1;
+
+              return (
+                <>
+                  {/* Previous Arrow */}
+                  {canGoPrev && (
+                    <button
+                      className="absolute left-4 top-1/3 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all duration-200 z-10"
+                      onClick={e => {
+                        e.stopPropagation();
+                        navigateToImage('prev');
+                      }}
+                    >
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <path
+                          d="M15 18L9 12L15 6"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </button>
+                  )}
+
+                  {/* Next Arrow */}
+                  {canGoNext && (
+                    <button
+                      className="absolute right-4 top-1/3 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all duration-200 z-10"
+                      onClick={e => {
+                        e.stopPropagation();
+                        navigateToImage('next');
+                      }}
+                    >
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <path
+                          d="M9 18L15 12L9 6"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </button>
+                  )}
+                </>
+              );
+            })()}
 
             <img
-              src={selectedImage.src}
+              src={
+                selectedImage && 'imageVariants' in selectedImage && selectedImage.imageVariants
+                  ? selectedImage.imageVariants[currentVariantIndex] || selectedImage.src
+                  : selectedImage.src
+              }
               alt={selectedImage.alt}
               className="w-full h-auto max-h-[60vh] object-contain mb-4 rounded-lg shadow-2xl"
               loading="eager"
@@ -819,7 +1000,10 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
 
             <button
               className="mt-6 px-6 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
-              onClick={() => setSelectedImage(null)}
+              onClick={() => {
+                setSelectedImage(null);
+                setCurrentVariantIndex(0);
+              }}
             >
               Close
             </button>

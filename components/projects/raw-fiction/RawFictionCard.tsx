@@ -241,60 +241,28 @@ export const RawFictionCard: React.FC<ProjectProps> = ({ isActive: _isActive = t
               <p className="text-lg text-gray-300 mb-8">
                 Evolution • Next Chapter • Advanced Sustainability
               </p>
-              <div className="bg-gray-800/50 border border-gray-700/50 rounded-lg p-6 mb-8 text-left">
+              <div className="bg-gray-800/50 border border-gray-700/50 rounded-lg p-6 mb-8 text-center">
                 <h3 className="text-lg font-semibold text-white mb-3">Collection Story</h3>
                 <p className="text-sm text-gray-300 leading-relaxed">
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam,
-                  quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                  The evolution of sustainable fashion. Featuring advanced materials like European
+                  hemp and stainless steel armor, this collection pushes the boundaries of
+                  eco-conscious design. From limited edition metal mesh armor to innovative wrap
+                  garments, each piece represents the next chapter in environmental awareness
+                  through fashion.
                 </p>
               </div>
             </div>
-            <div className="text-center py-20">
-              <div className="w-16 h-16 bg-gradient-to-br from-gray-600 to-gray-700 rounded-lg flex items-center justify-center mx-auto mb-4">
-                <span className="text-white font-semibold">RF</span>
-              </div>
-              <h3 className="text-xl font-semibold text-white mb-2">In Development</h3>
-              <p className="text-gray-400">The next evolution of our environmental message</p>
-            </div>
-          </div>
-        </div>
-      ),
-    },
-    {
-      id: 'editorial-shoots',
-      title: 'Editorial',
-      content: (
-        <div className="h-full w-full p-8 overflow-y-auto">
-          <div className="max-w-4xl mx-auto space-y-8">
-            <div className="text-center">
-              <h2 className="text-3xl font-bold text-white mb-4">Editorial Shoots</h2>
-              <p className="text-lg text-gray-300 mb-8">
-                Professional Photography • Behind the Scenes • Creative Vision
-              </p>
-              <div className="bg-gray-800/50 border border-gray-700/50 rounded-lg p-6 mb-8 text-left">
-                <h3 className="text-lg font-semibold text-white mb-3">Photo Credits</h3>
-                <div className="grid md:grid-cols-2 gap-4 text-sm text-gray-300">
-                  <div>
-                    <span className="text-gray-400">Photographer:</span>
-                    <div className="font-medium">Marcel Bernard</div>
-                  </div>
-                  <div>
-                    <span className="text-gray-400">Models:</span>
-                    <div className="font-medium">Romana Binder, Vladimir Cabak, Raphael Hulan</div>
-                  </div>
-                </div>
-              </div>
-            </div>
             <ImageGallery
-              componentId="raw-fiction-editorial"
-              collectionId="garbage-planet-1"
-              title="Editorial Photography"
-              mode="editorial"
+              componentId="raw-fiction-garbage-planet-2"
+              collectionId="garbage-planet-2"
+              title="Garbage Planet 2.0 Collection"
+              mode="collection"
             />
           </div>
         </div>
       ),
     },
+
     {
       id: 'digital-archives',
       title: 'Archives',
@@ -387,13 +355,7 @@ export const RawFictionCard: React.FC<ProjectProps> = ({ isActive: _isActive = t
         title: 'Garbage Planet 2.0',
         priority: 'lazy' as const,
       },
-      {
-        id: 'editorial-shoots',
-        title: 'Editorial',
-        hasGallery: true,
-        imageCount: 148,
-        priority: 'lazy' as const,
-      },
+
       {
         id: 'digital-archives',
         title: 'Archives',
@@ -532,16 +494,6 @@ export const RawFictionCard: React.FC<ProjectProps> = ({ isActive: _isActive = t
           galleryId: 'racism-main',
         }))
       ),
-
-      // Editorial Images
-      ...Array.from({ length: 148 }, (_, i) => ({
-        id: `editorial-${i + 1}`,
-        src: `/projects/raw-fiction-content/archive/editorial/garbage-planet-1/Editorial_${i + 1}.jpg`,
-        alt: `Editorial ${i + 1}`,
-        priority: 'low' as const,
-        tabId: 'editorial-shoots',
-        galleryId: 'editorial-main',
-      })),
 
       // Vintage Images
       ...Array.from({ length: 34 }, (_, i) => ({
