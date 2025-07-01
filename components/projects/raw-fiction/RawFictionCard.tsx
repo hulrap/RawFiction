@@ -40,9 +40,12 @@ export const RawFictionCard: React.FC<ProjectProps> = ({ isActive: _isActive = t
             <div className="text-center">
               <h1 className="text-5xl font-bold text-white mb-6">RAW FICTION</h1>
               <p className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
-                Raw Fiction is a cutting-edge fashion brand that pushes the boundaries of
-                contemporary design. Our collections blend raw materials with sophisticated
-                craftsmanship to create pieces that tell stories.
+                Raw Fiction was an ethical, handmade, vegan and ecological fashion brand,
+                created by my best friend Marcel Bernard and me. The label existed between
+                2019 and 2022 and we focused on social issues with each collection. Marcel
+                was responsible for the fashion design, photography, branding and visuals,
+                while I was responsible for managing the brand, our website, our channels and more.
+                It was a fun experience, where I gained a lot of valuable skills and insights.
               </p>
               <div className="inline-block mt-6 px-6 py-2 bg-gradient-to-r from-zinc-700 to-zinc-900 rounded-full text-sm font-medium text-white">
                 eco - fair - handmade - vegan
@@ -64,7 +67,7 @@ export const RawFictionCard: React.FC<ProjectProps> = ({ isActive: _isActive = t
                 {
                   name: 'PURE CHLORINE',
                   backgroundImage:
-                    '/projects/raw-fiction-content/archive/editorial/pure-chlorine/MG_7391 (12).jpg',
+                    '/projects/raw-fiction-content/archive/editorial/pure-chlorine/MG_7391.jpg',
                 },
                 {
                   name: 'RACISM',
@@ -118,20 +121,25 @@ export const RawFictionCard: React.FC<ProjectProps> = ({ isActive: _isActive = t
 
             <div className="grid md:grid-cols-2 gap-8">
               <div className="bg-zinc-900/50 border border-zinc-800/50 rounded-lg p-8">
-                <h3 className="text-xl font-bold text-white mb-4">Brand Philosophy</h3>
+                <h3 className="text-xl font-bold text-white mb-4">Brand Manifesto</h3>
                 <p className="text-sm text-gray-300 leading-relaxed">
-                  We believe fashion should be a form of artistic expression that challenges
-                  conventional norms while maintaining wearability and comfort. Each piece is a
-                  statement of individuality and creative rebellion.
+                  It is a period of exploitation and overconsumption, potentially leading humanity to
+                  the brink of destruction. Emerging from the chaos of polluting fashion brands,
+                  there is a small label from Austria who has declared it their mission to carry the
+                  torch of resistance with fashion to stand out - ethical. In a continuous battle
+                  against the exploitation of resources, animals and workers, they are on the
+                  forefront of utilizing old and new technologies that could end the struggle. More
+                  and more agents have joined their cause, but as time is running out, only the
+                  future will tell if the worst can still be stopped.
                 </p>
               </div>
 
               <div className="bg-zinc-900/50 border border-zinc-800/50 rounded-lg p-8">
-                <h3 className="text-xl font-bold text-white mb-4">Digital Collections</h3>
+                <h3 className="text-xl font-bold text-white mb-4">Digital Archives</h3>
                 <p className="text-sm text-gray-300 leading-relaxed">
                   Our extensive digital archives contain hundreds of high-resolution fashion images,
-                  behind-the-scenes content, and exclusive editorial footage. Experience luxury
-                  fashion through immersive digital galleries.
+                  behind-the-scenes content, and exclusive editorial footage. This window serves as
+                  a lens into the brand&apos;s history and the journey we took together.
                 </p>
               </div>
             </div>
