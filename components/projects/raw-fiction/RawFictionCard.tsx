@@ -1,6 +1,6 @@
-import React, { useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import Image from 'next/image';
-import { ContentWrapper } from './Wrapper';
+import { TabContainer } from '../../shared/TabContainer';
 import { ImageGallery } from './ImageGallery';
 import type { ProjectProps, TabItem } from '../../shared/types';
 
@@ -24,27 +24,10 @@ const BackgroundVideo: React.FC = () => (
 );
 
 export const RawFictionCard: React.FC<ProjectProps> = ({ isActive: _isActive = true }) => {
-  const handleError = useCallback((error: string, context: string) => {
-    // Production-grade error logging for fashion brand
-    const errorReport = {
-      error,
-      context,
-      brand: 'Raw Fiction',
-      timestamp: Date.now(),
-    };
+  const [activeTab, setActiveTab] = useState('overview');
 
-    // Only log in development environment
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Raw Fiction error:', errorReport);
-    }
-  }, []);
-
-  const handleSuccess = useCallback((_action: string) => {
-    // Production-grade success tracking without console pollution
-    // Could send to analytics service here
-    if (process.env.NODE_ENV === 'development') {
-      // Development-only success logging
-    }
+  const handleNavigateToTab = useCallback((tabId: string) => {
+    setActiveTab(tabId);
   }, []);
 
   const tabs: TabItem[] = [
@@ -55,7 +38,7 @@ export const RawFictionCard: React.FC<ProjectProps> = ({ isActive: _isActive = t
         <div className="h-full w-full p-8 overflow-y-auto">
           <div className="max-w-6xl mx-auto space-y-12">
             <div className="text-center">
-              <h1 className="text-5xl font-bold text-white mb-6">Raw Fiction</h1>
+              <h1 className="text-5xl font-bold text-white mb-6">RAW FICTION</h1>
               <p className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
                 Raw Fiction is a cutting-edge fashion brand that pushes the boundaries of
                 contemporary design. Our collections blend raw materials with sophisticated
@@ -76,12 +59,12 @@ export const RawFictionCard: React.FC<ProjectProps> = ({ isActive: _isActive = t
                 {
                   name: 'PRIDE',
                   backgroundImage:
-                    '/projects/raw-fiction-content/archive/editorial/pride/IMG_9277.JPG',
+                    '/projects/raw-fiction-content/archive/editorial/pride/IMG_9332.JPG',
                 },
                 {
                   name: 'PURE CHLORINE',
                   backgroundImage:
-                    '/projects/raw-fiction-content/archive/editorial/pure-chlorine/MG_7391 (15).jpg',
+                    '/projects/raw-fiction-content/archive/editorial/pure-chlorine/MG_7391 (12).jpg',
                 },
                 {
                   name: 'RACISM',
@@ -93,24 +76,44 @@ export const RawFictionCard: React.FC<ProjectProps> = ({ isActive: _isActive = t
                   backgroundImage:
                     '/projects/raw-fiction-content/archive/editorial/garbage-planet-1/Editorial_87.jpg',
                 },
-              ].map(collection => (
-                <div
-                  key={collection.name}
-                  className="relative rounded-lg overflow-hidden h-48 group cursor-pointer hover:scale-105 transition-transform duration-300"
-                  style={{
-                    backgroundImage: `url(${collection.backgroundImage})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                  }}
-                >
-                  <div className="absolute inset-0 bg-black/40 group-hover:bg-black/60 transition-colors duration-300" />
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <h3 className="text-xl font-bold text-white text-center px-4 drop-shadow-lg">
-                      {collection.name}
-                    </h3>
+              ].map(collection => {
+                const getTabId = (name: string) => {
+                  switch (name) {
+                    case 'GARBAGE PLANET':
+                      return 'garbage-planet';
+                    case 'PRIDE':
+                      return 'pride';
+                    case 'PURE CHLORINE':
+                      return 'pure-chlorine';
+                    case 'RACISM':
+                      return 'racism';
+                    case 'ARCHIVE':
+                      return 'digital-archives';
+                    default:
+                      return 'overview';
+                  }
+                };
+
+                return (
+                  <div
+                    key={collection.name}
+                    className="relative rounded-lg overflow-hidden h-48 group cursor-pointer hover:scale-105 transition-transform duration-300"
+                    style={{
+                      backgroundImage: `url(${collection.backgroundImage})`,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                    }}
+                    onClick={() => handleNavigateToTab(getTabId(collection.name))}
+                  >
+                    <div className="absolute inset-0 bg-black/40 group-hover:bg-black/60 transition-colors duration-300" />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <h3 className="text-xl font-bold text-white text-center px-4 drop-shadow-lg">
+                        {collection.name}
+                      </h3>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             <div className="grid md:grid-cols-2 gap-8">
@@ -381,195 +384,6 @@ export const RawFictionCard: React.FC<ProjectProps> = ({ isActive: _isActive = t
     },
   ];
 
-  // Loading configuration for the new collections
-  const loadingConfig = {
-    tabs: [
-      { id: 'overview', title: 'Overview', priority: 'immediate' as const },
-      {
-        id: 'garbage-planet',
-        title: 'Garbage Planet',
-        hasGallery: true,
-        imageCount: 72,
-        priority: 'preload' as const,
-      },
-      {
-        id: 'pride',
-        title: 'Pride',
-        hasGallery: true,
-        imageCount: 25,
-        priority: 'preload' as const,
-      },
-      {
-        id: 'pure-chlorine',
-        title: 'Pure Chlorine',
-        hasGallery: true,
-        imageCount: 12,
-        priority: 'preload' as const,
-      },
-      {
-        id: 'racism',
-        title: 'Racism',
-        hasGallery: true,
-        imageCount: 8,
-        priority: 'preload' as const,
-      },
-      {
-        id: 'garbage-planet-2',
-        title: 'Garbage Planet 2.0',
-        priority: 'lazy' as const,
-      },
-
-      {
-        id: 'digital-archives',
-        title: 'Archives',
-        hasGallery: true,
-        imageCount: 500,
-        priority: 'lazy' as const,
-      },
-      {
-        id: 'website-archive',
-        title: 'Website Archive',
-        hasGallery: true,
-        imageCount: 34,
-        priority: 'lazy' as const,
-      },
-    ],
-    images: [
-      // Garbage Planet Collection - GB1-GB15 (3 variants each) + GP16-GP23 (4 variants each)
-      // GB1-1, GB1-2, GB1-3, GB2-1, GB2-2, GB2-3, ..., GB15-1, GB15-2, GB15-3
-      ...Array.from({ length: 45 }, (_, i) => {
-        const productNum = Math.floor(i / 3) + 1;
-        const variant = (i % 3) + 1;
-        return {
-          id: `garbage-planet-gb${productNum}-${variant}`,
-          src: `/projects/raw-fiction-content/collections/garbage-planet-1/GB${productNum}-${variant}.jpg`,
-          alt: `Garbage Planet Product GB${productNum} Variant ${variant}`,
-          priority: 'high' as const,
-          tabId: 'garbage-planet',
-          galleryId: 'garbage-planet-main',
-        };
-      }),
-      // GP16-1, GP16-2, GP16-3, GP16-4, GP17-1, GP17-2, ..., GP23-1, GP23-2, GP23-3, GP23-4
-      ...Array.from({ length: 32 }, (_, i) => {
-        const productNum = Math.floor(i / 4) + 16;
-        const variant = (i % 4) + 1;
-        return {
-          id: `garbage-planet-gp${productNum}-${variant}`,
-          src: `/projects/raw-fiction-content/collections/garbage-planet-1/GP${productNum}-${variant}.jpg`,
-          alt: `Garbage Planet Product GP${productNum} Variant ${variant}`,
-          priority: 'high' as const,
-          tabId: 'garbage-planet',
-          galleryId: 'garbage-planet-main',
-        };
-      }),
-
-      // Pride Collection - actual file names
-      // crop-1 to crop-4
-      ...Array.from({ length: 4 }, (_, i) => ({
-        id: `pride-crop-${i + 1}`,
-        src: `/projects/raw-fiction-content/collections/pride/crop-${i + 1}.jpg`,
-        alt: `Pride Collection Crop ${i + 1}`,
-        priority: 'medium' as const,
-        tabId: 'pride',
-        galleryId: 'pride-main',
-      })),
-      // tee-1 to tee-4
-      ...Array.from({ length: 4 }, (_, i) => ({
-        id: `pride-tee-${i + 1}`,
-        src: `/projects/raw-fiction-content/collections/pride/tee-${i + 1}.jpg`,
-        alt: `Pride Collection Tee ${i + 1}`,
-        priority: 'medium' as const,
-        tabId: 'pride',
-        galleryId: 'pride-main',
-      })),
-      // harness1-1 to harness1-4
-      ...Array.from({ length: 4 }, (_, i) => ({
-        id: `pride-harness1-${i + 1}`,
-        src: `/projects/raw-fiction-content/collections/pride/harness1-${i + 1}.jpg`,
-        alt: `Pride Collection Harness1 ${i + 1}`,
-        priority: 'medium' as const,
-        tabId: 'pride',
-        galleryId: 'pride-main',
-      })),
-      // harness2-1 to harness2-4
-      ...Array.from({ length: 4 }, (_, i) => ({
-        id: `pride-harness2-${i + 1}`,
-        src: `/projects/raw-fiction-content/collections/pride/harness2-${i + 1}.jpg`,
-        alt: `Pride Collection Harness2 ${i + 1}`,
-        priority: 'medium' as const,
-        tabId: 'pride',
-        galleryId: 'pride-main',
-      })),
-      // harness3-1 to harness3-2
-      ...Array.from({ length: 2 }, (_, i) => ({
-        id: `pride-harness3-${i + 1}`,
-        src: `/projects/raw-fiction-content/collections/pride/harness3-${i + 1}.jpg`,
-        alt: `Pride Collection Harness3 ${i + 1}`,
-        priority: 'medium' as const,
-        tabId: 'pride',
-        galleryId: 'pride-main',
-      })),
-      // belt-1
-      {
-        id: 'pride-belt-1',
-        src: '/projects/raw-fiction-content/collections/pride/belt-1.jpg',
-        alt: 'Pride Collection Belt 1',
-        priority: 'medium' as const,
-        tabId: 'pride',
-        galleryId: 'pride-main',
-      },
-      // painting1 to painting3
-      ...Array.from({ length: 3 }, (_, i) => ({
-        id: `pride-painting-${i + 1}`,
-        src: `/projects/raw-fiction-content/collections/pride/painting${i + 1}.jpg`,
-        alt: `Pride Collection Painting ${i + 1}`,
-        priority: 'medium' as const,
-        tabId: 'pride',
-        galleryId: 'pride-main',
-      })),
-
-      // Pure Chlorine Collection - PURECROP_1 to PURECROP_6, HER_1 to HER_6
-      ...Array.from({ length: 6 }, (_, i) => ({
-        id: `pure-chlorine-purecrop-${i + 1}`,
-        src: `/projects/raw-fiction-content/collections/pure-chlorine/PURECROP_${i + 1}.jpg`,
-        alt: `Pure Chlorine Collection Pure Crop ${i + 1}`,
-        priority: 'medium' as const,
-        tabId: 'pure-chlorine',
-        galleryId: 'pure-chlorine-main',
-      })),
-      ...Array.from({ length: 6 }, (_, i) => ({
-        id: `pure-chlorine-her-${i + 1}`,
-        src: `/projects/raw-fiction-content/collections/pure-chlorine/HER_${i + 1}.jpg`,
-        alt: `Pure Chlorine Collection Her ${i + 1}`,
-        priority: 'medium' as const,
-        tabId: 'pure-chlorine',
-        galleryId: 'pure-chlorine-main',
-      })),
-
-      // Racism Collection - R1-1 to R1-4, R2-1 to R2-4, etc.
-      ...['R1', 'R2', 'R4', 'R7', 'R9', 'R10', 'R11', 'R12'].flatMap(code =>
-        Array.from({ length: 4 }, (_, i) => ({
-          id: `racism-${code.toLowerCase()}-${i + 1}`,
-          src: `/projects/raw-fiction-content/collections/racism/${code}-${i + 1}.jpg`,
-          alt: `Racism Collection ${code} Variant ${i + 1}`,
-          priority: 'medium' as const,
-          tabId: 'racism',
-          galleryId: 'racism-main',
-        }))
-      ),
-
-      // Vintage Images
-      ...Array.from({ length: 34 }, (_, i) => ({
-        id: `vintage-${i + 1}`,
-        src: `/projects/raw-fiction-content/website-archive/rawfiction${i + 1}.png`,
-        alt: `Vintage Raw Fiction Website Screenshot ${i + 1}`,
-        priority: 'low' as const,
-        tabId: 'website-archive',
-        galleryId: 'vintage-main',
-      })),
-    ],
-  };
-
   return (
     <div className="h-full w-full relative">
       {/* Background Video */}
@@ -577,14 +391,7 @@ export const RawFictionCard: React.FC<ProjectProps> = ({ isActive: _isActive = t
 
       {/* Main Content */}
       <div className="relative z-10 h-full">
-        <ContentWrapper
-          id="raw-fiction"
-          tabs={tabs}
-          className="h-full w-full"
-          onError={handleError}
-          onSuccess={handleSuccess}
-          loadingConfig={loadingConfig}
-        />
+        <TabContainer tabs={tabs} defaultTab={activeTab} className="h-full w-full" />
       </div>
     </div>
   );
