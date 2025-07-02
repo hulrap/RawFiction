@@ -39,9 +39,9 @@ export const AllianceCard: React.FC<AllianceCardProps> = memo(({ id, className, 
       allowForms: true,
       allowPopups: false,
       allowDownloads: false,
-      allowModals: false, // Block modals to prevent wallet popups
+      allowModals: true, // Required for Vercel security challenge
       allowTopNavigation: false,
-      strictMode: true, // Enable strict mode to block wallet extensions
+      strictMode: false, // Required for Vercel security challenge
     },
   };
 
@@ -57,11 +57,11 @@ export const AllianceCard: React.FC<AllianceCardProps> = memo(({ id, className, 
           <div className="text-purple-500 text-4xl mb-4">🏳️‍🌈</div>
           <h3 className="text-lg font-semibold mb-4 text-white">Queer Alliance Community</h3>
           <p className="text-sm text-gray-300 mb-6">
-            The LGBTQ+ community platform is protected by security policies that prevent embedding.
+            The LGBTQIA+ community platform is protected by security policies that prevent embedding.
           </p>
           <div className="space-y-4">
             <p className="text-xs text-gray-400">
-              Queer Alliance is dedicated to building inclusive communities and supporting LGBTQ+
+              Queer Alliance is dedicated to building inclusive communities and supporting LGBTQIA+
               individuals worldwide through advocacy, resources, and safe spaces.
             </p>
             <a
