@@ -40,15 +40,15 @@ export const RawFictionCard: React.FC<ProjectProps> = ({ isActive: _isActive = t
             <div className="text-center">
               <h1 className="text-5xl font-bold text-white mb-6">RAW FICTION</h1>
               <p className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
-                Raw Fiction was an ethical, handmade, vegan and ecological fashion brand,
-                created by my best friend Marcel Bernard and me. The label existed between
-                2019 and 2022 and we focused on social issues with each collection. Marcel
-                was responsible for the fashion design, photography, branding and visuals,
-                while I was responsible for managing the brand, our website, our channels and more.
-                It was a fun experience, where I gained a lot of valuable skills and insights.
+                Raw Fiction was an ethical, handmade, vegan and ecological fashion brand, created by
+                my best friend Marcel Bernard and me. The label existed between 2019 and 2022 and we
+                focused on social issues with each collection. Marcel was responsible for the
+                fashion design, photography, branding and visuals, while I was responsible for
+                managing the brand, our website, our channels and more. It was a fun experience,
+                where I gained a lot of valuable skills and insights.
               </p>
               <div className="inline-block mt-6 px-6 py-2 bg-gradient-to-r from-zinc-700 to-zinc-900 rounded-full text-sm font-medium text-white">
-                eco - fair - handmade - vegan
+                ECO - FAIR - HANDMADE - VEGAN
               </div>
             </div>
 
@@ -75,9 +75,9 @@ export const RawFictionCard: React.FC<ProjectProps> = ({ isActive: _isActive = t
                     '/projects/raw-fiction-content/archive/editorial/racism/BLICKWINKEL-2.jpg',
                 },
                 {
-                  name: 'ARCHIVE',
+                  name: 'GARBAGE PLANET 2.0',
                   backgroundImage:
-                    '/projects/raw-fiction-content/archive/editorial/garbage-planet-1/Editorial_87.jpg',
+                    '/projects/raw-fiction-content/collections/garbage-planet-2/GP21-1.jpg',
                 },
               ].map(collection => {
                 const getTabId = (name: string) => {
@@ -90,8 +90,8 @@ export const RawFictionCard: React.FC<ProjectProps> = ({ isActive: _isActive = t
                       return 'pure-chlorine';
                     case 'RACISM':
                       return 'racism';
-                    case 'ARCHIVE':
-                      return 'digital-archives';
+                    case 'GARBAGE PLANET 2.0':
+                      return 'garbage-planet-2';
                     default:
                       return 'overview';
                   }
@@ -123,8 +123,8 @@ export const RawFictionCard: React.FC<ProjectProps> = ({ isActive: _isActive = t
               <div className="bg-zinc-900/50 border border-zinc-800/50 rounded-lg p-8">
                 <h3 className="text-xl font-bold text-white mb-4">Brand Manifesto</h3>
                 <p className="text-sm text-gray-300 leading-relaxed">
-                  It is a period of exploitation and overconsumption, potentially leading humanity to
-                  the brink of destruction. Emerging from the chaos of polluting fashion brands,
+                  It is a period of exploitation and overconsumption, potentially leading humanity
+                  to the brink of destruction. Emerging from the chaos of polluting fashion brands,
                   there is a small label from Austria who has declared it their mission to carry the
                   torch of resistance with fashion to stand out - ethical. In a continuous battle
                   against the exploitation of resources, animals and workers, they are on the

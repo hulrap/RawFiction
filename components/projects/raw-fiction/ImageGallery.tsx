@@ -238,21 +238,21 @@ const ProductCard = memo<{
 
   return (
     <div
-      className="bg-gray-800/50 border border-gray-700/50 rounded-lg overflow-hidden cursor-pointer hover:scale-[1.02] transition-transform duration-200 will-change-transform"
+      className="bg-zinc-900/50 border border-zinc-800/50 rounded-lg overflow-hidden cursor-pointer hover:scale-[1.02] transition-transform duration-200 will-change-transform"
       onClick={() => onSelect(image, index)}
     >
-      <div className="relative h-48 bg-gray-900">
+      <div className="relative h-48 bg-zinc-950">
         {/* Loading Placeholder */}
         {!imageLoaded && !imageError && (
-          <div className="absolute inset-0 bg-gray-800 animate-pulse flex items-center justify-center">
-            <div className="w-8 h-8 border-2 border-gray-600 border-t-gray-400 rounded-full animate-spin" />
+          <div className="absolute inset-0 bg-zinc-900 animate-pulse flex items-center justify-center">
+            <div className="w-8 h-8 border-2 border-zinc-700 border-t-zinc-500 rounded-full animate-spin" />
           </div>
         )}
 
         {/* Error Placeholder */}
         {imageError && (
-          <div className="absolute inset-0 bg-gray-800 flex items-center justify-center">
-            <div className="text-gray-500 text-sm">Failed to load</div>
+          <div className="absolute inset-0 bg-zinc-900 flex items-center justify-center">
+            <div className="text-zinc-500 text-sm">Failed to load</div>
           </div>
         )}
 
@@ -296,16 +296,16 @@ const ArchiveImageCard = memo<{
   if (viewMode === 'list') {
     return (
       <div
-        className="flex items-center space-x-4 p-3 rounded-lg hover:bg-gray-700/50 cursor-pointer transition-colors duration-150"
+        className="flex items-center space-x-4 p-3 rounded-lg hover:bg-zinc-800/50 cursor-pointer transition-colors duration-150"
         onClick={() => onSelect(image, index)}
       >
-        <div className="relative w-12 h-12 bg-gray-900 rounded overflow-hidden flex-shrink-0">
+        <div className="relative w-12 h-12 bg-zinc-950 rounded overflow-hidden flex-shrink-0">
           {!imageLoaded && !imageError && (
-            <div className="absolute inset-0 bg-gray-800 animate-pulse" />
+            <div className="absolute inset-0 bg-zinc-900 animate-pulse" />
           )}
           {imageError && (
-            <div className="absolute inset-0 bg-gray-800 flex items-center justify-center">
-              <span className="text-gray-500 text-xs">✕</span>
+            <div className="absolute inset-0 bg-zinc-900 flex items-center justify-center">
+              <span className="text-zinc-500 text-xs">✕</span>
             </div>
           )}
           <img
@@ -332,18 +332,18 @@ const ArchiveImageCard = memo<{
 
   return (
     <div
-      className="bg-gray-800/50 border border-gray-700/50 rounded-lg overflow-hidden cursor-pointer hover:scale-[1.01] transition-transform duration-150 will-change-transform"
+      className="bg-zinc-900/50 border border-zinc-800/50 rounded-lg overflow-hidden cursor-pointer hover:scale-[1.01] transition-transform duration-150 will-change-transform"
       onClick={() => onSelect(image, index)}
     >
-      <div className="relative h-32 bg-gray-900">
+      <div className="relative h-32 bg-zinc-950">
         {!imageLoaded && !imageError && (
-          <div className="absolute inset-0 bg-gray-800 animate-pulse flex items-center justify-center">
-            <div className="w-4 h-4 border border-gray-600 border-t-gray-400 rounded-full animate-spin" />
+          <div className="absolute inset-0 bg-zinc-900 animate-pulse flex items-center justify-center">
+            <div className="w-4 h-4 border border-zinc-700 border-t-zinc-500 rounded-full animate-spin" />
           </div>
         )}
         {imageError && (
-          <div className="absolute inset-0 bg-gray-800 flex items-center justify-center">
-            <span className="text-gray-500 text-xs">Failed</span>
+          <div className="absolute inset-0 bg-zinc-900 flex items-center justify-center">
+            <span className="text-zinc-500 text-xs">Failed</span>
           </div>
         )}
         <img
@@ -535,9 +535,9 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
     return (
       <div className="h-full w-full bg-gradient-to-br from-gray-900 to-black p-6">
         {/* Archive Header */}
-        <div className="flex items-center justify-between mb-6 bg-gradient-to-r from-gray-800/80 to-gray-700/80 rounded-lg p-4 border border-gray-600/30">
+        <div className="flex items-center justify-between mb-6 bg-gradient-to-r from-zinc-900/80 to-zinc-800/80 rounded-lg p-4 border border-zinc-700/30">
           <div className="flex items-center space-x-4">
-            <div className="w-10 h-10 bg-gradient-to-br from-gray-600 to-gray-700 rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 bg-gradient-to-br from-zinc-700 to-zinc-800 rounded-lg flex items-center justify-center">
               <span className="text-white font-semibold">RF</span>
             </div>
             <div>
@@ -553,7 +553,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
           <div className="flex items-center space-x-2">
             <button
               onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
-              className="px-3 py-1 bg-gray-600/50 hover:bg-gray-600/70 rounded text-xs transition-colors text-white"
+              className="px-3 py-1 bg-zinc-700/50 hover:bg-zinc-700/70 rounded text-xs transition-colors text-white"
             >
               {viewMode === 'grid' ? 'List View' : 'Grid View'}
             </button>
@@ -579,7 +579,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
           currentFolder.images &&
           currentFolder.images.length > 0 &&
           currentFolder.images[0]?.credits && (
-            <div className="mb-6 bg-gray-800/30 border border-gray-700/30 rounded-lg p-4">
+            <div className="mb-6 bg-zinc-900/30 border border-zinc-800/30 rounded-lg p-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                 <div>
                   <h4 className="font-semibold text-gray-300 mb-2">Photography</h4>
@@ -615,12 +615,12 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
               ARCHIVE_FOLDERS.map(folder => (
                 <div
                   key={folder.id}
-                  className={`${viewMode === 'grid' ? 'bg-gray-800/50 border border-gray-700/50 rounded-lg p-4 text-center cursor-pointer hover:bg-gray-700/50 transition-colors group' : 'flex items-center space-x-4 p-3 rounded-lg hover:bg-gray-700/50 cursor-pointer transition-colors'}`}
+                  className={`${viewMode === 'grid' ? 'bg-zinc-900/50 border border-zinc-800/50 rounded-lg p-4 text-center cursor-pointer hover:bg-zinc-800/50 transition-colors group' : 'flex items-center space-x-4 p-3 rounded-lg hover:bg-zinc-800/50 cursor-pointer transition-colors'}`}
                   onClick={() => openFolder(folder)}
                 >
                   {viewMode === 'grid' ? (
                     <>
-                      <div className="w-12 h-12 bg-gradient-to-br from-gray-600 to-gray-700 rounded-lg flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                      <div className="w-12 h-12 bg-gradient-to-br from-zinc-700 to-zinc-800 rounded-lg flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
                         <span className="text-white text-xs font-semibold">RF</span>
                       </div>
                       <h3 className="text-sm font-medium text-gray-200 mb-1">{folder.name}</h3>
@@ -629,7 +629,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
                     </>
                   ) : (
                     <>
-                      <div className="w-8 h-8 bg-gradient-to-br from-gray-600 to-gray-700 rounded flex items-center justify-center">
+                      <div className="w-8 h-8 bg-gradient-to-br from-zinc-700 to-zinc-800 rounded flex items-center justify-center">
                         <span className="text-white text-xs font-semibold">RF</span>
                       </div>
                       <div className="flex-1">
@@ -648,12 +648,12 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
                 EDITORIAL_COLLECTIONS.map(collection => (
                   <div
                     key={collection.id}
-                    className={`${viewMode === 'grid' ? 'bg-gray-800/50 border border-gray-700/50 rounded-lg p-4 text-center cursor-pointer hover:bg-gray-700/50 transition-colors group' : 'flex items-center space-x-4 p-3 rounded-lg hover:bg-gray-700/50 cursor-pointer transition-colors'}`}
+                    className={`${viewMode === 'grid' ? 'bg-zinc-900/50 border border-zinc-800/50 rounded-lg p-4 text-center cursor-pointer hover:bg-zinc-800/50 transition-colors group' : 'flex items-center space-x-4 p-3 rounded-lg hover:bg-zinc-800/50 cursor-pointer transition-colors'}`}
                     onClick={() => openFolder(collection)}
                   >
                     {viewMode === 'grid' ? (
                       <>
-                        <div className="w-12 h-12 bg-gradient-to-br from-gray-600 to-gray-700 rounded-lg flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                        <div className="w-12 h-12 bg-gradient-to-br from-zinc-700 to-zinc-800 rounded-lg flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
                           <span className="text-white text-xs font-semibold">GP</span>
                         </div>
                         <h3 className="text-sm font-medium text-gray-200 mb-1">
@@ -664,7 +664,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
                       </>
                     ) : (
                       <>
-                        <div className="w-8 h-8 bg-gradient-to-br from-gray-600 to-gray-700 rounded flex items-center justify-center">
+                        <div className="w-8 h-8 bg-gradient-to-br from-zinc-700 to-zinc-800 rounded flex items-center justify-center">
                           <span className="text-white text-xs font-semibold">GP</span>
                         </div>
                         <div className="flex-1">
@@ -701,7 +701,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
             }}
           >
             <div
-              className="bg-gray-900/95 border border-gray-700/50 rounded-xl backdrop-blur-lg relative"
+              className="bg-zinc-950/95 border border-zinc-800/50 rounded-xl backdrop-blur-lg relative"
               style={{
                 padding: '1.5rem',
                 maxWidth: '90%',
@@ -798,7 +798,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
                 )}
               </div>
               <button
-                className="mt-6 px-6 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
+                className="mt-6 px-6 py-2 bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg transition-colors"
                 onClick={() => {
                   setSelectedImage(null);
                   setCurrentVariantIndex(0);
@@ -829,7 +829,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
                 Screenshot {index + 1} of {images.length}
               </div>
               <div
-                className="border border-gray-700/50 rounded-lg overflow-hidden bg-gray-800/30 cursor-pointer hover:border-gray-600/70 transition-colors"
+                className="border border-zinc-800/50 rounded-lg overflow-hidden bg-zinc-900/30 cursor-pointer hover:border-zinc-700/70 transition-colors"
                 onClick={() => handleImageSelect(image, index)}
               >
                 <img
@@ -939,7 +939,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
               />
               <div className="text-center mt-4">
                 <button
-                  className="px-6 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
+                  className="px-6 py-2 bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg transition-colors"
                   onClick={() => {
                     setSelectedImage(null);
                     setCurrentVariantIndex(0);
@@ -995,7 +995,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
           }}
         >
           <div
-            className="bg-gray-900/95 border border-gray-700/50 rounded-xl backdrop-blur-lg relative"
+            className="bg-zinc-950/95 border border-zinc-800/50 rounded-xl backdrop-blur-lg relative"
             style={{
               padding: '1.5rem',
               maxWidth: '90%',
@@ -1129,13 +1129,13 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
                 {/* Editorial Credits */}
                 {'credits' in selectedImage && selectedImage.credits && (
                   <>
-                    <div className="bg-gray-800/50 rounded-lg p-4 mb-4">
+                    <div className="bg-zinc-900/50 rounded-lg p-4 mb-4">
                       <h4 className="font-semibold text-white mb-2">Photography</h4>
                       <div className="text-sm">
                         <span className="text-white">{selectedImage.credits.photographer}</span>
                       </div>
                     </div>
-                    <div className="bg-gray-800/50 rounded-lg p-4 mb-4">
+                    <div className="bg-zinc-900/50 rounded-lg p-4 mb-4">
                       <h4 className="font-semibold text-white mb-2">Models</h4>
                       <div className="space-y-1 text-sm">
                         {selectedImage.credits.models.map((model, index) => (
@@ -1150,7 +1150,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
 
                 {/* Product Specifications */}
                 {'specifications' in selectedImage && selectedImage.specifications && (
-                  <div className="bg-gray-800/50 rounded-lg p-4">
+                  <div className="bg-zinc-900/50 rounded-lg p-4">
                     <h4 className="font-semibold text-white mb-2">Product Details</h4>
                     <div className="space-y-1 text-sm">
                       {Object.entries(selectedImage.specifications).map(([key, value]) => {
@@ -1191,7 +1191,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
                             key={index}
                             src={variant}
                             alt={`${selectedImage.title} variant ${index + 1}`}
-                            className="w-16 h-16 object-cover rounded border border-gray-600 hover:border-gray-400 cursor-pointer flex-shrink-0"
+                            className="w-16 h-16 object-cover rounded border border-zinc-700 hover:border-zinc-500 cursor-pointer flex-shrink-0"
                             onClick={e => {
                               e.stopPropagation();
                               setSelectedImage({ ...selectedImage, src: variant });
@@ -1216,7 +1216,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
             </div>
 
             <button
-              className="mt-6 px-6 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
+              className="mt-6 px-6 py-2 bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg transition-colors"
               onClick={() => {
                 setSelectedImage(null);
                 setCurrentVariantIndex(0);

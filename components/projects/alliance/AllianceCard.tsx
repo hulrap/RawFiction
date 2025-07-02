@@ -9,8 +9,7 @@ interface AllianceCardProps {
 }
 
 export const AllianceCard: React.FC<AllianceCardProps> = memo(({ id, className, style }) => {
-  const handleSuccess = useCallback(() => {
- }, []);
+  const handleSuccess = useCallback(() => {}, []);
 
   // Simple direct loading configuration
   const queerAllianceConfig: SiteConfig = {
@@ -36,7 +35,7 @@ export const AllianceCard: React.FC<AllianceCardProps> = memo(({ id, className, 
     },
     sandbox: {
       allowScripts: true,
-      allowSameOrigin: false, // Security: prevent sandbox escape (Cloudflare blocks anyway)
+      allowSameOrigin: true, // Required for Vercel security challenge to complete
       allowForms: true,
       allowPopups: false,
       allowDownloads: false,
