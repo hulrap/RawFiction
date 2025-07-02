@@ -110,7 +110,8 @@
     transform-style: preserve-3d;
     transition: all 100ms cubic-bezier(0.4, 0, 0.2, 1);
     backface-visibility: hidden;
-    /* Removed forced aspect-ratio so websites can display naturally */
+    /* Container maintains 16:9 dimensions for embedded websites to detect properly */
+    aspect-ratio: 16 / 9;
   }
 
   .space-card {
@@ -141,6 +142,8 @@
     display: flex;
     flex-direction: column;
     isolation: isolate; /* Create stacking context for proper overlay layering */
+    /* Maintain 16:9 aspect ratio for embedded website detection */
+    aspect-ratio: 16 / 9;
   }
 
   /* Glass overlay styles for 3D cube grid */
@@ -249,7 +252,8 @@
     contain: layout style paint;
     content-visibility: auto;
     contain-intrinsic-size: 1000px calc(1000px * 9 / 16);
-    /* Removed forced aspect-ratio for natural website scaling */
+    /* Maintain 16:9 aspect ratio for embedded website detection */
+    aspect-ratio: 16 / 9;
   }
 
   .performance-optimized {
@@ -709,6 +713,8 @@
     touch-action: pan-x pan-y;
     overflow: hidden;
     contain: layout style paint;
+    /* Ensure iframe reports 16:9 aspect ratio to embedded websites */
+    aspect-ratio: 16 / 9;
   }
 
   /* Ensure iframe content is properly contained */

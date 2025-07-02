@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { memo, useCallback } from 'react';
 import { EmbeddedWrapper } from './Wrapper';
 import type { SiteConfig } from '../../shared/types';
 
@@ -9,6 +9,8 @@ interface AiAlignmentCardProps {
 }
 
 export const AiAlignmentCard: React.FC<AiAlignmentCardProps> = memo(({ id, className, style }) => {
+  const handleSuccess = useCallback(() => {}, []);
+
   // Simple direct loading configuration for AI Alignment Space
   const aiAlignmentConfig: SiteConfig = {
     url: 'https://ai-alignment.space',
@@ -47,8 +49,9 @@ export const AiAlignmentCard: React.FC<AiAlignmentCardProps> = memo(({ id, class
     <EmbeddedWrapper
       id={id}
       siteConfig={aiAlignmentConfig}
-      className={`h-full w-full ${className}`}
-      {...(style && { style })}
+      className={className ?? 'h-full w-full'}
+      style={style ?? {}}
+      onSuccess={handleSuccess}
     />
   );
 });
