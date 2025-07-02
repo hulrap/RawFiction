@@ -21,7 +21,7 @@ export const EmbeddedWebsiteFrame: React.FC<EmbeddedWebsiteFrameProps> = ({
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Prevent scroll event bubbling from iframe
+  // Prevent scroll event bubbling from iframe and block wallet injection
   React.useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -36,13 +36,54 @@ export const EmbeddedWebsiteFrame: React.FC<EmbeddedWebsiteFrameProps> = ({
       e.stopPropagation();
     };
 
+    // Block wallet injection attempts
+    const blockWalletInjection = () => {
+      try {
+        const iframe = iframeRef.current;
+        if (iframe && iframe.contentWindow && iframe.contentDocument) {
+          // Block common wallet objects from being injected
+          const walletBlockers = [
+            'cardano',
+            'yoroi',
+            'nami',
+            'eternl',
+            'flint',
+            'typhoncip30',
+            'gerowallet',
+            'ethereum',
+            'web3',
+            'solana',
+            'phantom',
+          ];
+
+          walletBlockers.forEach(walletName => {
+            try {
+              Object.defineProperty(iframe.contentWindow, walletName, {
+                value: undefined,
+                writable: false,
+                configurable: false,
+              });
+            } catch (e) {
+              // Silently fail if we can't access the iframe window
+            }
+          });
+        }
+      } catch (e) {
+        // Silently fail if we can't access iframe content due to CORS
+      }
+    };
+
     // Add event listeners to prevent scroll capture
     container.addEventListener('wheel', preventWheelBubbling, { passive: false });
     container.addEventListener('touchmove', preventTouchBubbling, { passive: false });
 
+    // Try to block wallet injection periodically
+    const walletBlockInterval = setInterval(blockWalletInjection, 1000);
+
     return () => {
       container.removeEventListener('wheel', preventWheelBubbling);
       container.removeEventListener('touchmove', preventTouchBubbling);
+      clearInterval(walletBlockInterval);
     };
   }, []);
 
@@ -92,11 +133,17 @@ export const EmbeddedWebsiteFrame: React.FC<EmbeddedWebsiteFrameProps> = ({
         allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
         onLoad={handleIframeLoad}
         onError={handleIframeError}
+        // Block wallet extensions through CSP-like headers
+        data-block-wallets="true"
+        data-no-injection="true"
         style={{
           minHeight: '100%',
           minWidth: '100%',
           overscrollBehavior: 'contain',
           touchAction: 'pan-x pan-y',
+          // Additional isolation
+          isolation: 'isolate',
+          contain: 'layout style paint',
         }}
       />
     </div>

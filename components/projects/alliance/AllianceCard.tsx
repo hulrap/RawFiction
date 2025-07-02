@@ -39,9 +39,9 @@ export const AllianceCard: React.FC<AllianceCardProps> = memo(({ id, className, 
       allowForms: true,
       allowPopups: false,
       allowDownloads: false,
-      allowModals: true,
+      allowModals: false, // Block modals to prevent wallet popups
       allowTopNavigation: false,
-      strictMode: false,
+      strictMode: true, // Enable strict mode to block wallet extensions
     },
   };
 
