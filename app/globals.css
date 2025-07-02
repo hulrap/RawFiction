@@ -110,7 +110,7 @@
     transform-style: preserve-3d;
     transition: all 100ms cubic-bezier(0.4, 0, 0.2, 1);
     backface-visibility: hidden;
-    aspect-ratio: 16 / 9;
+    /* Removed forced aspect-ratio so websites can display naturally */
   }
 
   .space-card {
@@ -249,7 +249,7 @@
     contain: layout style paint;
     content-visibility: auto;
     contain-intrinsic-size: 1000px calc(1000px * 9 / 16);
-    aspect-ratio: 16 / 9;
+    /* Removed forced aspect-ratio for natural website scaling */
   }
 
   .performance-optimized {

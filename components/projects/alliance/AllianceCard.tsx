@@ -57,7 +57,8 @@ export const AllianceCard: React.FC<AllianceCardProps> = memo(({ id, className, 
           <div className="text-purple-500 text-4xl mb-4">🏳️‍🌈</div>
           <h3 className="text-lg font-semibold mb-4 text-white">Queer Alliance Community</h3>
           <p className="text-sm text-gray-300 mb-6">
-            The LGBTQIA+ community platform is protected by security policies that prevent embedding.
+            The LGBTQIA+ community platform is protected by security policies that prevent
+            embedding.
           </p>
           <div className="space-y-4">
             <p className="text-xs text-gray-400">
