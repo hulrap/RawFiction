@@ -1,6 +1,5 @@
 import React, { useState, useCallback } from 'react';
 import { EmbeddedWebsiteFrame } from '../../shared/EmbeddedWebsiteFrame';
-import { Loading } from './Loading';
 import type { SiteConfig } from '../../shared/types';
 
 interface EmbeddedWrapperProps {
@@ -22,22 +21,10 @@ export const EmbeddedWrapper: React.FC<EmbeddedWrapperProps> = ({
   onError,
   onSuccess,
 }) => {
-  const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
 
-  const handleLoadingError = useCallback(
-    (error: string) => {
-      setIsLoading(false);
-      setHasError(true);
-      setErrorMessage(error);
-      onError?.(error);
-    },
-    [onError]
-  );
-
   const handleIframeLoad = useCallback(() => {
-    setIsLoading(false);
     setHasError(false);
     onSuccess?.();
   }, [onSuccess]);
@@ -52,13 +39,12 @@ export const EmbeddedWrapper: React.FC<EmbeddedWrapperProps> = ({
   );
 
   const retryLoad = useCallback(() => {
-    setIsLoading(true);
     setHasError(false);
     setErrorMessage('');
   }, []);
 
   // Show error state
-  if (hasError && !isLoading) {
+  if (hasError) {
     return (
       <div id={id} className={`relative ${className}`} style={style}>
         <div className="absolute inset-0 bg-gray-900 border border-purple-500 flex items-center justify-center">
@@ -94,16 +80,7 @@ export const EmbeddedWrapper: React.FC<EmbeddedWrapperProps> = ({
     );
   }
 
-  // Show loading state
-  if (isLoading) {
-    return (
-      <div id={id} className={`relative ${className}`} style={style}>
-        <Loading config={siteConfig} onError={handleLoadingError} />
-      </div>
-    );
-  }
-
-  // Show the actual iframe
+  // Show the iframe directly - no loading screen
   return (
     <div id={id} className={`relative ${className}`} style={style}>
       <EmbeddedWebsiteFrame

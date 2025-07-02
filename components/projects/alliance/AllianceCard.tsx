@@ -49,8 +49,8 @@ export const AllianceCard: React.FC<AllianceCardProps> = memo(({ id, className, 
     <EmbeddedWrapper
       id={id}
       siteConfig={queerAllianceConfig}
-      className={className || 'h-full w-full'}
-      style={style || {}}
+      className={className ?? 'h-full w-full'}
+      style={style ?? {}}
       onSuccess={handleSuccess}
       fallbackContent={
         <div className="text-center p-8">
