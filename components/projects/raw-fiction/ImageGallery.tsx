@@ -775,7 +775,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
               <img
                 src={
                   selectedImage && 'imageVariants' in selectedImage && selectedImage.imageVariants
-                    ? selectedImage.imageVariants[currentVariantIndex] || selectedImage.src
+                    ? selectedImage.imageVariants[currentVariantIndex] ?? selectedImage.src
                     : selectedImage.src
                 }
                 alt={selectedImage.alt}
@@ -924,7 +924,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
               <img
                 src={
                   selectedImage && 'imageVariants' in selectedImage && selectedImage.imageVariants
-                    ? selectedImage.imageVariants[currentVariantIndex] || selectedImage.src
+                    ? selectedImage.imageVariants[currentVariantIndex] ?? selectedImage.src
                     : selectedImage.src
                 }
                 alt={selectedImage.alt}
@@ -1022,7 +1022,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
 
               const canGoPrev = hasVariants ? currentVariantIndex > 0 : currentImageIndex > 0;
               const canGoNext = hasVariants
-                ? currentVariantIndex < (selectedImage.imageVariants?.length || 0) - 1
+                ? currentVariantIndex < (selectedImage.imageVariants?.length ?? 0) - 1
                 : currentImageIndex < getCurrentImages().length - 1;
 
               return (
@@ -1087,7 +1087,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
             <img
               src={
                 selectedImage && 'imageVariants' in selectedImage && selectedImage.imageVariants
-                  ? selectedImage.imageVariants[currentVariantIndex] || selectedImage.src
+                  ? selectedImage.imageVariants[currentVariantIndex] ?? selectedImage.src
                   : selectedImage.src
               }
               alt={selectedImage.alt}

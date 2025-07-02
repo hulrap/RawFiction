@@ -1,9 +1,8 @@
-// Advanced 3D Background System
-export { AdvancedBackground } from './core/AdvancedBackground';
-export { PathTracingEngine } from './engines/PathTracingEngine';
-export { WebGPURenderer } from './engines/WebGPURenderer';
-export { AdvancedParticleSystem } from './systems/ParticleSystem';
-export { SmartSwarmSystem } from './systems/SmartSwarmSystem';
+// Main Background Component
+export { CubeMazeBackground } from './CubeMazeBackground';
 
 // Types
-export * from './types/GraphicsTypes';
+export * from './types';
+
+// Default export for convenience
+export { CubeMazeBackground as default } from './CubeMazeBackground';

@@ -216,7 +216,7 @@ export const ContentLoadingIndicator: React.FC<{
         <div className="w-12 h-12 bg-gradient-to-br from-gray-600 to-gray-700 rounded-lg flex items-center justify-center mx-auto mb-3">
           <span className="text-white font-semibold text-sm">{getLoadingIcon()}</span>
         </div>
-        <div className="text-white text-sm mb-2">{message || `Loading ${getTypeLabel()}...`}</div>
+        <div className="text-white text-sm mb-2">{message ?? `Loading ${getTypeLabel()}...`}</div>
         <div className="w-32 bg-gray-700 rounded-full h-1">
           <div
             className="h-1 rounded-full transition-all duration-300 bg-gradient-to-r from-gray-400 to-gray-500"

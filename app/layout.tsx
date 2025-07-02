@@ -33,9 +33,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="dns-prefetch" href="https://queer-alliance.com" />
         <link rel="dns-prefetch" href="https://rawfiction.xyz" />
       </head>
-      <body className={`${inter.className} bg-[var(--brand-bg)] text-[var(--brand-fg)]`}>
-        {children}
-      </body>
+      <body className={`${inter.className} text-[var(--brand-fg)]`}>{children}</body>
     </html>
   );
 }
