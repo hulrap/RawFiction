@@ -62,6 +62,11 @@ const LegalCard = lazy(() =>
 // Import types
 import type { ProjectProps } from './shared/types';
 
+interface PortfolioCarouselProps {
+  onCardReady: (cardIndex: number) => void;
+  showCarousel: boolean;
+}
+
 interface PortfolioProject {
   id: string;
   title: string;
@@ -240,7 +245,10 @@ const PORTFOLIO_PROJECTS: PortfolioProject[] = [
   },
 ];
 
-export const PortfolioCarousel: React.FC = () => {
+export const PortfolioCarousel: React.FC<PortfolioCarouselProps> = ({
+  onCardReady,
+  showCarousel,
+}) => {
   const totalProjects = PORTFOLIO_PROJECTS.length;
 
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -248,10 +256,6 @@ export const PortfolioCarousel: React.FC = () => {
   const [wheelEnabled, setWheelEnabled] = useState(true);
   const [shatteredCards, setShatteredCards] = useState<Set<number>>(new Set());
   const [visitedCards, setVisitedCards] = useState<Set<number>>(new Set([0])); // Track visited cards
-
-  // Global loading state - wait for ALL card overlays to be ready
-  const [allCardsReady, setAllCardsReady] = useState(false);
-  const [readyCards, setReadyCards] = useState<Set<number>>(new Set());
 
   // All cards are loaded immediately now - no selective loading needed
 
@@ -266,19 +270,9 @@ export const PortfolioCarousel: React.FC = () => {
   // Track card overlay readiness for global loading screen
   const handleCardReady = useCallback(
     (cardIndex: number) => {
-      setReadyCards(prev => {
-        const newReady = new Set(prev);
-        newReady.add(cardIndex);
-
-        // Check if all cards are ready
-        if (newReady.size === totalProjects) {
-          setAllCardsReady(true);
-        }
-
-        return newReady;
-      });
+      onCardReady(cardIndex);
     },
-    [totalProjects]
+    [onCardReady]
   );
 
   // 3-Card positioning system: always show exactly 3 cards (previous, current, next)
@@ -558,15 +552,11 @@ export const PortfolioCarousel: React.FC = () => {
       }
     >
       {/* Global Loading Screen - Wait for all card overlays */}
-      {!allCardsReady && (
-        <div className="fixed inset-0 z-[9999] bg-[var(--brand-bg)] flex items-center justify-center">
-          <div className="text-6xl text-[var(--brand-accent)] font-mono tracking-wider animate-pulse">
-            {readyCards.size} / 13
-          </div>
-        </div>
-      )}
-
-      <div className="carousel-container">
+      <div
+        className={`carousel-container transition-opacity duration-1000 ${
+          showCarousel ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
+      >
         <div className="carousel-wrapper">
           {PORTFOLIO_PROJECTS.map((project, index) => {
             const Component = project.component;

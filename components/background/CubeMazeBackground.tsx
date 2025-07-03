@@ -1,10 +1,12 @@
-import React, { useRef, useMemo } from 'react';
+import React, { useRef, useMemo, useState } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { Environment, SpotLight } from '@react-three/drei';
 import * as THREE from 'three';
+import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry';
 import type { CubeSurface, PerformanceLevel } from './types';
 
 // The new, correctly structured Scene component
-const Scene = () => {
+const Scene = ({ mouse }: { mouse: THREE.Vector2 }) => {
   const { viewport } = useThree();
 
   // We define the walls inside the component that has access to the viewport
@@ -51,26 +53,42 @@ const Scene = () => {
 
   return (
     <>
-      <ambientLight intensity={0.8} />
-      <directionalLight position={[0, 20, 50]} intensity={1.2} color="#cccccc" />
-      <directionalLight position={[0, -20, -50]} intensity={0.5} color="#555555" />
+      {/* Ambient light for a soft overall illumination */}
+      <ambientLight intensity={0.7} />
+
+      {/* A focused spotlight to create dramatic highlights and shadows */}
+      <SpotLight
+        penumbra={0.5}
+        intensity={4}
+        angle={0.6}
+        position={[20, 20, 30]}
+        castShadow
+        color="#ffffff"
+      />
+
+      {/* Environment lighting for realistic, glossy reflections */}
+      <Environment preset="apartment" blur={0.4} />
 
       {surfaces.map(surface => (
-        <CubeWall key={surface.name} surface={surface} />
+        <CubeWall key={surface.name} surface={surface} mouse={mouse} />
       ))}
     </>
   );
 };
 
-const CubeWall: React.FC<{ surface: CubeSurface }> = ({ surface }) => {
+const CubeWall: React.FC<{ surface: CubeSurface; mouse: THREE.Vector2 }> = ({ surface, mouse }) => {
   const meshRef = useRef<THREE.InstancedMesh>(null);
+  const { camera } = useThree(); // Get camera once, outside the loop
 
   const { geometry, material, cubes } = useMemo(() => {
-    const geom = new THREE.BoxGeometry(1, 1, 1);
+    // Use RoundedBoxGeometry for smooth, enameled corners
+    const geom = new RoundedBoxGeometry(1, 1, 1, 6, 0.1);
+    // Material updated for a glossy, dark enamel look
     const mat = new THREE.MeshStandardMaterial({
-      color: new THREE.Color(0x666666),
-      roughness: 0.6,
-      metalness: 0.2,
+      color: '#383838', // A slightly lighter anthracite for better light interaction
+      metalness: 0.8, // Increased metalness for a metallic sheen
+      roughness: 0.05, // Greatly reduced roughness for a glossy, reflective surface
+      vertexColors: true, // Enable vertex colors to allow for dynamic color changes
     });
 
     const spacing = 1.0;
@@ -96,18 +114,49 @@ const CubeWall: React.FC<{ surface: CubeSurface }> = ({ surface }) => {
     return { geometry: geom, material: mat, cubes: cubeData };
   }, [surface.dimensions.width, surface.dimensions.height]);
 
+  const dummy = useMemo(() => new THREE.Object3D(), []);
+  const color = useMemo(() => new THREE.Color(), []);
+  const smoothstep = (min: number, max: number, value: number) => {
+    const x = Math.max(0, Math.min(1, (value - min) / (max - min)));
+    return x * x * (3 - 2 * x);
+  };
+  const HOVER_RADIUS = 0.2;
+
   useFrame(({ clock }) => {
     if (!meshRef.current) return;
     const time = clock.getElapsedTime();
-    const matrix = new THREE.Matrix4();
-    cubes.forEach((cube, index) => {
-      const movement = Math.sin(time * cube.speedFactor + cube.phase) * cube.amplitudeFactor;
-      const position = cube.basePosition.clone();
-      position.z += movement;
-      matrix.setPosition(position);
-      meshRef.current!.setMatrixAt(index, matrix);
+
+    cubes.forEach((cube, i) => {
+      const { basePosition, speedFactor, phase, amplitudeFactor } = cube;
+      dummy.position.copy(basePosition);
+
+      // Convert world position to screen UV
+      const screenPos = dummy.position.clone().project(camera); // Use camera from hook
+      const cubeUV = new THREE.Vector2((screenPos.x + 1) / 2, (screenPos.y + 1) / 2);
+      const dist = cubeUV.distanceTo(mouse);
+
+      // Hover elevation
+      const hoverInfluence = 1.0 - smoothstep(0.0, HOVER_RADIUS, dist);
+      dummy.position.z +=
+        Math.sin(time * speedFactor + phase) * amplitudeFactor + hoverInfluence * 2;
+
+      dummy.updateMatrix();
+      meshRef.current!.setMatrixAt(i, dummy.matrix);
+
+      // Oil spill color effect
+      if (hoverInfluence > 0.01) {
+        const hue = (time * 0.1 + basePosition.x * 0.05 + basePosition.y * 0.05) % 1;
+        color.setHSL(hue, 0.7, 0.6);
+        meshRef.current!.setColorAt(i, color);
+      } else {
+        // Reset color if not hovered
+        meshRef.current!.setColorAt(i, new THREE.Color(material.color));
+      }
     });
     meshRef.current.instanceMatrix.needsUpdate = true;
+    if (meshRef.current.instanceColor) {
+      meshRef.current.instanceColor.needsUpdate = true;
+    }
   });
 
   return (
@@ -121,16 +170,30 @@ export const CubeMazeBackground: React.FC<{
   className?: string;
   performanceLevel?: PerformanceLevel;
 }> = ({ className = 'cube-maze-background' }) => {
+  const [mouse, setMouse] = useState(new THREE.Vector2(0.5, 0.5));
+  const handleMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
+    const { clientX, clientY, currentTarget } = event;
+    const { left, top, width, height } = currentTarget.getBoundingClientRect();
+    setMouse(
+      new THREE.Vector2(
+        (clientX - left) / width,
+        1 - (clientY - top) / height // Invert Y to match coordinate system
+      )
+    );
+  };
+
   return (
     <div
       className={className}
       style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', zIndex: -1 }}
+      onMouseMove={handleMouseMove}
     >
       <Canvas
         camera={{ position: [0, 0, 10], fov: 75, near: 0.1, far: 1000 }}
         gl={{ alpha: true, antialias: true }}
+        dpr={[1, 1.5]} // Cap DPR for performance
       >
-        <Scene />
+        <Scene mouse={mouse} />
       </Canvas>
     </div>
   );

@@ -111,4 +111,17 @@ declare global {
   type GPUPowerPreference = 'low-power' | 'high-performance';
 }
 
+declare module 'three/examples/jsm/geometries/RoundedBoxGeometry' {
+  import { BufferGeometry } from 'three';
+  export class RoundedBoxGeometry extends BufferGeometry {
+    constructor(
+      width?: number,
+      height?: number,
+      depth?: number,
+      segments?: number,
+      radius?: number
+    );
+  }
+}
+
 export {};
