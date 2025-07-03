@@ -371,12 +371,10 @@ const EventContent: React.FC<{ event: MannerImGartenEvent }> = ({ event }) => (
       </div>
 
       {/* Main Description - Always full width */}
-      <div className="card-glass p-6 col-span-full">
-        <div className="prose prose-invert max-w-none">
-          <p className="text-sm opacity-90 leading-relaxed whitespace-pre-line">
-            {event.description}
-          </p>
-        </div>
+      <div className="card-glass p-6 col-span-full flex flex-col items-center justify-center text-center">
+        <p className="text-sm opacity-90 leading-relaxed whitespace-pre-line">
+          {event.description}
+        </p>
       </div>
 
       {/* Dynamic Grid Layout for smaller cards */}

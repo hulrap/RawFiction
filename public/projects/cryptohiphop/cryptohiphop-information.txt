@@ -1,0 +1,392 @@
+﻿Table of contents
+
+
+1 Value Proposition        2
+2 Introduction        2
+The current state of the music industry        2
+Musical collectors items in the digital age        2
+3 Summary        3
+4 A new system for music distribution, promotion and art incubation        4
+CryptoRappers        5
+NFT Artdrops        6
+NFT Marketplace        6
+Digital Bulletin Board        6
+Art Incubation        6
+5 Roadmap        6
+5 Core Team        7
+6 Resources and links        8
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1 Value Proposition
+
+
+We propose CryptoHipHop as a fun means of fully decentralizing music distribution, promotion, collection and incubation. CryptoHipHop acts as a distribution and finance bridge between music and art lovers and music artists and aims to ultimately make the middle-men obsolete.
+
+
+Instead of production companies, stores, artists management and more profiting from your and the artists money and efforts, we are building a digital infrastructure for distribution and promotion while making digital music items collectible through “tokenization”.  
+
+
+CryptoRappers are non-fungible tokens that act as something like a membership-card to the CryptoHipHop space. CryptoRappers are the NFT-Subscriptions that make you eligible to receive limited hip hop artworks. Hold, claim and receive Artdrops. 
+
+
+• Fans: for the first time ever, fans gain access to limited, cryptographically secure artworks from artists in the Hip Hop space and get rewarded for being part of the community. Instead of proudly owning a limited vinyl, fans can now claim ownership over the digital version of a limited vinyl, while one doesn’t exclude the other. 
+
+
+• Artists: get the possibility to gain exposure, sell their art through a new and innovative distribution channel, get funded for music production, extend their existing NFT market or create their NFT market for the first time
+
+
+2 Introduction
+
+
+The current state of the music industry
+Over the last decades the music industry has drastically evolved. From vinyl and tapes to CDs to mp3s and mp4s. Today’s music is mostly consumed on smartphones or computers. 
+With the rise of the internet, online music streaming has become the most prevalent medium for consumption and has pushed other media nearly into extinction. At the same time, the previous inability of digitally displayed code on the internet to capture value and a new wave  of hip hop vinyls have demonstrated that even with universal accessibility, fans want to own some kind of medium with unique pieces of art from their beloved artists.
+Musical collectors items in the digital age
+There have already been some efforts in the Hip Hop sphere to finally combine this important music genre with blockchain technology, but none of them have touched the most important topics in the way we did as far as we know: distribution, ownership and community. The Hip Hop industry is in dire need for mechanisms to capture, distribute, own and monetize musical art. Platforms starting with Apple, Youtube or Spotify have touched this topic and Audius has put it into a perspective of blockchain technology. 
+3 Summary
+
+
+Crypto Hip Hop aims to provide a distribution mechanism, marketplace and DAO for distributing, promoting and owning Hip Hop related NFT’s. Our first NFT launch called CryptoRappers entitles the holders to receive Artdrops from established Hip Hop artists. In order to claim the NFT drop, users need to send their CryptoRapper with a small amount of ADA to our wallet and receive back the CryptoRapper plus an Artdrop. This way, we can collect funds during each artdrop to support the artist, create cool partnerships and ultimately incubate music production. Later on they will be used as a DAO token for voting rights with a fair distribution of voting power so that we can transition from a centralized starting model to a decentralized maintenance model. 
+
+
+Launch: 
+During our launch phase, we are going to start with the distribution of CryptoRappers and with our main community building activities. Holders will receive Artdrops from our first partnerships. Once all the CryptoRappers have been distributed and we have reached 10.000 Community members, our next phase starts. 
+
+
+Marketplace: 
+During our marketplace phase, we are going to launch our own marketplace purely designated to the hip hop niche. Owners of artdrops or CryptoRappers are going to be able to directly trade them on our website and discover lots of dope hip hop projects if I may say so. 
+
+
+DAO: 
+As soon as the marketplace is established and running smoothly, we are going to start with our transition to full decentralization, so that the community can have total control over the future of CryptoHipHop. 
+
+
+4 A new system for music distribution, promotion and art incubation
+
+
+The problems
+Hip Hop has not fully entered the cryptoverse yet. 
+Hip Hop artists have a difficult environment for professional production and distribution
+Hip Hop fans are mostly not able yet to own unique digital artworks from their idols. 
+
+
+Our solutions 
+Ownership: 
+We are going to create and tokenize hip hop artworks in partnership with established artists in order to make them owneable on blockchains. Hip Hop fans are now able to own audiovisual artworks of their favourite Rappers, DJs, Graffiti Artists and more and have the ability to transfer these artworks in a seamless and secure way. 
+Matchmaking:
+By creating a passionate community with like minded individuals who want to own hip hop art and getting established artists into our crypto-boat who want to distribute hip hop art, we are creating a perfect match between fans, collectors and artists. Fans are willing to spend money for rare collectibles because of sentimental value, some collectors spend money for an increase of value. At the same time artists want to witness their art being seen and appreciated and ultimately getting fair pay for their creative blood, sweat and tears. 
+Decentralization:
+Like many other projects, our platform kicks off as a centralized endeavor. As soon as we have released our NFT marketplace and our artist collaborations are running smoothly, we are starting our process for centralizing the project through a DAO mechanism. 
+Music Distribution:
+By providing every holder of our CryptoRappers with Artdrops from artists, we are able to create a secure and steady distribution channel. Additionally to those artdrops, the ownership of a CryptoRapper entitles to get Virtual Reality concert tickets dropped as NFT. By adding more tokens like CryptoRappers to the pool, we are able to channel different releases into different communities. For example, we are going to create a CryptoTrappers Series designated to Trap releases only. This way we are able to grow the distribution channels and specify artdrops for distribution to the right kind of hip hop fans without compromising the supply/demand mechanics for any of our Token releases. Artists we collaborate with can expect a certain kind of distribution level and fans are able to anticipate releases as soon as we publish our artdrop schedule for 2022. 
+Community:
+By building and maintaining a community in the hip hop space, we are creating numerous touchpoints for unthinkable potential. Artists can exchange and find each other to reach their goals. Fans can get infos they would’ve never gotten otherwise. We are only the matchmaker, bringing together artists and fans for direct interaction.
+
+
+
+
+
+
+
+
+CryptoRappers
+As previously explained, our CryptoRappers are the centerpiece of our CryptoHipHop project as the ownership is necessary to receive Hip Hop NFTs distributed through us. CryptoRappers are first created by our graphics artist and then generated by code into 10.000 unique versions with different rarities by our coder. This concept of NFT releases in a 10.000 series of computer-generated art was already replicated from the initial Cryptopunks idea many times. Some of these projects have a unique and fun idea or they even have a game or other utility attached to these NFTs, but many are here for a quick buck just to exit once money is received. We have a different approach. We created the CryptoRappers as we were in need of a utility NFT that can act as the membership-token to facilitate our artdrop allocations and we thought it’s funny to create a pendant to Cryptopunks with Hip Hop. We also want to pay homage and respect to them with our token concept since they were the original inventors of 10.000 piece NFT pixel art series. 
+
+
+CryptoRappers give you utility through four features: 
+
+
+1. Regular Artdrops
+Regular artdrops are distributed to every holder. 
+2. Random Artdrops
+Random artdrops are only distributed to a few random holders. The system works similar to a raffle and each owned CryptoRapper entitles you to 1 entry. The maximum is 50 entries no matter how many CryptoRappers you hold. 
+3. Special Artdrops
+These artdrops don’t fall into either category. There will be unique and special collaborations that enable those special artdrops. More will be revealed in Q1 2022 with our artdrop schedule. 
+4. VR concert tickets
+Depending on the concert, either each holder or every holder is going to receive a concert ticket for Virtual Reality shows regularly. 
+5. DAO voting rights (tba)
+
+
+  
+
+NFT Artdrops
+Claiming Artdrops: 
+
+
+To claim your Artdrop, you will send your CryptoRappers and a small amount of ADA to our wallet and receive back your CryptoRappers and Artdrops within a few minutes. 
+The ADA that you send for claiming the drop is distributed as follows: 
+50% goes to the artist
+30% goes to our DAO treasury wallet
+10% goes to our Incubator wallet
+10% goes to the team
+
+
+Artdrop Mechanics:
+
+
+VR concert tickets
+Every holder of a HipHopHead is going to receive our VR concert tickets as an NFT drop. With the tickets you will gain access to exclusive Virtual Reality Hip Hop shows in venues like VRNightlife, Somnium Space, and more. The process of claiming the NFT is the same as in regular artdrops. 
+
+
+
+
+Regular Artdrops
+Every holder of a CryptoRapper is going to receive our regular artdrops. 
+1-9         Rappers =         1 Artdrop 
+10-19         Rappers =         2 Artdrops 
+20-29         Rappers =         3 Artdrops
+30-39         Rappers =         4 Artdrops
+40-49         Rappers =         5 Artdrops 
+50+         Rappers =         6 Artdrops
+Examples: 
+If you own 19 Rappers you receive 2 NFT’s.
+If you own 20 Rappers you receive 3 NFT’s.
+If you own 100 CryptoRappers you will still receive a maximum of 6 NFTs per Artdrop. 
+
+
+
+
+Random Artdrops
+Our random artdrops are only distributed to randomly selected wallets. To participate in our random NFT drop you need to send your HipHopHead to our wallet. Winners receive the random drop and everyone else gets their NFT sent back. 
+
+
+
+
+
+
+Special Artdrops
+Special artdrops are possible through cross-topic collaborations. From time to time, we are going to drop NFTs that are unrelated to CryptoHipHop. 
+NFT Marketplace
+Digital Bulletin Board
+Art Incubation
+
+
+5 Roadmap
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+5 Core Team
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+6 Resources and links
