@@ -366,10 +366,8 @@ export const PortfolioCarousel: React.FC<PortfolioCarouselProps> = ({
         cursor: transform.cursor,
         // Expose transform data for WebGL compensation
         carouselPosition: position,
-        carouselTransform: transform,
       } as React.CSSProperties & {
         carouselPosition: string;
-        carouselTransform: typeof transform;
       };
     },
     [currentIndex, totalProjects]
@@ -560,9 +558,9 @@ export const PortfolioCarousel: React.FC<PortfolioCarouselProps> = ({
         <div className="carousel-wrapper">
           {PORTFOLIO_PROJECTS.map((project, index) => {
             const Component = project.component;
-            const cardTransform = getCardTransform(index);
+            const style = getCardTransform(index);
             const isVisited = visitedCards.has(index);
-            const isCenter = cardTransform.carouselPosition === 'center';
+            const isCenter = style.carouselPosition === 'center';
 
             // Fixed rule: once a card is shattered (revealed), it stays revealed regardless of position
             const wasShattered = shatteredCards.has(index);
@@ -576,13 +574,13 @@ export const PortfolioCarousel: React.FC<PortfolioCarouselProps> = ({
                   className={`portfolio-card space-card performance-optimized ${
                     index === currentIndex ? 'active-card' : ''
                   }`}
-                  style={cardTransform}
+                  style={style}
                   onClick={e => {
                     // Allow navigation to visited cards or adjacent cards
                     const canNavigate =
                       index !== currentIndex &&
                       !isTransitioning &&
-                      (isVisited || cardTransform.carouselPosition !== 'hidden');
+                      (isVisited || style.carouselPosition !== 'hidden');
 
                     if (canNavigate) {
                       // Navigate unless clicking on buttons or links
@@ -605,10 +603,9 @@ export const PortfolioCarousel: React.FC<PortfolioCarouselProps> = ({
                     onShatter={() => {
                       setShatteredCards(prev => new Set([...prev, index]));
                     }}
-                    carouselPosition={cardTransform.carouselPosition}
-                    carouselTransform={cardTransform.carouselTransform}
-                    forceHighQuality={true} // Force high quality for all cards
+                    carouselPosition={style.carouselPosition}
                     onOverlayReady={() => handleCardReady(index)}
+                    forceHighQuality={style.carouselPosition !== 'hidden'}
                   >
                     {/* Always load all content immediately for instant reveal */}
                     <Suspense

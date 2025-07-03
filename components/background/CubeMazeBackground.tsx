@@ -2,6 +2,8 @@ import React, { useRef, useMemo, useState } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Environment, SpotLight } from '@react-three/drei';
 import * as THREE from 'three';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry';
 import type { CubeSurface, PerformanceLevel } from './types';
 

@@ -3,20 +3,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Canvas, useFrame, invalidate } from '@react-three/fiber';
 import { Environment, Lightformer } from '@react-three/drei';
 import * as THREE from 'three';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry';
-
-interface CarouselTransform {
-  x: number;
-  y: number;
-  z: number;
-  rotX: number;
-  rotY: number;
-  scale: number;
-  opacity: number;
-  zIndex: number;
-  pointerEvents: string;
-  cursor: string;
-}
 
 interface CardWithOverlayProps {
   title: string;
@@ -25,7 +14,6 @@ interface CardWithOverlayProps {
   onShatter: () => void;
   children: React.ReactNode;
   carouselPosition: string;
-  carouselTransform: CarouselTransform;
   forceHighQuality?: boolean;
   onOverlayReady?: () => void;
 }
@@ -163,7 +151,6 @@ export const CardWithOverlay: React.FC<CardWithOverlayProps> = ({
   onShatter,
   children,
   carouselPosition,
-  carouselTransform,
   forceHighQuality = false,
   onOverlayReady,
 }) => {
@@ -316,12 +303,12 @@ export const CardWithOverlay: React.FC<CardWithOverlayProps> = ({
           width: '100%',
           height: '100%',
           // Content is always loaded and rendered, but hidden behind overlay when needed
-          opacity: 1, // Always visible for loading/rendering
-          visibility: 'visible', // Always visible for loading/rendering
-          zIndex: isOverlayVisible ? 1 : 10, // Put behind overlay when overlay is visible
+          opacity: isShattered ? 1 : 0, // Fade in when shattered
+          visibility: isShattered ? 'visible' : 'hidden', // Hide when not shattered
+          zIndex: 1, // Always behind overlay until revealed
         }}
       >
-        {children}
+        {isShattered && children}
       </div>
 
       {/* Enhanced 3D Cube Grid Overlay */}
@@ -379,9 +366,7 @@ export const CardWithOverlay: React.FC<CardWithOverlayProps> = ({
                   premultipliedAlpha: false,
                 }}
                 dpr={
-                  forceHighQuality
-                    ? window.devicePixelRatio * (carouselTransform?.scale || 1.0)
-                    : Math.min(window.devicePixelRatio, 2) * (carouselTransform?.scale || 1.0)
+                  forceHighQuality ? window.devicePixelRatio : Math.min(window.devicePixelRatio, 2)
                 }
                 frameloop="always"
               >
