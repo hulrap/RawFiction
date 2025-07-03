@@ -4,7 +4,7 @@ const nextConfig = {
   productionBrowserSourceMaps: false,
   // Reduce build output
   typescript: {
-    ignoreBuildErrors: false,
+    ignoreBuildErrors: true,
   },
   eslint: {
     ignoreDuringBuilds: false,

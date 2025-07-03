@@ -1,7 +1,8 @@
 import React, { useRef, useMemo, useState } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { Environment, SpotLight, RoundedBox } from '@react-three/drei';
+import { Environment, SpotLight } from '@react-three/drei';
 import * as THREE from 'three';
+import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry';
 import type { CubeSurface, PerformanceLevel } from './types';
 
 // The new, correctly structured Scene component
@@ -79,7 +80,9 @@ const CubeWall: React.FC<{ surface: CubeSurface; mouse: THREE.Vector2 }> = ({ su
   const meshRef = useRef<THREE.InstancedMesh>(null);
   const { camera } = useThree(); // Get camera once, outside the loop
 
-  const { material, cubes } = useMemo(() => {
+  const { geometry, material, cubes } = useMemo(() => {
+    // Use RoundedBoxGeometry for smooth, enameled corners
+    const geom = new RoundedBoxGeometry(1, 1, 1, 6, 0.1);
     // Material updated for a glossy, dark enamel look
     const mat = new THREE.MeshStandardMaterial({
       color: '#383838', // A slightly lighter anthracite for better light interaction
@@ -108,7 +111,7 @@ const CubeWall: React.FC<{ surface: CubeSurface; mouse: THREE.Vector2 }> = ({ su
         amplitudeFactor: 1.0 + Math.random() * 1.0,
       });
     }
-    return { material: mat, cubes: cubeData };
+    return { geometry: geom, material: mat, cubes: cubeData };
   }, [surface.dimensions.width, surface.dimensions.height]);
 
   const dummy = useMemo(() => new THREE.Object3D(), []);
@@ -158,11 +161,7 @@ const CubeWall: React.FC<{ surface: CubeSurface; mouse: THREE.Vector2 }> = ({ su
 
   return (
     <group position={surface.center} rotation={new THREE.Euler(...surface.rotation)}>
-      <instancedMesh ref={meshRef} args={[undefined, material, cubes.length]}>
-        <RoundedBox args={[1, 1, 1]} radius={0.1} smoothness={6}>
-          {/* We can leave the material here if it's shared, or attach it directly to the instancedMesh */}
-        </RoundedBox>
-      </instancedMesh>
+      <instancedMesh ref={meshRef} args={[geometry, material, cubes.length]} />
     </group>
   );
 };
