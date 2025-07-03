@@ -1,9 +1,8 @@
 import React, { useState, useRef, useMemo, useCallback, useEffect, useLayoutEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Canvas, useFrame, invalidate } from '@react-three/fiber';
-import { Environment, Lightformer } from '@react-three/drei';
+import { Environment, Lightformer, RoundedBox } from '@react-three/drei';
 import * as THREE from 'three';
-import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry';
 
 interface CarouselTransform {
   x: number;
@@ -63,11 +62,6 @@ const CubeGrid: React.FC<{
   const CUBES_X = Math.floor(EFFECTIVE_WIDTH / CUBE_PITCH);
   const CUBES_Y = Math.floor(EFFECTIVE_HEIGHT / CUBE_PITCH);
   const TOTAL_CUBES = CUBES_X * CUBES_Y;
-
-  const geometry = useMemo(
-    () => new RoundedBoxGeometry(CUBE_SIZE, CUBE_SIZE, CUBE_SIZE, 2, 0.01),
-    [CUBE_SIZE]
-  );
 
   const cubes = useMemo(() => {
     const temp = [];
@@ -150,8 +144,10 @@ const CubeGrid: React.FC<{
   }, [isInitialized, onReady]);
 
   return (
-    <instancedMesh ref={meshRef} args={[geometry, undefined, TOTAL_CUBES]}>
-      <meshStandardMaterial color="#e5e7eb" metalness={0.9} roughness={0.25} />
+    <instancedMesh ref={meshRef} args={[undefined, undefined, TOTAL_CUBES]}>
+      <RoundedBox args={[CUBE_SIZE, CUBE_SIZE, CUBE_SIZE]} radius={0.01} smoothness={2}>
+        <meshStandardMaterial color="#e5e7eb" metalness={0.9} roughness={0.25} />
+      </RoundedBox>
     </instancedMesh>
   );
 };
