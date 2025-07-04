@@ -1,4 +1,4 @@
-import React, { useRef, useMemo, useState } from 'react';
+import React, { useRef, useMemo, useState, useEffect } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Environment, SpotLight } from '@react-three/drei';
 import * as THREE from 'three';
@@ -56,12 +56,12 @@ const Scene = ({ mouse }: { mouse: THREE.Vector2 }) => {
   return (
     <>
       {/* Ambient light for a soft overall illumination */}
-      <ambientLight intensity={0.7} />
+      <ambientLight intensity={1.5} />
 
       {/* A focused spotlight to create dramatic highlights and shadows */}
       <SpotLight
         penumbra={0.5}
-        intensity={4}
+        intensity={6}
         angle={0.6}
         position={[20, 20, 30]}
         castShadow
@@ -87,8 +87,8 @@ const CubeWall: React.FC<{ surface: CubeSurface; mouse: THREE.Vector2 }> = ({ su
     const geom = new RoundedBoxGeometry(1, 1, 1, 6, 0.1);
     // Material updated for a glossy, dark enamel look
     const mat = new THREE.MeshStandardMaterial({
-      color: '#383838', // A slightly lighter anthracite for better light interaction
-      metalness: 0.8, // Increased metalness for a metallic sheen
+      color: '#606060', // A lighter grey for better visibility
+      metalness: 0.7, // Slightly reduced to show more base color
       roughness: 0.05, // Greatly reduced roughness for a glossy, reflective surface
       vertexColors: true, // Enable vertex colors to allow for dynamic color changes
     });
@@ -171,8 +171,18 @@ const CubeWall: React.FC<{ surface: CubeSurface; mouse: THREE.Vector2 }> = ({ su
 export const CubeMazeBackground: React.FC<{
   className?: string;
   performanceLevel?: PerformanceLevel;
-}> = ({ className = 'cube-maze-background' }) => {
+  onReady?: () => void;
+}> = ({ className = 'cube-maze-background', onReady }) => {
   const [mouse, setMouse] = useState(new THREE.Vector2(0.5, 0.5));
+
+  // Signal that background is ready after initial render
+  useEffect(() => {
+    const timer = requestAnimationFrame(() => {
+      onReady?.();
+    });
+    return () => cancelAnimationFrame(timer);
+  }, [onReady]);
+
   const handleMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
     const { clientX, clientY, currentTarget } = event;
     const { left, top, width, height } = currentTarget.getBoundingClientRect();

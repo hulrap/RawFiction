@@ -3,13 +3,15 @@ import React from 'react';
 interface IntegratedLoadingScreenProps {
   loadedCount: number;
   totalCount: number;
+  isReady: boolean;
 }
 
 export const IntegratedLoadingScreen: React.FC<IntegratedLoadingScreenProps> = ({
   loadedCount,
   totalCount,
+  isReady,
 }) => {
-  const isComplete = loadedCount === totalCount;
+  const isComplete = loadedCount === totalCount && isReady;
 
   return (
     <div

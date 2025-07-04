@@ -10,11 +10,16 @@ const TOTAL_PROJECTS = 13; // Set this to the actual number of projects
 
 export default function ClientWrapper() {
   const [isMounted, setIsMounted] = useState(false);
+  const [backgroundReady, setBackgroundReady] = useState(false);
   const [readyCards, setReadyCards] = useState<Set<number>>(new Set());
   const [showCarousel, setShowCarousel] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
+  }, []);
+
+  const handleBackgroundReady = useCallback(() => {
+    setBackgroundReady(true);
   }, []);
 
   const handleCardReady = useCallback((cardIndex: number) => {
@@ -44,8 +49,14 @@ export default function ClientWrapper() {
 
   return (
     <>
-      <Background />
-      <IntegratedLoadingScreen loadedCount={readyCards.size} totalCount={TOTAL_PROJECTS} />
+      <Background onReady={handleBackgroundReady} />
+      {backgroundReady && (
+        <IntegratedLoadingScreen
+          loadedCount={readyCards.size}
+          totalCount={TOTAL_PROJECTS}
+          isReady={showCarousel}
+        />
+      )}
       <PortfolioCarousel onCardReady={handleCardReady} showCarousel={showCarousel} />
     </>
   );

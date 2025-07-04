@@ -610,8 +610,10 @@ export const PortfolioCarousel: React.FC<PortfolioCarouselProps> = React.memo(
       >
         {/* Global Loading Screen - Wait for all card overlays */}
         <div
-          className={`carousel-container transition-opacity duration-1000 ${
-            showCarousel ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          className={`carousel-container transition-all duration-1000 ease-out ${
+            showCarousel
+              ? 'opacity-100 translate-y-0'
+              : 'opacity-0 translate-y-8 pointer-events-none'
           }`}
         >
           <div className="carousel-wrapper">
