@@ -21,11 +21,12 @@ let isAudioPreloaded = false;
 // Pre-generated audio buffers (created without AudioContext)
 let preGeneratedClickBuffer: Float32Array | null = null;
 
-// Ultra-fast audio initialization
-const initAudioContextFast = async () => {
+// Ultra-fast audio initialization - must be called synchronously in user gesture
+const initAudioContextFast = () => {
   if (typeof window === 'undefined') return false;
 
   try {
+
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     if (!AudioContext) {
       console.warn('AudioContext not supported');
@@ -36,16 +37,24 @@ const initAudioContextFast = async () => {
     audioContext = new AudioContext();
     Howler.ctx = audioContext;
 
-    // Resume if suspended
+    // Handle AudioContext state - this needs to be synchronous in user gesture
     if (audioContext.state === 'suspended') {
-      await audioContext.resume();
+      // Call resume synchronously and handle the promise
+      audioContext.resume();
+    } else {
+      // AudioContext is already running, create bass saber immediately
+      createBassSaberFast()
+        .then(success => {
+          if (!success) {
+              console.error('Failed to create bass saber (context running)');
+          }
+        })
+        .catch(error => {
+          console.error('Error creating bass saber (context running):', error);
+        });
     }
 
-    // Immediately create all audio nodes
-    await createBassSaberFast();
-
     isAudioInitialized = true;
-    console.log('Audio context initialized ultra-fast');
     return true;
   } catch (error) {
     console.error('Failed to initialize audio context:', error);
@@ -92,7 +101,6 @@ const preGenerateAudioData = () => {
       preGeneratedClickBuffer[i] = sample;
     }
 
-    console.log('Audio data pre-generated successfully');
     return true;
   } catch (error) {
     console.error('Failed to pre-generate audio data:', error);
@@ -109,17 +117,18 @@ const preloadAudioFast = async () => {
     preGenerateAudioData();
 
     isAudioPreloaded = true;
-    console.log('Audio system pre-loaded at maximum speed');
     return true;
   } catch (error) {
-    console.error('Failed to preload audio:', error);
     return false;
   }
 };
 
 // Ultra-fast click sound using pre-generated buffer
 const playSoftClickFast = async () => {
-  if (!audioContext || !preGeneratedClickBuffer) return;
+  if (!audioContext || !preGeneratedClickBuffer) {
+    console.warn('Cannot play click: audioContext or buffer missing');
+    return;
+  }
 
   try {
     // Create buffer from pre-generated data
@@ -146,7 +155,6 @@ const playSoftClickFast = async () => {
     gainNode.connect(audioContext.destination);
 
     source.start(0);
-    console.log('Ultra-fast click played');
   } catch (error) {
     console.error('Error playing fast click:', error);
   }
@@ -154,9 +162,13 @@ const playSoftClickFast = async () => {
 
 // Ultra-fast bass saber creation
 const createBassSaberFast = async () => {
-  if (!audioContext) return false;
+  if (!audioContext) {
+    console.error('Cannot create bass saber: no audio context');
+    return false;
+  }
 
   try {
+
     // Clean up existing
     if (bassSaber) {
       bassSaber.stop();
@@ -200,7 +212,13 @@ const createBassSaberFast = async () => {
     bassSaber.start();
     subBass.start();
 
-    console.log('Ultra-fast bass saber created');
+
+    // If hover was requested before bass saber was ready, activate it now
+    if (isHoverActive && gainNode && subGainNode) {
+      gainNode.gain.setTargetAtTime(0.3, audioContext.currentTime, 0.1);
+      subGainNode.gain.setTargetAtTime(0.2, audioContext.currentTime, 0.1);
+    }
+
     return true;
   } catch (error) {
     console.error('Failed to create fast bass saber:', error);
@@ -214,6 +232,7 @@ export const audioManager = {
 
   playNavigation: async () => {
     try {
+
       // Initialize everything on first call if needed
       if (!isAudioInitialized) {
         const success = await initAudioContextFast();
@@ -226,21 +245,28 @@ export const audioManager = {
     }
   },
 
-  startHover: async () => {
+  startHover: () => {
     try {
+      console.log('Hover audio start requested, initialized:', isAudioInitialized);
+
       // Initialize everything on first call if needed
       if (!isAudioInitialized) {
-        const success = await initAudioContextFast();
-        if (!success) return;
+        const success = initAudioContextFast();
+        if (!success) {
+          console.error('Failed to initialize audio for hover');
+          return;
+        }
       }
 
       isHoverActive = true;
 
+      // Try to start audio immediately if nodes exist, otherwise wait for async creation
       if (gainNode && subGainNode && audioContext) {
         // Start immediately - everything is already created
         gainNode.gain.setTargetAtTime(0.3, audioContext.currentTime, 0.1);
         subGainNode.gain.setTargetAtTime(0.2, audioContext.currentTime, 0.1);
-        console.log('Ultra-fast hover audio started');
+      } else {
+        console.log('Audio nodes not ready yet, will activate when bass saber is created');
       }
     } catch (error) {
       console.error('Error starting hover audio:', error);
@@ -254,7 +280,6 @@ export const audioManager = {
       if (gainNode && subGainNode && audioContext) {
         gainNode.gain.setTargetAtTime(0, audioContext.currentTime, 0.3);
         subGainNode.gain.setTargetAtTime(0, audioContext.currentTime, 0.3);
-        console.log('Hover audio stopped');
       }
     } catch (error) {
       console.error('Error stopping hover audio:', error);
@@ -271,8 +296,23 @@ export const audioManager = {
         !subBass ||
         !filterNode ||
         !isHoverActive
-      )
+      ) {
+        // Only log if we expect it to work, and show detailed component status
+        if (isHoverActive && isAudioInitialized) {
+          console.warn('Cannot update hover intensity - missing components:', {
+            hasAudioContext: !!audioContext,
+            audioContextState: audioContext?.state,
+            hasGainNode: !!gainNode,
+            hasSubGainNode: !!subGainNode,
+            hasBassSaber: !!bassSaber,
+            hasSubBass: !!subBass,
+            hasFilterNode: !!filterNode,
+            isHoverActive,
+            isAudioInitialized,
+          });
+        }
         return;
+      }
 
       const clampedIntensity = Math.max(0, Math.min(1, intensity));
 

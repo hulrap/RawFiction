@@ -31,7 +31,6 @@ export default function ClientWrapper() {
       try {
         await audioManager.preload();
         setAudioReady(true);
-        console.log('Audio preloaded successfully');
       } catch (error) {
         console.error('Failed to preload audio:', error);
         // Still mark as ready to not block the site
@@ -75,47 +74,47 @@ export default function ClientWrapper() {
     };
   }, [allSystemsReady]);
 
-  const handleMouseMove = useCallback(
-    (event: React.MouseEvent<HTMLDivElement>) => {
-      if (!audioInitialized) {
-        audioManager.startHover();
-        setAudioInitialized(true);
-      }
+  const handleMouseMove = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
+    const { clientX, clientY, currentTarget } = event;
+    const { left, top, width, height } = currentTarget.getBoundingClientRect();
 
-      const { clientX, clientY, currentTarget } = event;
-      const { left, top, width, height } = currentTarget.getBoundingClientRect();
+    const now = performance.now();
+    const deltaX = clientX - lastMousePosition.current.x;
+    const deltaY = clientY - lastMousePosition.current.y;
+    const deltaTime = now - lastMouseTime.current;
 
-      const now = performance.now();
-      const deltaX = clientX - lastMousePosition.current.x;
-      const deltaY = clientY - lastMousePosition.current.y;
-      const deltaTime = now - lastMouseTime.current;
+    if (deltaTime > 0) {
+      const speed = Math.sqrt(deltaX * deltaX + deltaY * deltaY) / deltaTime;
+      const normalizedSpeed = Math.min(speed / 10, 1.0); // Normalize and cap speed
+      audioManager.updateHoverIntensity(normalizedSpeed);
+    }
 
-      if (deltaTime > 0) {
-        const speed = Math.sqrt(deltaX * deltaX + deltaY * deltaY) / deltaTime;
-        const normalizedSpeed = Math.min(speed / 10, 1.0); // Normalize and cap speed
-        audioManager.updateHoverIntensity(normalizedSpeed);
-      }
+    lastMousePosition.current = { x: clientX, y: clientY };
+    lastMouseTime.current = now;
 
-      lastMousePosition.current = { x: clientX, y: clientY };
-      lastMouseTime.current = now;
+    // Clear any existing inactivity timer
+    if (mouseInactivityTimer.current) {
+      clearTimeout(mouseInactivityTimer.current);
+    }
 
-      // Clear any existing inactivity timer
-      if (mouseInactivityTimer.current) {
-        clearTimeout(mouseInactivityTimer.current);
-      }
+    // Set a timer to reduce intensity if mouse stops moving
+    mouseInactivityTimer.current = setTimeout(() => {
+      audioManager.updateHoverIntensity(0);
+    }, 100); // Reduce intensity after 100ms of no movement
 
-      // Set a timer to reduce intensity if mouse stops moving
-      mouseInactivityTimer.current = setTimeout(() => {
-        audioManager.updateHoverIntensity(0);
-      }, 100); // Reduce intensity after 100ms of no movement
+    // Convert to NDC (-1 to +1) for Three.js
+    setMouse(
+      new THREE.Vector2(((clientX - left) / width) * 2 - 1, -((clientY - top) / height) * 2 + 1)
+    );
+  }, []);
 
-      // Convert to NDC (-1 to +1) for Three.js
-      setMouse(
-        new THREE.Vector2(((clientX - left) / width) * 2 - 1, -((clientY - top) / height) * 2 + 1)
-      );
-    },
-    [audioInitialized]
-  );
+  const handleClick = useCallback(() => {
+    // Initialize audio on click (user gesture)
+    if (!audioInitialized) {
+      audioManager.startHover();
+      setAudioInitialized(true);
+    }
+  }, [audioInitialized]);
 
   const handleMouseLeave = useCallback(() => {
     // Stop audio when mouse leaves the screen
@@ -137,6 +136,7 @@ export default function ClientWrapper() {
     <div
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
+      onClick={handleClick}
       style={{ width: '100vw', height: '100vh', position: 'relative' }}
     >
       <Background onReady={handleBackgroundReady} mouse={mouse} />
