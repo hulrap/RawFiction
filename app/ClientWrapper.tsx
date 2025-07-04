@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import Background from '@/components/Background';
 import { PortfolioCarousel } from '@/components/PortfolioCarousel';
 import { IntegratedLoadingScreen } from '@/components/shared/IntegratedLoadingScreen';
+import * as THREE from 'three';
 
 // Constants
 const TOTAL_PROJECTS = 13; // Set this to the actual number of projects
@@ -13,6 +14,7 @@ export default function ClientWrapper() {
   const [backgroundReady, setBackgroundReady] = useState(false);
   const [readyCards, setReadyCards] = useState<Set<number>>(new Set());
   const [showCarousel, setShowCarousel] = useState(false);
+  const [mouse, setMouse] = useState(new THREE.Vector2(0, 0));
 
   useEffect(() => {
     setIsMounted(true);
@@ -43,13 +45,25 @@ export default function ClientWrapper() {
     };
   }, [allCardsReady]);
 
+  const handleMouseMove = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
+    const { clientX, clientY, currentTarget } = event;
+    const { left, top, width, height } = currentTarget.getBoundingClientRect();
+    // Convert to NDC (-1 to +1) for Three.js
+    setMouse(
+      new THREE.Vector2(((clientX - left) / width) * 2 - 1, -((clientY - top) / height) * 2 + 1)
+    );
+  }, []);
+
   if (!isMounted) {
     return null;
   }
 
   return (
-    <>
-      <Background onReady={handleBackgroundReady} />
+    <div
+      onMouseMove={handleMouseMove}
+      style={{ width: '100vw', height: '100vh', position: 'relative' }}
+    >
+      <Background onReady={handleBackgroundReady} mouse={mouse} />
       {backgroundReady && (
         <IntegratedLoadingScreen
           loadedCount={readyCards.size}
@@ -58,6 +72,6 @@ export default function ClientWrapper() {
         />
       )}
       <PortfolioCarousel onCardReady={handleCardReady} showCarousel={showCarousel} />
-    </>
+    </div>
   );
 }
