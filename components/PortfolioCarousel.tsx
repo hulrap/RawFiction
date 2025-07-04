@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useCallback, lazy, Suspense, useMemo } from 'react';
 import { NavigationControls } from './NavigationControls';
 import { CardWithOverlay } from './CardWithOverlay';
 
@@ -61,6 +61,65 @@ const LegalCard = lazy(() =>
 
 // Import types
 import type { ProjectProps } from './shared/types';
+
+// Memoized card component for performance
+const PortfolioCard = React.memo<{
+  readonly project: PortfolioProject;
+  readonly style: React.CSSProperties & { carouselPosition: string };
+  readonly shouldShowOverlay: boolean;
+  readonly needsImmediateOverlay: boolean;
+  readonly onShatter: () => void;
+  readonly onCardReady: () => void;
+  readonly onClick: (e: React.MouseEvent) => void;
+}>(
+  ({
+    project,
+    style,
+    shouldShowOverlay,
+    needsImmediateOverlay,
+    onShatter,
+    onCardReady,
+    onClick,
+  }) => {
+    const Component = project.component;
+
+    return (
+      <ErrorBoundary key={project.id} id={project.id}>
+        <div
+          className={`portfolio-card space-card performance-optimized ${
+            style.carouselPosition === 'center' ? 'active-card' : ''
+          }`}
+          style={style}
+          onClick={onClick}
+        >
+          {/* ALWAYS render CardWithOverlay for consistent cube grid quality */}
+          <CardWithOverlay
+            title={project.title}
+            isOverlayVisible={shouldShowOverlay}
+            needsImmediateOverlay={needsImmediateOverlay}
+            onShatter={onShatter}
+            carouselPosition={style.carouselPosition}
+            onOverlayReady={onCardReady}
+            forceHighQuality={style.carouselPosition !== 'hidden'}
+          >
+            {/* Always load all content immediately for instant reveal */}
+            <Suspense
+              fallback={
+                <div className="card-glass p-8 flex items-center justify-center opacity-50">
+                  <div className="text-sm text-[var(--brand-accent)]">Loading...</div>
+                </div>
+              }
+            >
+              <Component id={project.id} />
+            </Suspense>
+          </CardWithOverlay>
+        </div>
+      </ErrorBoundary>
+    );
+  }
+);
+
+PortfolioCard.displayName = 'PortfolioCard';
 
 interface PortfolioCarouselProps {
   onCardReady: (cardIndex: number) => void;
@@ -245,61 +304,38 @@ const PORTFOLIO_PROJECTS: PortfolioProject[] = [
   },
 ];
 
-export const PortfolioCarousel: React.FC<PortfolioCarouselProps> = ({
-  onCardReady,
-  showCarousel,
-}) => {
-  const totalProjects = PORTFOLIO_PROJECTS.length;
+export const PortfolioCarousel: React.FC<PortfolioCarouselProps> = React.memo(
+  ({ onCardReady, showCarousel }) => {
+    // Memoize total projects count
+    const totalProjects = useMemo(() => PORTFOLIO_PROJECTS.length, []);
 
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isTransitioning, setIsTransitioning] = useState(false);
-  const [wheelEnabled, setWheelEnabled] = useState(true);
-  const [shatteredCards, setShatteredCards] = useState<Set<number>>(new Set());
-  const [visitedCards, setVisitedCards] = useState<Set<number>>(new Set([0])); // Track visited cards
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const [isTransitioning, setIsTransitioning] = useState(false);
+    const [wheelEnabled, setWheelEnabled] = useState(true);
+    const [shatteredCards, setShatteredCards] = useState<Set<number>>(new Set());
+    const [visitedCards, setVisitedCards] = useState<Set<number>>(new Set([0])); // Track visited cards
 
-  // All cards are loaded immediately now - no selective loading needed
+    // All cards are loaded immediately now - no selective loading needed
 
-  // Mark current card as visited when it changes
-  useEffect(() => {
-    setVisitedCards(prev => new Set([...prev, currentIndex]));
-  }, [currentIndex]);
+    // Mark current card as visited when it changes
+    useEffect(() => {
+      setVisitedCards(prev => new Set([...prev, currentIndex]));
+    }, [currentIndex]);
 
-  // Persistent shattered state: once a card is revealed, it stays revealed
-  // No cleanup based on currentIndex - let cards stay revealed after being shattered
+    // Persistent shattered state: once a card is revealed, it stays revealed
+    // No cleanup based on currentIndex - let cards stay revealed after being shattered
 
-  // Track card overlay readiness for global loading screen
-  const handleCardReady = useCallback(
-    (cardIndex: number) => {
-      onCardReady(cardIndex);
-    },
-    [onCardReady]
-  );
+    // Track card overlay readiness for global loading screen
+    const handleCardReady = useCallback(
+      (cardIndex: number) => {
+        onCardReady(cardIndex);
+      },
+      [onCardReady]
+    );
 
-  // 3-Card positioning system: always show exactly 3 cards (previous, current, next)
-  const getCardTransform = useCallback(
-    (index: number) => {
-      // Calculate which position this card should be in
-      let position: 'left' | 'center' | 'right' | 'hidden';
-
-      // Current card is always center
-      if (index === currentIndex) {
-        position = 'center';
-      }
-      // Next card is on the right
-      else if (index === (currentIndex + 1) % totalProjects) {
-        position = 'right';
-      }
-      // Previous card is on the left
-      else if (index === (currentIndex - 1 + totalProjects) % totalProjects) {
-        position = 'left';
-      }
-      // All other cards are hidden
-      else {
-        position = 'hidden';
-      }
-
-      // Define positions for the 3-card layout
-      const transforms = {
+    // Memoized transform definitions (expensive object creation)
+    const transformDefinitions = useMemo(
+      () => ({
         center: {
           x: 0,
           y: 0,
@@ -309,8 +345,8 @@ export const PortfolioCarousel: React.FC<PortfolioCarouselProps> = ({
           scale: 1.0,
           opacity: 1,
           zIndex: 100,
-          pointerEvents: 'auto',
-          cursor: 'default',
+          pointerEvents: 'auto' as const,
+          cursor: 'default' as const,
         },
         left: {
           x: -500,
@@ -321,8 +357,8 @@ export const PortfolioCarousel: React.FC<PortfolioCarouselProps> = ({
           scale: 0.75,
           opacity: 1,
           zIndex: 50,
-          pointerEvents: 'auto',
-          cursor: 'pointer',
+          pointerEvents: 'auto' as const,
+          cursor: 'pointer' as const,
         },
         right: {
           x: 500,
@@ -333,8 +369,8 @@ export const PortfolioCarousel: React.FC<PortfolioCarouselProps> = ({
           scale: 0.75,
           opacity: 1,
           zIndex: 50,
-          pointerEvents: 'auto',
-          cursor: 'pointer',
+          pointerEvents: 'auto' as const,
+          cursor: 'pointer' as const,
         },
         hidden: {
           x: 0,
@@ -345,236 +381,262 @@ export const PortfolioCarousel: React.FC<PortfolioCarouselProps> = ({
           scale: 0.1,
           opacity: 0,
           zIndex: 0,
-          pointerEvents: 'none',
-          cursor: 'default',
+          pointerEvents: 'none' as const,
+          cursor: 'default' as const,
         },
-      };
+      }),
+      []
+    );
 
-      const transform = transforms[position];
+    // Memoized position calculation function
+    const getCardPosition = useCallback(
+      (index: number): 'left' | 'center' | 'right' | 'hidden' => {
+        if (index === currentIndex) {
+          return 'center';
+        }
+        if (index === (currentIndex + 1) % totalProjects) {
+          return 'right';
+        }
+        if (index === (currentIndex - 1 + totalProjects) % totalProjects) {
+          return 'left';
+        }
+        return 'hidden';
+      },
+      [currentIndex, totalProjects]
+    );
 
-      return {
-        transform: `
+    // 3-Card positioning system: always show exactly 3 cards (previous, current, next)
+    const getCardTransform = useCallback(
+      (index: number) => {
+        const position = getCardPosition(index);
+        const transform = transformDefinitions[position];
+
+        return {
+          transform: `
           translate(-50%, -50%)
           translate3d(${transform.x}px, ${transform.y}px, ${transform.z}px)
           rotateX(${transform.rotX}deg)
           rotateY(${transform.rotY}deg)
           scale(${transform.scale})
         `,
-        opacity: transform.opacity,
-        pointerEvents: transform.pointerEvents as 'auto' | 'none',
-        zIndex: transform.zIndex,
-        cursor: transform.cursor,
-        // Expose transform data for WebGL compensation
-        carouselPosition: position,
-      } as React.CSSProperties & {
-        carouselPosition: string;
-      };
-    },
-    [currentIndex, totalProjects]
-  );
+          opacity: transform.opacity,
+          pointerEvents: transform.pointerEvents,
+          zIndex: transform.zIndex,
+          cursor: transform.cursor,
+          // Expose transform data for WebGL compensation
+          carouselPosition: position,
+        } as React.CSSProperties & {
+          carouselPosition: string;
+        };
+      },
+      [getCardPosition, transformDefinitions]
+    );
 
-  // Safe navigation functions with circuit breaker
-  const goToNext = useCallback(() => {
-    try {
-      if (isTransitioning) return;
-      setIsTransitioning(true);
-      setCurrentIndex(prev => (prev + 1) % totalProjects);
-      setTimeout(() => setIsTransitioning(false), 100);
-    } catch (error) {
-      // Handle navigation errors silently
-      setIsTransitioning(false);
-    }
-  }, [isTransitioning, totalProjects]);
-
-  const goToPrevious = useCallback(() => {
-    try {
-      if (isTransitioning) return;
-      setIsTransitioning(true);
-      setCurrentIndex(prev => (prev - 1 + totalProjects) % totalProjects);
-      setTimeout(() => setIsTransitioning(false), 100);
-    } catch (error) {
-      // Handle navigation errors silently
-      setIsTransitioning(false);
-    }
-  }, [isTransitioning, totalProjects]);
-
-  const goToIndex = useCallback(
-    (index: number) => {
+    // Safe navigation functions with circuit breaker
+    const goToNext = useCallback(() => {
       try {
-        if (isTransitioning || index === currentIndex || index < 0 || index >= totalProjects)
-          return;
-
+        if (isTransitioning) return;
         setIsTransitioning(true);
-        setCurrentIndex(index);
-
-        // Mark card as visited when navigating to it
-        setVisitedCards(prev => new Set([...prev, index]));
-
-        // Match the CSS transition duration
-        setTimeout(() => setIsTransitioning(false), 50);
+        setCurrentIndex(prev => (prev + 1) % totalProjects);
+        setTimeout(() => setIsTransitioning(false), 100);
       } catch (error) {
         // Handle navigation errors silently
         setIsTransitioning(false);
       }
-    },
-    [isTransitioning, currentIndex, totalProjects]
-  );
+    }, [isTransitioning, totalProjects]);
 
-  // Safe wheel navigation with circuit breaker
-  useEffect(() => {
-    const handleWheel = (e: WheelEvent) => {
-      try {
-        if (!wheelEnabled || isTransitioning) {
-          e.preventDefault();
-          return;
-        }
-
-        const target = e.target as HTMLElement;
-        const isInEmbeddedSite =
-          target.closest('.embedded-website') ||
-          target.closest('.website-container') ||
-          target.closest('.content-area');
-
-        if (isInEmbeddedSite) return;
-
-        e.preventDefault();
-
-        setWheelEnabled(false);
-        setTimeout(() => setWheelEnabled(true), 400);
-
-        if (e.deltaY > 0) {
-          goToNext();
-        } else {
-          goToPrevious();
-        }
-      } catch (error) {
-        // Handle wheel navigation errors silently
-        setWheelEnabled(true);
-      }
-    };
-
-    window.addEventListener('wheel', handleWheel, { passive: false });
-    return () => window.removeEventListener('wheel', handleWheel);
-  }, [goToNext, goToPrevious, wheelEnabled, isTransitioning]);
-
-  // Safe keyboard navigation
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
+    const goToPrevious = useCallback(() => {
       try {
         if (isTransitioning) return;
-
-        switch (e.key) {
-          case 'ArrowRight':
-          case 'ArrowDown':
-            e.preventDefault();
-            goToNext();
-            break;
-          case 'ArrowLeft':
-          case 'ArrowUp':
-            e.preventDefault();
-            goToPrevious();
-            break;
-          case 'Home':
-            e.preventDefault();
-            goToIndex(0);
-            break;
-          case 'End':
-            e.preventDefault();
-            goToIndex(totalProjects - 1);
-            break;
-        }
+        setIsTransitioning(true);
+        setCurrentIndex(prev => (prev - 1 + totalProjects) % totalProjects);
+        setTimeout(() => setIsTransitioning(false), 100);
       } catch (error) {
-        // Handle keyboard navigation errors silently
+        // Handle navigation errors silently
+        setIsTransitioning(false);
       }
-    };
+    }, [isTransitioning, totalProjects]);
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [goToNext, goToPrevious, goToIndex, isTransitioning, totalProjects]);
+    const goToIndex = useCallback(
+      (index: number) => {
+        try {
+          if (isTransitioning || index === currentIndex || index < 0 || index >= totalProjects)
+            return;
 
-  // Safe touch navigation
-  useEffect(() => {
-    let startX = 0;
-    let startY = 0;
+          setIsTransitioning(true);
+          setCurrentIndex(index);
 
-    const handleTouchStart = (e: TouchEvent) => {
-      try {
-        if (e.touches?.[0]) {
-          startX = e.touches[0].clientX;
-          startY = e.touches[0].clientY;
+          // Mark card as visited when navigating to it
+          setVisitedCards(prev => new Set([...prev, index]));
+
+          // Match the CSS transition duration
+          setTimeout(() => setIsTransitioning(false), 50);
+        } catch (error) {
+          // Handle navigation errors silently
+          setIsTransitioning(false);
         }
-      } catch (error) {
-        // Handle touch start errors silently
-      }
-    };
+      },
+      [isTransitioning, currentIndex, totalProjects]
+    );
 
-    const handleTouchEnd = (e: TouchEvent) => {
-      try {
-        if (isTransitioning) return;
-
-        const touch = e.changedTouches?.[0];
-        if (!touch) return;
-
-        const touchEndX = touch.clientX;
-        const touchEndY = touch.clientY;
-        const deltaX = touchEndX - startX;
-        const deltaY = touchEndY - startY;
-
-        if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50) {
-          if (deltaX > 0) {
-            goToPrevious();
-          } else {
-            goToNext();
+    // Safe wheel navigation with circuit breaker
+    useEffect(() => {
+      const handleWheel = (e: WheelEvent) => {
+        try {
+          if (!wheelEnabled || isTransitioning) {
+            e.preventDefault();
+            return;
           }
+
+          const target = e.target as HTMLElement;
+          const isInEmbeddedSite =
+            target.closest('.embedded-website') ||
+            target.closest('.website-container') ||
+            target.closest('.content-area');
+
+          if (isInEmbeddedSite) return;
+
+          e.preventDefault();
+
+          setWheelEnabled(false);
+          setTimeout(() => setWheelEnabled(true), 400);
+
+          if (e.deltaY > 0) {
+            goToNext();
+          } else {
+            goToPrevious();
+          }
+        } catch (error) {
+          // Handle wheel navigation errors silently
+          setWheelEnabled(true);
         }
-      } catch (error) {
-        // Handle touch navigation errors silently
-      }
-    };
+      };
 
-    window.addEventListener('touchstart', handleTouchStart);
-    window.addEventListener('touchend', handleTouchEnd);
+      window.addEventListener('wheel', handleWheel, { passive: false });
+      return () => window.removeEventListener('wheel', handleWheel);
+    }, [goToNext, goToPrevious, wheelEnabled, isTransitioning]);
 
-    return () => {
-      window.removeEventListener('touchstart', handleTouchStart);
-      window.removeEventListener('touchend', handleTouchEnd);
-    };
-  }, [goToNext, goToPrevious, isTransitioning]);
+    // Safe keyboard navigation
+    useEffect(() => {
+      const handleKeyDown = (e: KeyboardEvent) => {
+        try {
+          if (isTransitioning) return;
 
-  return (
-    <ErrorBoundary
-      fallback={
-        <div className="fixed inset-0 flex items-center justify-center bg-[var(--brand-bg)]">
-          <div className="text-[var(--brand-accent)]">Portfolio unavailable</div>
-        </div>
-      }
-    >
-      {/* Global Loading Screen - Wait for all card overlays */}
-      <div
-        className={`carousel-container transition-opacity duration-1000 ${
-          showCarousel ? 'opacity-100' : 'opacity-0 pointer-events-none'
-        }`}
+          switch (e.key) {
+            case 'ArrowRight':
+            case 'ArrowDown':
+              e.preventDefault();
+              goToNext();
+              break;
+            case 'ArrowLeft':
+            case 'ArrowUp':
+              e.preventDefault();
+              goToPrevious();
+              break;
+            case 'Home':
+              e.preventDefault();
+              goToIndex(0);
+              break;
+            case 'End':
+              e.preventDefault();
+              goToIndex(totalProjects - 1);
+              break;
+          }
+        } catch (error) {
+          // Handle keyboard navigation errors silently
+        }
+      };
+
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [goToNext, goToPrevious, goToIndex, isTransitioning, totalProjects]);
+
+    // Safe touch navigation
+    useEffect(() => {
+      let startX = 0;
+      let startY = 0;
+
+      const handleTouchStart = (e: TouchEvent) => {
+        try {
+          if (e.touches?.[0]) {
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+          }
+        } catch (error) {
+          // Handle touch start errors silently
+        }
+      };
+
+      const handleTouchEnd = (e: TouchEvent) => {
+        try {
+          if (isTransitioning) return;
+
+          const touch = e.changedTouches?.[0];
+          if (!touch) return;
+
+          const touchEndX = touch.clientX;
+          const touchEndY = touch.clientY;
+          const deltaX = touchEndX - startX;
+          const deltaY = touchEndY - startY;
+
+          if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50) {
+            if (deltaX > 0) {
+              goToPrevious();
+            } else {
+              goToNext();
+            }
+          }
+        } catch (error) {
+          // Handle touch navigation errors silently
+        }
+      };
+
+      window.addEventListener('touchstart', handleTouchStart);
+      window.addEventListener('touchend', handleTouchEnd);
+
+      return () => {
+        window.removeEventListener('touchstart', handleTouchStart);
+        window.removeEventListener('touchend', handleTouchEnd);
+      };
+    }, [goToNext, goToPrevious, isTransitioning]);
+
+    return (
+      <ErrorBoundary
+        fallback={
+          <div className="fixed inset-0 flex items-center justify-center bg-[var(--brand-bg)]">
+            <div className="text-[var(--brand-accent)]">Portfolio unavailable</div>
+          </div>
+        }
       >
-        <div className="carousel-wrapper">
-          {PORTFOLIO_PROJECTS.map((project, index) => {
-            const Component = project.component;
-            const style = getCardTransform(index);
-            const isVisited = visitedCards.has(index);
-            const isCenter = style.carouselPosition === 'center';
+        {/* Global Loading Screen - Wait for all card overlays */}
+        <div
+          className={`carousel-container transition-opacity duration-1000 ${
+            showCarousel ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          }`}
+        >
+          <div className="carousel-wrapper">
+            {PORTFOLIO_PROJECTS.map((project, index) => {
+              const style = getCardTransform(index);
+              const isVisited = visitedCards.has(index);
+              const isCenter = style.carouselPosition === 'center';
 
-            // Fixed rule: once a card is shattered (revealed), it stays revealed regardless of position
-            const wasShattered = shatteredCards.has(index);
-            const shouldShowOverlay = !wasShattered;
-            // Non-center cards get immediate overlay for smooth transitions (only if they need overlay)
-            const needsImmediateOverlay = !isCenter && shouldShowOverlay;
+              // Fixed rule: once a card is shattered (revealed), it stays revealed regardless of position
+              const wasShattered = shatteredCards.has(index);
+              const shouldShowOverlay = !wasShattered;
+              // Non-center cards get immediate overlay for smooth transitions (only if they need overlay)
+              const needsImmediateOverlay = !isCenter && shouldShowOverlay;
 
-            return (
-              <ErrorBoundary key={project.id} id={project.id}>
-                <div
-                  className={`portfolio-card space-card performance-optimized ${
-                    index === currentIndex ? 'active-card' : ''
-                  }`}
+              return (
+                <PortfolioCard
+                  key={project.id}
+                  project={project}
                   style={style}
+                  shouldShowOverlay={shouldShowOverlay}
+                  needsImmediateOverlay={needsImmediateOverlay}
+                  onShatter={() => {
+                    setShatteredCards(prev => new Set([...prev, index]));
+                  }}
+                  onCardReady={() => handleCardReady(index)}
                   onClick={e => {
                     // Allow navigation to visited cards or adjacent cards
                     const canNavigate =
@@ -594,47 +656,23 @@ export const PortfolioCarousel: React.FC<PortfolioCarouselProps> = ({
                       }
                     }
                   }}
-                >
-                  {/* ALWAYS render CardWithOverlay for consistent cube grid quality */}
-                  <CardWithOverlay
-                    title={project.title}
-                    isOverlayVisible={shouldShowOverlay}
-                    needsImmediateOverlay={needsImmediateOverlay}
-                    onShatter={() => {
-                      setShatteredCards(prev => new Set([...prev, index]));
-                    }}
-                    carouselPosition={style.carouselPosition}
-                    onOverlayReady={() => handleCardReady(index)}
-                    forceHighQuality={style.carouselPosition !== 'hidden'}
-                  >
-                    {/* Always load all content immediately for instant reveal */}
-                    <Suspense
-                      fallback={
-                        <div className="card-glass p-8 flex items-center justify-center opacity-50">
-                          <div className="text-sm text-[var(--brand-accent)]">Loading...</div>
-                        </div>
-                      }
-                    >
-                      <Component id={project.id} />
-                    </Suspense>
-                  </CardWithOverlay>
-                </div>
-              </ErrorBoundary>
-            );
-          })}
-        </div>
+                />
+              );
+            })}
+          </div>
 
-        <ErrorBoundary>
-          <NavigationControls
-            projects={PORTFOLIO_PROJECTS}
-            currentIndex={currentIndex}
-            onNavigate={goToIndex}
-            onNext={goToNext}
-            onPrevious={goToPrevious}
-            isTransitioning={isTransitioning}
-          />
-        </ErrorBoundary>
-      </div>
-    </ErrorBoundary>
-  );
-};
+          <ErrorBoundary>
+            <NavigationControls
+              projects={PORTFOLIO_PROJECTS}
+              currentIndex={currentIndex}
+              onNavigate={goToIndex}
+              onNext={goToNext}
+              onPrevious={goToPrevious}
+              isTransitioning={isTransitioning}
+            />
+          </ErrorBoundary>
+        </div>
+      </ErrorBoundary>
+    );
+  }
+);
