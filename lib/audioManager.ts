@@ -47,21 +47,15 @@ const initAudioContext = async () => {
   }
 };
 
-// Preload audio system - called during loading phase
+// Preload audio system - called during loading phase (but doesn't create AudioContext)
 const preloadAudio = async () => {
   if (isAudioPreloaded) return true;
 
   try {
-    // Create a silent audio context to prepare everything
-    const success = await initAudioContext();
-    if (!success) return false;
-
-    // Pre-create the bass saber system
-    await createBassSaber();
-
-    // Mark as preloaded
+    // Just mark as preloaded without creating AudioContext
+    // The actual audio will be initialized on first user interaction
     isAudioPreloaded = true;
-    console.log('Audio system preloaded successfully');
+    console.log('Audio system marked as preloaded (will initialize on user interaction)');
     return true;
   } catch (error) {
     console.error('Failed to preload audio:', error);
@@ -208,7 +202,7 @@ const createBassSaber = async () => {
 };
 
 export const audioManager = {
-  // Preload function for loading phase
+  // Preload function for loading phase (doesn't create AudioContext)
   preload: preloadAudio,
 
   playNavigation: async () => {
@@ -231,7 +225,7 @@ export const audioManager = {
         if (!success) return;
       }
 
-      if (!bassSaber || !isAudioPreloaded) {
+      if (!bassSaber) {
         const success = await createBassSaber();
         if (!success) return;
       }
