@@ -9,7 +9,7 @@ import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeom
 
 interface CardWithOverlayProps {
   title: string;
-  isOverlayVisible: boolean;
+  isRevealed: boolean;
   needsImmediateOverlay?: boolean;
   onShatter: () => void;
   children: React.ReactNode;
@@ -146,7 +146,7 @@ const CubeGrid: React.FC<{
 
 export const CardWithOverlay: React.FC<CardWithOverlayProps> = ({
   title,
-  isOverlayVisible,
+  isRevealed,
   needsImmediateOverlay = false,
   onShatter,
   children,
@@ -154,7 +154,6 @@ export const CardWithOverlay: React.FC<CardWithOverlayProps> = ({
   forceHighQuality = false,
   onOverlayReady,
 }) => {
-  const [isShattered, setIsShattered] = useState(false);
   const [isFlowing, setIsFlowing] = useState(false);
   const [mouse, setMouse] = useState(new THREE.Vector2(0.5, 0.5));
   const [flowProgress, setFlowProgress] = useState(0);
@@ -169,7 +168,7 @@ export const CardWithOverlay: React.FC<CardWithOverlayProps> = ({
 
   // Initialize ALL overlays immediately - regardless of visibility
   useEffect(() => {
-    if (isOverlayVisible && !isAtomicReady) {
+    if (!isRevealed && !isAtomicReady) {
       if (needsImmediateOverlay) {
         // Immediate overlay for non-center cards - no waiting
         setIsAtomicReady(true);
@@ -187,7 +186,7 @@ export const CardWithOverlay: React.FC<CardWithOverlayProps> = ({
     }
     return undefined;
   }, [
-    isOverlayVisible,
+    isRevealed,
     isContentReady,
     isWebGLReady,
     isAtomicReady,
@@ -213,15 +212,14 @@ export const CardWithOverlay: React.FC<CardWithOverlayProps> = ({
   useEffect(() => {
     if (carouselPosition !== 'center') {
       // Immediately reset any flowing/shattered state for non-center cards
-      setIsShattered(false);
       setIsFlowing(false);
       setFlowProgress(0);
       // Force immediate overlay readiness for non-center cards
-      if (isOverlayVisible) {
+      if (!isRevealed) {
         setIsAtomicReady(true);
       }
     }
-  }, [carouselPosition, isOverlayVisible]);
+  }, [carouselPosition, isRevealed]);
 
   // Content ready detection
   useEffect(() => {
@@ -262,7 +260,7 @@ export const CardWithOverlay: React.FC<CardWithOverlayProps> = ({
 
   // Handle overlay click to trigger shatter effect
   const handleClick = useCallback(() => {
-    if (isShattered || isFlowing) return;
+    if (isRevealed || isFlowing) return;
 
     setIsFlowing(true);
 
@@ -283,14 +281,13 @@ export const CardWithOverlay: React.FC<CardWithOverlayProps> = ({
 
         // Complete the animation smoothly
         requestAnimationFrame(() => {
-          setIsShattered(true);
           setTimeout(onShatter, 50);
         });
       }
     };
 
     requestAnimationFrame(animateFlow);
-  }, [isShattered, isFlowing, onShatter]);
+  }, [isRevealed, isFlowing, onShatter]);
 
   return (
     <div className="card-content-container lazy-container">
@@ -303,17 +300,17 @@ export const CardWithOverlay: React.FC<CardWithOverlayProps> = ({
           width: '100%',
           height: '100%',
           // Content is always loaded and rendered, but hidden behind overlay when needed
-          opacity: isShattered ? 1 : 0, // Fade in when shattered
-          visibility: isShattered ? 'visible' : 'hidden', // Hide when not shattered
+          opacity: isRevealed ? 1 : 0, // Fade in when shattered
+          visibility: isRevealed ? 'visible' : 'hidden', // Hide when not shattered
           zIndex: 1, // Always behind overlay until revealed
         }}
       >
-        {isShattered && children}
+        {isRevealed && children}
       </div>
 
       {/* Enhanced 3D Cube Grid Overlay */}
       <AnimatePresence>
-        {isOverlayVisible && !isShattered && (
+        {!isRevealed && (
           <motion.div
             ref={overlayRef}
             className="glass-overlay-container"
@@ -414,35 +411,24 @@ export const CardWithOverlay: React.FC<CardWithOverlayProps> = ({
 
             {/* Content overlay with enhanced styling */}
             {!isFlowing && (needsImmediateOverlay ? true : isAtomicReady) && (
-              <motion.div
-                className="glass-overlay-content"
-                initial={{
-                  opacity: needsImmediateOverlay ? 1 : 0,
-                  y: needsImmediateOverlay ? 0 : 20,
-                }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: needsImmediateOverlay ? 0 : 0.5 }}
-              >
-                <div className="glass-overlay-text">
-                  <motion.h2
-                    className="glass-overlay-title uppercase"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.1, duration: 0.5 }}
-                  >
-                    {title}
-                  </motion.h2>
-                  <motion.div
-                    className="glass-overlay-subtitle"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.2, duration: 0.5 }}
-                  >
-                    Click to reveal
-                  </motion.div>
-                </div>
-              </motion.div>
+              <div className="glass-overlay-content">
+                <motion.h2
+                  className="glass-overlay-title uppercase"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1, duration: 0.5 }}
+                >
+                  {title}
+                </motion.h2>
+                <motion.div
+                  className="glass-overlay-subtitle"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2, duration: 0.5 }}
+                >
+                  Click to reveal
+                </motion.div>
+              </div>
             )}
           </motion.div>
         )}

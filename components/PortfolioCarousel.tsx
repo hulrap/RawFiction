@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, lazy, Suspense, useMemo } from 'react';
 import { NavigationControls } from './NavigationControls';
 import { CardWithOverlay } from './CardWithOverlay';
+import { audioManager } from '@/lib/audioManager';
 
 // Lazy load all project components for better performance
 const WelcomeCard = lazy(() =>
@@ -66,58 +67,46 @@ import type { ProjectProps } from './shared/types';
 const PortfolioCard = React.memo<{
   readonly project: PortfolioProject;
   readonly style: React.CSSProperties & { carouselPosition: string };
-  readonly shouldShowOverlay: boolean;
+  readonly isRevealed: boolean;
   readonly needsImmediateOverlay: boolean;
   readonly onShatter: () => void;
   readonly onCardReady: () => void;
   readonly onClick: (e: React.MouseEvent) => void;
-}>(
-  ({
-    project,
-    style,
-    shouldShowOverlay,
-    needsImmediateOverlay,
-    onShatter,
-    onCardReady,
-    onClick,
-  }) => {
-    const Component = project.component;
+}>(({ project, style, isRevealed, needsImmediateOverlay, onShatter, onCardReady, onClick }) => {
+  const Component = project.component;
 
-    return (
-      <ErrorBoundary key={project.id} id={project.id}>
-        <div
-          className={`portfolio-card space-card performance-optimized ${
-            style.carouselPosition === 'center' ? 'active-card' : ''
-          }`}
-          style={style}
-          onClick={onClick}
+  return (
+    <ErrorBoundary key={project.id} id={project.id}>
+      <div
+        className={`portfolio-card space-card performance-optimized ${
+          style.carouselPosition === 'center' ? 'active-card' : ''
+        }`}
+        style={style}
+        onClick={onClick}
+      >
+        <CardWithOverlay
+          title={project.title}
+          isRevealed={isRevealed}
+          needsImmediateOverlay={needsImmediateOverlay}
+          onShatter={onShatter}
+          carouselPosition={style.carouselPosition}
+          onOverlayReady={onCardReady}
+          forceHighQuality={style.carouselPosition !== 'hidden'}
         >
-          {/* ALWAYS render CardWithOverlay for consistent cube grid quality */}
-          <CardWithOverlay
-            title={project.title}
-            isOverlayVisible={shouldShowOverlay}
-            needsImmediateOverlay={needsImmediateOverlay}
-            onShatter={onShatter}
-            carouselPosition={style.carouselPosition}
-            onOverlayReady={onCardReady}
-            forceHighQuality={style.carouselPosition !== 'hidden'}
+          <Suspense
+            fallback={
+              <div className="card-glass p-8 flex items-center justify-center opacity-50">
+                <div className="text-sm text-[var(--brand-accent)]">Loading...</div>
+              </div>
+            }
           >
-            {/* Always load all content immediately for instant reveal */}
-            <Suspense
-              fallback={
-                <div className="card-glass p-8 flex items-center justify-center opacity-50">
-                  <div className="text-sm text-[var(--brand-accent)]">Loading...</div>
-                </div>
-              }
-            >
-              <Component id={project.id} />
-            </Suspense>
-          </CardWithOverlay>
-        </div>
-      </ErrorBoundary>
-    );
-  }
-);
+            <Component id={project.id} />
+          </Suspense>
+        </CardWithOverlay>
+      </div>
+    </ErrorBoundary>
+  );
+});
 
 PortfolioCard.displayName = 'PortfolioCard';
 
@@ -313,17 +302,8 @@ export const PortfolioCarousel: React.FC<PortfolioCarouselProps> = React.memo(
     const [isTransitioning, setIsTransitioning] = useState(false);
     const [wheelEnabled, setWheelEnabled] = useState(true);
     const [shatteredCards, setShatteredCards] = useState<Set<number>>(new Set());
-    const [visitedCards, setVisitedCards] = useState<Set<number>>(new Set([0])); // Track visited cards
 
     // All cards are loaded immediately now - no selective loading needed
-
-    // Mark current card as visited when it changes
-    useEffect(() => {
-      setVisitedCards(prev => new Set([...prev, currentIndex]));
-    }, [currentIndex]);
-
-    // Persistent shattered state: once a card is revealed, it stays revealed
-    // No cleanup based on currentIndex - let cards stay revealed after being shattered
 
     // Track card overlay readiness for global loading screen
     const handleCardReady = useCallback(
@@ -436,6 +416,7 @@ export const PortfolioCarousel: React.FC<PortfolioCarouselProps> = React.memo(
     const goToNext = useCallback(() => {
       try {
         if (isTransitioning) return;
+        audioManager.playNavigation();
         setIsTransitioning(true);
         setCurrentIndex(prev => (prev + 1) % totalProjects);
         setTimeout(() => setIsTransitioning(false), 100);
@@ -448,6 +429,7 @@ export const PortfolioCarousel: React.FC<PortfolioCarouselProps> = React.memo(
     const goToPrevious = useCallback(() => {
       try {
         if (isTransitioning) return;
+        audioManager.playNavigation();
         setIsTransitioning(true);
         setCurrentIndex(prev => (prev - 1 + totalProjects) % totalProjects);
         setTimeout(() => setIsTransitioning(false), 100);
@@ -465,9 +447,6 @@ export const PortfolioCarousel: React.FC<PortfolioCarouselProps> = React.memo(
 
           setIsTransitioning(true);
           setCurrentIndex(index);
-
-          // Mark card as visited when navigating to it
-          setVisitedCards(prev => new Set([...prev, index]));
 
           // Match the CSS transition duration
           setTimeout(() => setIsTransitioning(false), 50);
@@ -619,39 +598,29 @@ export const PortfolioCarousel: React.FC<PortfolioCarouselProps> = React.memo(
           <div className="carousel-wrapper">
             {PORTFOLIO_PROJECTS.map((project, index) => {
               const style = getCardTransform(index);
-              const isVisited = visitedCards.has(index);
               const isCenter = style.carouselPosition === 'center';
 
-              // Fixed rule: once a card is shattered (revealed), it stays revealed regardless of position
-              const wasShattered = shatteredCards.has(index);
-              const shouldShowOverlay = !wasShattered;
-              // Non-center cards get immediate overlay for smooth transitions (only if they need overlay)
-              const needsImmediateOverlay = !isCenter && shouldShowOverlay;
+              // A card is revealed ONLY if it's in the center AND has been clicked.
+              const isRevealed = isCenter && shatteredCards.has(index);
+
+              // Non-center cards get immediate overlay for smooth transitions
+              const needsImmediateOverlay = !isCenter;
 
               return (
                 <PortfolioCard
                   key={project.id}
                   project={project}
                   style={style}
-                  shouldShowOverlay={shouldShowOverlay}
+                  isRevealed={isRevealed}
                   needsImmediateOverlay={needsImmediateOverlay}
                   onShatter={() => {
                     setShatteredCards(prev => new Set([...prev, index]));
                   }}
                   onCardReady={() => handleCardReady(index)}
                   onClick={e => {
-                    // Allow navigation to visited cards or adjacent cards
-                    const canNavigate =
-                      index !== currentIndex &&
-                      !isTransitioning &&
-                      (isVisited || style.carouselPosition !== 'hidden');
-
-                    if (canNavigate) {
-                      // Navigate unless clicking on buttons or links
+                    if (index !== currentIndex && !isTransitioning) {
                       const target = e.target as HTMLElement;
-                      const isButton = target.closest('button, a, [role="button"]');
-
-                      if (!isButton) {
+                      if (!target.closest('button, a, [role="button"]')) {
                         e.preventDefault();
                         e.stopPropagation();
                         goToIndex(index);
