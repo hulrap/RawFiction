@@ -126,14 +126,14 @@ const CubeWall: React.FC<{ surface: CubeSurface; mouse: THREE.Vector2 }> = ({ su
   const { camera } = useThree();
 
   const { geometry, material, cubes } = useMemo(() => {
-    const geom = new RoundedBoxGeometry(1, 1, 1, 6, 0.1);
+    const geom = new RoundedBoxGeometry(2, 2, 2, 6, 0.2);
     const mat = new THREE.MeshStandardMaterial({
       color: '#333333',
       metalness: 0.95,
       roughness: 0.05,
       vertexColors: true,
     });
-    const spacing = 1.0;
+    const spacing = 2.0;
     const width = typeof surface.dimensions.width === 'number' ? surface.dimensions.width : 0;
     const height = typeof surface.dimensions.height === 'number' ? surface.dimensions.height : 0;
     const gridSizeX = Math.ceil(width / spacing);

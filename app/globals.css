@@ -357,8 +357,11 @@
     transform: translateX(-50%);
     z-index: 1000;
     display: flex;
+    justify-content: center;
+    align-items: center;
     gap: 1rem;
     padding: 1rem;
+    width: 500px;
     background: var(--brand-glass);
     backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
