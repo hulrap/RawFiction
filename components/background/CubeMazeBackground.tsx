@@ -158,8 +158,8 @@ const CubeWall: React.FC<{ surface: CubeSurface; mouse: THREE.Vector2 }> = ({ su
   const baseColor = useMemo(() => new THREE.Color(material.color), [material.color]);
   const dummy = useMemo(() => new THREE.Object3D(), []);
   const color = useMemo(() => new THREE.Color(), []);
+  const instanceMatrix = useMemo(() => new THREE.Matrix4(), []);
   const worldPosition = useMemo(() => new THREE.Vector3(), []);
-  const screenPosition = useMemo(() => new THREE.Vector2(), []);
 
   const smoothstep = useCallback((min: number, max: number, value: number) => {
     const x = Math.max(0, Math.min(1, (value - min) / (max - min)));
@@ -178,12 +178,12 @@ const CubeWall: React.FC<{ surface: CubeSurface; mouse: THREE.Vector2 }> = ({ su
       dummy.position.copy(basePosition);
       dummy.updateMatrix();
 
-      worldPosition.setFromMatrixPosition(dummy.matrix.premultiply(meshRef.current!.matrixWorld));
+      // Get the true world position of the cube instance without mutating matrices
+      instanceMatrix.multiplyMatrices(meshRef.current!.matrixWorld, dummy.matrix);
+      worldPosition.setFromMatrixPosition(instanceMatrix);
 
       const projected = worldPosition.clone().project(camera);
-      screenPosition.set(projected.x, projected.y);
-
-      const dist = screenPosition.distanceTo(mouse);
+      const dist = new THREE.Vector2(projected.x, projected.y).distanceTo(mouse);
 
       const hoverInfluence = 1.0 - smoothstep(0.0, HOVER_RADIUS, dist);
 
