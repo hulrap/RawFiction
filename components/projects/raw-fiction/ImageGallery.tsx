@@ -197,6 +197,133 @@ const createEditorialCollections = (): FolderItem[] => {
     })),
   ];
 
+  // Enter the (co)void editorial with subfolder structure
+  const enterCovoidLocationFolders: FolderItem[] = [
+    {
+      id: 'cafe-landtmann',
+      name: 'Cafe Landtmann',
+      type: 'folder',
+      itemCount: 84, // Based on the project layout
+      images: [
+        // Main cafe images
+        ...Array.from({ length: 84 }, (_, i) => ({
+          id: `cafe-landtmann-${i + 1}`,
+          src: `/projects/raw-fiction-content/archive/editorial/enter-the-co-void/Cafe-Landtmann/ (${i + 1}).jpg`,
+          alt: `Enter the (co)void - Cafe Landtmann ${i + 1}`,
+          title: `Enter the (co)void`,
+          collection: 'Enter the (co)void - Cafe Landtmann',
+          category: 'Editorial',
+          description: 'Marcel Bernard',
+          credits: {
+            photographer: 'Marcel Bernard',
+            models: [
+              'Special thanks to models from Enfant Terrible',
+              'Special thanks to Cafe Landtmann',
+            ],
+          },
+        })),
+        // Additional subfolder images
+        ...Array.from({ length: 38 }, (_, i) => ({
+          id: `cafe-landtmann-subfolder-${i + 1}`,
+          src: `/projects/raw-fiction-content/archive/editorial/enter-the-co-void/Cafe-Landtmann/ (1)/_MG_${2930 + i}.jpg`,
+          alt: `Enter the (co)void - Cafe Landtmann Detail ${i + 1}`,
+          title: `Enter the (co)void`,
+          collection: 'Enter the (co)void - Cafe Landtmann',
+          category: 'Editorial',
+          description: 'Marcel Bernard',
+          credits: {
+            photographer: 'Marcel Bernard',
+            models: [
+              'Special thanks to models from Enfant Terrible',
+              'Special thanks to Cafe Landtmann',
+            ],
+          },
+        })),
+      ],
+    },
+    {
+      id: 'generali-arena',
+      name: 'Generali Arena',
+      type: 'folder',
+      itemCount: 17,
+      images: Array.from({ length: 17 }, (_, i) => ({
+        id: `generali-arena-${i + 1}`,
+        src: `/projects/raw-fiction-content/archive/editorial/enter-the-co-void/Generali-Arena/ (${i + 1}).jpg`,
+        alt: `Enter the (co)void - Generali Arena ${i + 1}`,
+        title: `Enter the (co)void`,
+        collection: 'Enter the (co)void - Generali Arena',
+        category: 'Editorial',
+        description: 'Marcel Bernard',
+        credits: {
+          photographer: 'Marcel Bernard',
+          models: ['Special thanks to Generali for providing us the location', 'Raphael Hulan'],
+        },
+      })),
+    },
+    {
+      id: 'schikaneder',
+      name: 'Schikaneder',
+      type: 'folder',
+      itemCount: 54,
+      images: Array.from({ length: 54 }, (_, i) => ({
+        id: `schikaneder-${i + 1}`,
+        src: `/projects/raw-fiction-content/archive/editorial/enter-the-co-void/Schikaneder/ (${i + 1}).jpg`,
+        alt: `Enter the (co)void - Schikaneder ${i + 1}`,
+        title: `Enter the (co)void`,
+        collection: 'Enter the (co)void - Schikaneder',
+        category: 'Editorial',
+        description: 'Ivana Dzoic',
+        credits: {
+          photographer: 'Ivana Dzoic',
+          models: ['Hartwin Haselbauer', 'Tom Gailer', 'Romana Binder', 'Raphael Hulan'],
+        },
+      })),
+    },
+    {
+      id: 'vienna',
+      name: 'Vienna',
+      type: 'folder',
+      itemCount: 8,
+      images: Array.from({ length: 8 }, (_, i) => ({
+        id: `vienna-${i + 1}`,
+        src: `/projects/raw-fiction-content/archive/editorial/enter-the-co-void/Vienna/(${i + 1}).jpg`,
+        alt: `Enter the (co)void - Vienna ${i + 1}`,
+        title: `Enter the (co)void`,
+        collection: 'Enter the (co)void - Vienna',
+        category: 'Editorial',
+        description: 'Marcel Bernard',
+        credits: {
+          photographer: 'Marcel Bernard',
+          models: ['Raphael Hulan'],
+        },
+      })),
+    },
+    {
+      id: 'weltmuseum',
+      name: 'Weltmuseum',
+      type: 'folder',
+      itemCount: 58,
+      images: Array.from({ length: 58 }, (_, i) => ({
+        id: `weltmuseum-${i + 1}`,
+        src: `/projects/raw-fiction-content/archive/editorial/enter-the-co-void/Weltmuseum/ (${i + 1}).jpg`,
+        alt: `Enter the (co)void - Weltmuseum ${i + 1}`,
+        title: `Enter the (co)void`,
+        collection: 'Enter the (co)void - Weltmuseum',
+        category: 'Editorial',
+        description: 'Marcel Bernard',
+        credits: {
+          photographer: 'Marcel Bernard',
+          models: ['Special thanks to Enfant Terrible models', 'Special thanks to Weltmuseum'],
+        },
+      })),
+    },
+  ];
+
+  const enterCovoidImages = enterCovoidLocationFolders.reduce(
+    (acc, folder) => acc.concat(folder.images || []),
+    [] as ImageItem[]
+  );
+
   return [
     {
       id: 'garbage-planet-1-editorial',
@@ -225,6 +352,14 @@ const createEditorialCollections = (): FolderItem[] => {
       type: 'folder',
       itemCount: unityImages.length,
       images: unityImages,
+    },
+    {
+      id: 'enter-the-covoid-editorial',
+      name: 'Enter the (co)void Editorial',
+      type: 'folder',
+      itemCount: enterCovoidImages.length,
+      images: enterCovoidImages,
+      editorialImages: enterCovoidLocationFolders as any, // Store subfolders for navigation
     },
   ];
 };
@@ -588,6 +723,50 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
           currentFolder.images.length > 0 &&
           currentFolder.images[0]?.credits && (
             <div className="mb-6 bg-zinc-900/30 border border-zinc-800/30 rounded-lg p-4">
+              {/* Show COVID description for Enter the (co)void editorial */}
+              {currentFolder.id === 'enter-the-covoid-editorial' && (
+                <div className="mb-6 bg-zinc-900/50 border border-zinc-800/50 rounded-lg p-4">
+                  <h4 className="text-lg font-semibold text-white mb-3">
+                    About Enter the (co)void
+                  </h4>
+                  <p className="text-sm text-gray-300 leading-relaxed">
+                    Void bedeutet Leere. Co(void) ist die von Covid geschaffene Leere. Der Virus war
+                    noch nie mit dem Menschen kompatibel. Wir sind ein von Natur aus soziales Wesen.
+                    Interaktion und Anerkennung zählen zu unseren absoluten Grundbedürfnissen und
+                    sind nicht aus unserem Leben wegzudenken. Das Ausbleiben sozialer und
+                    kultureller Interaktion an öffentlichen Orten des Zusammenkommens erzeugt sowohl
+                    in uns selbst, als auch an diesen Plätzen eine Leere. Wo einst ein Menschenmeer
+                    war, ist es heute menschenleer. Das hat so weitgreifende Auswirkungen, dass man
+                    darüber Bücher schreiben könnte. Von geschädigten Existenzen, über verlorene
+                    Kindheit und Bildung, über das Fernbleiben von Kunst und Kultur bis zu
+                    psychischen Problemen.
+                  </p>
+                  <p className="text-sm text-gray-300 leading-relaxed mt-3">
+                    Mit unserem Projekt &ldquo;Enter the Co(void)&rdquo; machen wir die von Covid
+                    verursachte Leere anhand verlassener Orte des Gesellschaftslebens visuell
+                    sichtbar.
+                  </p>
+                </div>
+              )}
+
+              {/* Show COVID description for location subfolders */}
+              {(currentFolder.id === 'cafe-landtmann' ||
+                currentFolder.id === 'generali-arena' ||
+                currentFolder.id === 'schikaneder' ||
+                currentFolder.id === 'vienna' ||
+                currentFolder.id === 'weltmuseum') && (
+                <div className="mb-6 bg-zinc-900/50 border border-zinc-800/50 rounded-lg p-4">
+                  <h4 className="text-lg font-semibold text-white mb-3">
+                    About Enter the (co)void
+                  </h4>
+                  <p className="text-sm text-gray-300 leading-relaxed">
+                    Void means emptiness. Co(void) is the emptiness created by COVID. This project
+                    makes the COVID-caused emptiness visually visible through abandoned places of
+                    social life.
+                  </p>
+                </div>
+              )}
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                 <div>
                   <h4 className="font-semibold text-gray-300 mb-2">Photography</h4>
@@ -668,16 +847,46 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
                     )}
                   </div>
                 ))
-              : // Image contents of selected collection
-                currentFolder.images?.map((image, index) => (
-                  <ArchiveImageCard
-                    key={image.id}
-                    image={image}
-                    index={index}
-                    viewMode={viewMode}
-                    onSelect={(img: ImageItem, idx: number) => handleImageSelect(img, idx)}
-                  />
-                )) || []}
+              : currentFolder.id === 'enter-the-covoid-editorial'
+                ? // Enter the (co)void editorial with location subfolders
+                  currentFolder.editorialImages?.map((locationFolder: any) => (
+                    <div
+                      key={locationFolder.id}
+                      className={`${viewMode === 'grid' ? 'bg-zinc-900/50 border border-zinc-800/50 rounded-lg p-4 text-center cursor-pointer hover:bg-zinc-800/50 transition-colors group' : 'flex items-center space-x-4 p-3 rounded-lg hover:bg-zinc-800/50 cursor-pointer transition-colors'}`}
+                      onClick={() => openFolder(locationFolder)}
+                    >
+                      {viewMode === 'grid' ? (
+                        <>
+                          <h3 className="text-sm font-medium text-gray-200 mb-1">
+                            {locationFolder.name}
+                          </h3>
+                          <p className="text-xs text-gray-400">{locationFolder.itemCount} images</p>
+                        </>
+                      ) : (
+                        <>
+                          <div className="flex-1">
+                            <div className="text-sm font-medium text-gray-200">
+                              {locationFolder.name}
+                            </div>
+                            <div className="text-xs text-gray-400">
+                              {locationFolder.itemCount} images
+                            </div>
+                          </div>
+                          <div className="text-xs text-gray-500">Location</div>
+                        </>
+                      )}
+                    </div>
+                  )) || []
+                : // Image contents of selected collection
+                  currentFolder.images?.map((image, index) => (
+                    <ArchiveImageCard
+                      key={image.id}
+                      image={image}
+                      index={index}
+                      viewMode={viewMode}
+                      onSelect={(img: ImageItem, idx: number) => handleImageSelect(img, idx)}
+                    />
+                  )) || []}
         </div>
 
         {/* Enhanced Editorial Image Modal for Archives */}
