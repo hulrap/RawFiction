@@ -32,7 +32,7 @@ interface FolderItem {
   itemCount?: number;
   size?: string;
   images?: ImageItem[];
-  editorialImages?: EditorialItem[];
+  editorialImages?: EditorialItem[] | FolderItem[];
   productImages?: ProductItem[];
 }
 
@@ -217,8 +217,7 @@ const createEditorialCollections = (): FolderItem[] => {
           credits: {
             photographer: 'Marcel Bernard',
             models: [
-              'Special thanks to models from Enfant Terrible',
-              'Special thanks to Cafe Landtmann',
+              'Special thanks to Café Landtmann, Generali and Weltmuseum, and all models from Enfant Terrible',
             ],
           },
         })),
@@ -359,7 +358,7 @@ const createEditorialCollections = (): FolderItem[] => {
       type: 'folder',
       itemCount: enterCovoidImages.length,
       images: enterCovoidImages,
-      editorialImages: enterCovoidLocationFolders as any, // Store subfolders for navigation
+      editorialImages: enterCovoidLocationFolders, // Store subfolders for navigation
     },
   ];
 };
@@ -676,7 +675,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
   // Archive Mode - Folder Explorer Interface
   if (mode === 'archive') {
     return (
-      <div className="h-full w-full bg-gradient-to-br from-gray-900 to-black p-6">
+      <div className="h-full w-full p-6">
         {/* Archive Header */}
         <div className="flex items-center justify-between mb-6 bg-gradient-to-r from-zinc-900/80 to-zinc-800/80 rounded-lg p-4 border border-zinc-700/30">
           <div className="flex items-center space-x-4">
@@ -716,77 +715,6 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
             <span className="text-gray-200">{currentFolder.name}</span>
           </div>
         )}
-
-        {/* Credits Section - Show when inside an editorial collection */}
-        {currentFolder &&
-          currentFolder.images &&
-          currentFolder.images.length > 0 &&
-          currentFolder.images[0]?.credits && (
-            <div className="mb-6 bg-zinc-900/30 border border-zinc-800/30 rounded-lg p-4">
-              {/* Show COVID description for Enter the (co)void editorial */}
-              {currentFolder.id === 'enter-the-covoid-editorial' && (
-                <div className="mb-6 bg-zinc-900/50 border border-zinc-800/50 rounded-lg p-4">
-                  <h4 className="text-lg font-semibold text-white mb-3">
-                    About Enter the (co)void
-                  </h4>
-                  <p className="text-sm text-gray-300 leading-relaxed">
-                    Void bedeutet Leere. Co(void) ist die von Covid geschaffene Leere. Der Virus war
-                    noch nie mit dem Menschen kompatibel. Wir sind ein von Natur aus soziales Wesen.
-                    Interaktion und Anerkennung zählen zu unseren absoluten Grundbedürfnissen und
-                    sind nicht aus unserem Leben wegzudenken. Das Ausbleiben sozialer und
-                    kultureller Interaktion an öffentlichen Orten des Zusammenkommens erzeugt sowohl
-                    in uns selbst, als auch an diesen Plätzen eine Leere. Wo einst ein Menschenmeer
-                    war, ist es heute menschenleer. Das hat so weitgreifende Auswirkungen, dass man
-                    darüber Bücher schreiben könnte. Von geschädigten Existenzen, über verlorene
-                    Kindheit und Bildung, über das Fernbleiben von Kunst und Kultur bis zu
-                    psychischen Problemen.
-                  </p>
-                  <p className="text-sm text-gray-300 leading-relaxed mt-3">
-                    Mit unserem Projekt &ldquo;Enter the Co(void)&rdquo; machen wir die von Covid
-                    verursachte Leere anhand verlassener Orte des Gesellschaftslebens visuell
-                    sichtbar.
-                  </p>
-                </div>
-              )}
-
-              {/* Show COVID description for location subfolders */}
-              {(currentFolder.id === 'cafe-landtmann' ||
-                currentFolder.id === 'generali-arena' ||
-                currentFolder.id === 'schikaneder' ||
-                currentFolder.id === 'vienna' ||
-                currentFolder.id === 'weltmuseum') && (
-                <div className="mb-6 bg-zinc-900/50 border border-zinc-800/50 rounded-lg p-4">
-                  <h4 className="text-lg font-semibold text-white mb-3">
-                    About Enter the (co)void
-                  </h4>
-                  <p className="text-sm text-gray-300 leading-relaxed">
-                    Void means emptiness. Co(void) is the emptiness created by COVID. This project
-                    makes the COVID-caused emptiness visually visible through abandoned places of
-                    social life.
-                  </p>
-                </div>
-              )}
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                <div>
-                  <h4 className="font-semibold text-gray-300 mb-2">Photography</h4>
-                  <p className="text-white">{currentFolder.images[0]?.credits?.photographer}</p>
-                </div>
-                <div>
-                  <h4 className="font-semibold text-gray-300 mb-2">Models</h4>
-                  <div className="space-y-1">
-                    {currentFolder.images[0]?.credits?.models.map(
-                      (model: string, index: number) => (
-                        <p key={index} className="text-white">
-                          {model}
-                        </p>
-                      )
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
 
         {/* Folder/Image Grid */}
         <div
@@ -849,34 +777,38 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
                 ))
               : currentFolder.id === 'enter-the-covoid-editorial'
                 ? // Enter the (co)void editorial with location subfolders
-                  currentFolder.editorialImages?.map((locationFolder: any) => (
-                    <div
-                      key={locationFolder.id}
-                      className={`${viewMode === 'grid' ? 'bg-zinc-900/50 border border-zinc-800/50 rounded-lg p-4 text-center cursor-pointer hover:bg-zinc-800/50 transition-colors group' : 'flex items-center space-x-4 p-3 rounded-lg hover:bg-zinc-800/50 cursor-pointer transition-colors'}`}
-                      onClick={() => openFolder(locationFolder)}
-                    >
-                      {viewMode === 'grid' ? (
-                        <>
-                          <h3 className="text-sm font-medium text-gray-200 mb-1">
-                            {locationFolder.name}
-                          </h3>
-                          <p className="text-xs text-gray-400">{locationFolder.itemCount} images</p>
-                        </>
-                      ) : (
-                        <>
-                          <div className="flex-1">
-                            <div className="text-sm font-medium text-gray-200">
+                  (currentFolder.editorialImages as FolderItem[])?.map(
+                    (locationFolder: FolderItem) => (
+                      <div
+                        key={locationFolder.id}
+                        className={`${viewMode === 'grid' ? 'bg-zinc-900/50 border border-zinc-800/50 rounded-lg p-4 text-center cursor-pointer hover:bg-zinc-800/50 transition-colors group' : 'flex items-center space-x-4 p-3 rounded-lg hover:bg-zinc-800/50 cursor-pointer transition-colors'}`}
+                        onClick={() => openFolder(locationFolder)}
+                      >
+                        {viewMode === 'grid' ? (
+                          <>
+                            <h3 className="text-sm font-medium text-gray-200 mb-1">
                               {locationFolder.name}
-                            </div>
-                            <div className="text-xs text-gray-400">
+                            </h3>
+                            <p className="text-xs text-gray-400">
                               {locationFolder.itemCount} images
+                            </p>
+                          </>
+                        ) : (
+                          <>
+                            <div className="flex-1">
+                              <div className="text-sm font-medium text-gray-200">
+                                {locationFolder.name}
+                              </div>
+                              <div className="text-xs text-gray-400">
+                                {locationFolder.itemCount} images
+                              </div>
                             </div>
-                          </div>
-                          <div className="text-xs text-gray-500">Location</div>
-                        </>
-                      )}
-                    </div>
-                  )) || []
+                            <div className="text-xs text-gray-500">Location</div>
+                          </>
+                        )}
+                      </div>
+                    )
+                  ) || []
                 : // Image contents of selected collection
                   currentFolder.images?.map((image, index) => (
                     <ArchiveImageCard
@@ -889,225 +821,115 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
                   )) || []}
         </div>
 
-        {/* Enhanced Editorial Image Modal for Archives */}
-        {selectedImage && (
-          <div
-            className="fixed inset-0 bg-black/95 backdrop-blur-sm z-50 overflow-y-auto"
-            onClick={() => {
-              setSelectedImage(null);
-              setCurrentVariantIndex(0);
-            }}
-          >
-            <div className="min-h-full flex items-center justify-center p-4">
-              <div
-                className="bg-zinc-950/95 border border-zinc-800/50 rounded-xl backdrop-blur-lg relative w-full max-w-7xl"
-                onClick={e => e.stopPropagation()}
-              >
-                {/* Close Button */}
-                <button
-                  className="absolute top-4 right-4 bg-black/80 hover:bg-black/90 text-white rounded-full w-10 h-10 flex items-center justify-center transition-colors z-20 shadow-lg"
-                  onClick={() => {
-                    setSelectedImage(null);
-                    setCurrentVariantIndex(0);
-                  }}
-                >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                    <line
-                      x1="18"
-                      y1="6"
-                      x2="6"
-                      y2="18"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <line
-                      x1="6"
-                      y1="6"
-                      x2="18"
-                      y2="18"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </button>
+        {/* Description Section - Show after subfolders */}
+        {currentFolder &&
+          currentFolder.images &&
+          currentFolder.images.length > 0 &&
+          currentFolder.images[0]?.credits &&
+          (currentFolder.id === 'enter-the-covoid-editorial' ||
+            currentFolder.id === 'cafe-landtmann' ||
+            currentFolder.id === 'generali-arena' ||
+            currentFolder.id === 'schikaneder' ||
+            currentFolder.id === 'vienna' ||
+            currentFolder.id === 'weltmuseum') && (
+            <div className="mt-8 mb-8 bg-zinc-900/30 border border-zinc-800/30 rounded-lg p-6">
+              {/* Show COVID description for Enter the (co)void editorial */}
+              {currentFolder.id === 'enter-the-covoid-editorial' && (
+                <div className="mb-6 bg-zinc-900/50 border border-zinc-800/50 rounded-lg p-6">
+                  <h4 className="text-lg font-semibold text-white mb-4">
+                    About Enter the (co)void
+                  </h4>
+                  <p className="text-sm text-gray-300 leading-relaxed mb-4">
+                    Void bedeutet Leere. Co(void) ist die von Covid geschaffene Leere. Der Virus war
+                    noch nie mit dem Menschen kompatibel. Wir sind ein von Natur aus soziales Wesen.
+                    Interaktion und Anerkennung zählen zu unseren absoluten Grundbedürfnissen und
+                    sind nicht aus unserem Leben wegzudenken. Das Ausbleiben sozialer und
+                    kultureller Interaktion an öffentlichen Orten des Zusammenkommens erzeugt sowohl
+                    in uns selbst, als auch an diesen Plätzen eine Leere. Wo einst ein Menschenmeer
+                    war, ist es heute menschenleer. Das hat so weitgreifende Auswirkungen, dass man
+                    darüber Bücher schreiben könnte. Von geschädigten Existenzen, über verlorene
+                    Kindheit und Bildung, über das Fernbleiben von Kunst und Kultur bis zu
+                    psychischen Problemen.
+                  </p>
+                  <p className="text-sm text-gray-300 leading-relaxed">
+                    Mit unserem Projekt &ldquo;Enter the Co(void)&rdquo; machen wir die von Covid
+                    verursachte Leere anhand verlassener Orte des Gesellschaftslebens visuell
+                    sichtbar.
+                  </p>
+                </div>
+              )}
 
-                <div className="p-6">
-                  <div className="flex flex-col lg:flex-row gap-8 h-full">
-                    {/* Main Image Section */}
-                    <div className="flex-1 flex flex-col justify-start min-h-0">
-                      <div className="relative group">
-                        <img
-                          src={selectedImage.src}
-                          alt={selectedImage.alt}
-                          className="w-full h-auto max-h-[80vh] object-contain rounded-lg shadow-2xl"
-                          loading="eager"
-                        />
+              {/* Show COVID description for location subfolders */}
+              {(currentFolder.id === 'cafe-landtmann' ||
+                currentFolder.id === 'generali-arena' ||
+                currentFolder.id === 'schikaneder' ||
+                currentFolder.id === 'vienna' ||
+                currentFolder.id === 'weltmuseum') && (
+                <div className="mb-6 bg-zinc-900/50 border border-zinc-800/50 rounded-lg p-4">
+                  <h4 className="text-lg font-semibold text-white mb-3">
+                    About Enter the (co)void
+                  </h4>
+                  <p className="text-sm text-gray-300 leading-relaxed">
+                    Void means emptiness. Co(void) is the emptiness created by COVID. This project
+                    makes the COVID-caused emptiness visually visible through abandoned places of
+                    social life.
+                  </p>
+                </div>
+              )}
 
-                        {/* Enhanced Navigation Arrows */}
-                        {getCurrentImages().length > 1 && (
-                          <>
-                            {currentImageIndex > 0 && (
-                              <button
-                                className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/80 hover:bg-black/90 text-white p-3 rounded-full transition-all duration-300 z-10 shadow-xl opacity-0 group-hover:opacity-100 hover:scale-110"
-                                onClick={e => {
-                                  e.stopPropagation();
-                                  navigateToImage('prev');
-                                }}
-                              >
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                                  <path
-                                    d="M15 18L9 12L15 6"
-                                    stroke="currentColor"
-                                    strokeWidth="2.5"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                  />
-                                </svg>
-                              </button>
-                            )}
-                            {currentImageIndex < getCurrentImages().length - 1 && (
-                              <button
-                                className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/80 hover:bg-black/90 text-white p-3 rounded-full transition-all duration-300 z-10 shadow-xl opacity-0 group-hover:opacity-100 hover:scale-110"
-                                onClick={e => {
-                                  e.stopPropagation();
-                                  navigateToImage('next');
-                                }}
-                              >
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                                  <path
-                                    d="M9 18L15 12L9 6"
-                                    stroke="currentColor"
-                                    strokeWidth="2.5"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                  />
-                                </svg>
-                              </button>
-                            )}
-                          </>
-                        )}
-
-                        {/* Image Counter */}
-                        <div className="absolute bottom-4 right-4 bg-black/80 text-white px-3 py-1 rounded-full text-sm font-medium">
-                          {currentImageIndex + 1} / {getCurrentImages().length}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Enhanced Info Panel */}
-                    <div className="lg:w-80 flex-shrink-0 space-y-6">
-                      {/* Header Info */}
-                      <div className="space-y-3">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-gradient-to-br from-zinc-600 to-zinc-800 rounded-lg flex items-center justify-center">
-                            <svg
-                              width="20"
-                              height="20"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              className="text-white"
-                            >
-                              <path
-                                d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              />
-                              <circle
-                                cx="12"
-                                cy="13"
-                                r="4"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              />
-                            </svg>
-                          </div>
-                          <div>
-                            <h3 className="text-lg font-bold text-white">Editorial Image</h3>
-                            <p className="text-sm text-gray-400">{selectedImage.collection}</p>
-                          </div>
-                        </div>
-
-                        {selectedImage.description && (
-                          <div className="bg-gradient-to-r from-zinc-900/80 to-zinc-800/80 rounded-lg p-4 border border-zinc-700/50">
-                            <h4 className="text-sm font-semibold text-gray-300 mb-2">
-                              Photo Credits
-                            </h4>
-                            <p className="text-white font-medium">{selectedImage.description}</p>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Credits Section */}
-                      {'credits' in selectedImage && selectedImage.credits && (
-                        <div className="space-y-4">
-                          <div className="bg-gradient-to-br from-zinc-900/90 to-zinc-800/90 rounded-xl p-5 border border-zinc-700/50 backdrop-blur-sm">
-                            <div className="flex items-center mb-3">
-                              <svg
-                                width="16"
-                                height="16"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                className="text-zinc-400 mr-2"
-                              >
-                                <path
-                                  d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"
-                                  stroke="currentColor"
-                                  strokeWidth="2"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                />
-                                <circle
-                                  cx="9"
-                                  cy="7"
-                                  r="4"
-                                  stroke="currentColor"
-                                  strokeWidth="2"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                />
-                                <path
-                                  d="M23 21v-2a4 4 0 0 0-3-3.87"
-                                  stroke="currentColor"
-                                  strokeWidth="2"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                />
-                                <path
-                                  d="M16 3.13a4 4 0 0 1 0 7.75"
-                                  stroke="currentColor"
-                                  strokeWidth="2"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                />
-                              </svg>
-                              <h4 className="font-semibold text-white">Models</h4>
-                            </div>
-                            <div className="space-y-2">
-                              {selectedImage.credits.models.map((model, index) => (
-                                <div key={index} className="flex items-center space-x-2">
-                                  <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
-                                  <p className="text-gray-200 font-medium">{model}</p>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <h4 className="font-semibold text-gray-300 mb-2">Photography</h4>
+                  <p className="text-white">{currentFolder.images[0]?.credits?.photographer}</p>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-gray-300 mb-2">Models</h4>
+                  <div className="space-y-1">
+                    {currentFolder.images[0]?.credits?.models.map(
+                      (model: string, index: number) => (
+                        <p key={index} className="text-white">
+                          {model}
+                        </p>
+                      )
+                    )}
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
+
+        {/* Standard Credits Section for other editorials */}
+        {currentFolder &&
+          currentFolder.images &&
+          currentFolder.images.length > 0 &&
+          currentFolder.images[0]?.credits &&
+          currentFolder.id !== 'enter-the-covoid-editorial' &&
+          currentFolder.id !== 'cafe-landtmann' &&
+          currentFolder.id !== 'generali-arena' &&
+          currentFolder.id !== 'schikaneder' &&
+          currentFolder.id !== 'vienna' &&
+          currentFolder.id !== 'weltmuseum' && (
+            <div className="mt-8 mb-8 bg-zinc-900/30 border border-zinc-800/30 rounded-lg p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <h4 className="font-semibold text-gray-300 mb-2">Photography</h4>
+                  <p className="text-white">{currentFolder.images[0]?.credits?.photographer}</p>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-gray-300 mb-2">Models</h4>
+                  <div className="space-y-1">
+                    {currentFolder.images[0]?.credits?.models.map(
+                      (model: string, index: number) => (
+                        <p key={index} className="text-white">
+                          {model}
+                        </p>
+                      )
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
       </div>
     );
   }
@@ -1340,7 +1162,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
                           loading="eager"
                         />
 
-                        {/* Enhanced Navigation for Editorial */}
+                        {/* Enhanced Navigation Arrows */}
                         {getCurrentImages().length > 1 && (
                           <>
                             {currentImageIndex > 0 && (
