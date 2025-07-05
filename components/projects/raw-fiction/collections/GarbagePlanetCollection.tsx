@@ -27,6 +27,8 @@ export interface ProductItem {
     features?: string;
     donations?: string;
     badge?: string;
+    sustainability?: string;
+    orderInfo?: string;
   };
 }
 
@@ -40,6 +42,10 @@ const GP_PRODUCT_INFO = {
       'Our crop-top is handcrafted in Vienna, Austria with love. The fabric consists of pure GOTS certified linen. Our crop-top is Unisex, but with a feminine touch. Besides the cotton yarn they are 100% made out of woven black linen fabric, featuring a steel button on the backside of the neck.',
     features:
       'Unisex design with feminine touch, 100% woven black linen fabric, steel button on neck backside, very airy and cooling due to linen fabric - perfect for warm summer days.',
+    sustainability:
+      'Our crop-top is handcrafted in Vienna, Austria with love. The fabric consists of pure GOTS certified linen. While we do not own a certificate on our own, the sourcing with GOTS certified materials ensures high environmental and social standards throughout the whole production chain involved in creating a fabric. By producing in our hometown Vienna and with its high social standards, we can guarantee fairness during the making of our garments. In order to sew our clothes without causing microplastic waste, we are using GOTS certified cotton yarns. This ensures that the top is fully biodegradable. The metal button is made from stainless steel, which is 100% recyclable, the handcrafted agent badge is made from old damaged tin dishes and can be recycled too. To offset the CO2 emissions involved in the creation of this crop-top, we are estimating their impact and purchasing CO2 allowances, as well as planting a tree for every top sold, through trustworthy programs.',
+    orderInfo:
+      'We are producing the items only after you have fallen in love with them. This means they are specifically handmade for you and we never create any waste from dead stock. The production process only takes 2 weeks until the items are shipped.',
   },
   17: {
     name: 'Hotpants',
@@ -48,6 +54,10 @@ const GP_PRODUCT_INFO = {
     description: 'Handcrafted sustainable hotpants made from 100% organic GOTS certified linen.',
     features:
       'Comfortable fit, sustainable materials, handmade in Vienna with high social standards.',
+    sustainability:
+      'Our hotpants are handcrafted in Vienna, Austria with love. The fabric consists of pure GOTS certified linen. While we do not own a certificate on our own, the sourcing with GOTS certified materials ensures high environmental and social standards throughout the whole production chain involved in creating a fabric. By producing in our hometown Vienna and with its high social standards, we can guarantee fairness during the making of our garments.',
+    orderInfo:
+      'We are producing the items only after you have fallen in love with them. This means they are specifically handmade for you and we never create any waste from dead stock. The production process only takes 2 weeks until the items are shipped.',
   },
   18: {
     name: 'Turtleneck',
@@ -57,6 +67,10 @@ const GP_PRODUCT_INFO = {
       'Our turtleneck is handcrafted in Vienna, Austria with love. The fabric consists of pure GOTS certified linen. Our turtleneck is feminine. Besides the cotton yarn it is 100% made out of woven black linen fabric, featuring steel buttons on the collar.',
     features:
       'Feminine design, 100% woven black linen fabric, steel buttons on collar, can be worn with buttons in front or back.',
+    sustainability:
+      'Our turtleneck is handcrafted in Vienna, Austria with love. The fabric consists of pure GOTS certified linen. While we do not own a certificate on our own, the sourcing with GOTS certified materials ensures high environmental and social standards throughout the whole production chain involved in creating a fabric. By producing in our hometown Vienna and with its high social standards, we can guarantee fairness during the making of our garments. In order to sew our clothes without causing microplastic waste, we are using GOTS certified cotton yarns. This ensures that the turtleneck is fully biodegradable. The metal buttons are made from stainless steel, which is 100% recyclable, the handcrafted agent badge is made from old damaged tin dishes and can be recycled too. To offset the CO2 emissions involved in the creation of this turtleneck and components, we are estimating their impact and purchasing CO2 allowances, as well as planting a tree for every turtleneck sold, through trustworthy programs.',
+    orderInfo:
+      'We are producing the items only after you have fallen in love with them. This means they are specifically handmade for you and we never create any waste from dead stock. The production process only takes 2 weeks until the items are shipped.',
   },
   19: {
     name: 'Kimono',
@@ -64,6 +78,10 @@ const GP_PRODUCT_INFO = {
     sex: 'Unisex',
     description: 'Elegant kimono design handcrafted from sustainable materials.',
     features: 'Flowing kimono silhouette, versatile styling options, made from organic linen.',
+    sustainability:
+      'Our kimono is handcrafted in Vienna, Austria with love. The fabric consists of pure GOTS certified linen. While we do not own a certificate on our own, the sourcing with GOTS certified materials ensures high environmental and social standards throughout the whole production chain involved in creating a fabric.',
+    orderInfo:
+      'We are producing the items only after you have fallen in love with them. This means they are specifically handmade for you and we never create any waste from dead stock. The production process only takes 2 weeks until the items are shipped.',
   },
   20: {
     name: 'LongT',
@@ -71,6 +89,10 @@ const GP_PRODUCT_INFO = {
     sex: 'Unisex',
     description: 'Long-sleeved sustainable t-shirt made from organic materials.',
     features: 'Comfortable long-sleeve design, breathable linen fabric, minimalist aesthetic.',
+    sustainability:
+      'Our LongT is handcrafted in Vienna, Austria with love. The fabric consists of pure GOTS certified linen. While we do not own a certificate on our own, the sourcing with GOTS certified materials ensures high environmental and social standards throughout the whole production chain involved in creating a fabric.',
+    orderInfo:
+      'We are producing the items only after you have fallen in love with them. This means they are specifically handmade for you and we never create any waste from dead stock. The production process only takes 2 weeks until the items are shipped.',
   },
   21: {
     name: 'Pants',
@@ -78,6 +100,10 @@ const GP_PRODUCT_INFO = {
     sex: 'Unisex',
     description: 'Sustainable pants crafted from organic linen with attention to detail.',
     features: 'Comfortable fit, durable construction, timeless design.',
+    sustainability:
+      'Our pants are handcrafted in Vienna, Austria with love. The fabric consists of pure GOTS certified linen. While we do not own a certificate on our own, the sourcing with GOTS certified materials ensures high environmental and social standards throughout the whole production chain involved in creating a fabric.',
+    orderInfo:
+      'We are producing the items only after you have fallen in love with them. This means they are specifically handmade for you and we never create any waste from dead stock. The production process only takes 2 weeks until the items are shipped.',
   },
   22: {
     name: 'Tank Kimono',
@@ -85,6 +111,10 @@ const GP_PRODUCT_INFO = {
     sex: 'Unisex',
     description: 'Unique tank kimono hybrid design combining comfort and style.',
     features: 'Innovative design, lightweight feel, perfect for layering.',
+    sustainability:
+      'Our tank kimono is handcrafted in Vienna, Austria with love. The fabric consists of pure GOTS certified linen. While we do not own a certificate on our own, the sourcing with GOTS certified materials ensures high environmental and social standards throughout the whole production chain involved in creating a fabric.',
+    orderInfo:
+      'We are producing the items only after you have fallen in love with them. This means they are specifically handmade for you and we never create any waste from dead stock. The production process only takes 2 weeks until the items are shipped.',
   },
   23: {
     name: 'Apron',
@@ -92,6 +122,10 @@ const GP_PRODUCT_INFO = {
     sex: 'Unisex',
     description: 'Functional apron made from sustainable materials with Raw Fiction aesthetic.',
     features: 'Practical design, durable construction, sustainable materials.',
+    sustainability:
+      'Our apron is handcrafted in Vienna, Austria with love. The fabric consists of pure GOTS certified linen. While we do not own a certificate on our own, the sourcing with GOTS certified materials ensures high environmental and social standards throughout the whole production chain involved in creating a fabric.',
+    orderInfo:
+      'We are producing the items only after you have fallen in love with them. This means they are specifically handmade for you and we never create any waste from dead stock. The production process only takes 2 weeks until the items are shipped.',
   },
 };
 
@@ -160,6 +194,8 @@ export const generateGarbagePlanetProducts = (): ProductItem[] => {
         features: productInfo.features,
         donations: '10% donated to Pure Earth',
         badge: 'Agent-Badge included (handmade tin)',
+        sustainability: productInfo.sustainability,
+        orderInfo: productInfo.orderInfo,
       },
     });
   }

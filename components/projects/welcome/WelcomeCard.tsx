@@ -6,7 +6,7 @@ export const WelcomeCard: React.FC = () => {
       <div className="card-glass p-12 max-w-2xl text-center">
         <h1 className="heading-main mb-8">WELCOME TO MY PORTFOLIO</h1>
         <p className="text-xl text-[var(--brand-accent)] mb-8">
-          BEHIND EACH PROJECT IS A WINDOW
+          WINDOWS INTO MY PAST AND CURRENT PROJECTS
         </p>
         <div className="text-[var(--brand-fg)] opacity-70">
           SCROLL OR USE ARROW KEYS TO NAVIGATE

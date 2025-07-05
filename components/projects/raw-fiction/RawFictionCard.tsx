@@ -70,9 +70,9 @@ export const RawFictionCard: React.FC<ProjectProps> = ({ isActive: _isActive = t
                     '/projects/raw-fiction-content/archive/editorial/pure-chlorine/MG_7391.jpg',
                 },
                 {
-                  name: 'RACISM',
+                  name: 'UNITY',
                   backgroundImage:
-                    '/projects/raw-fiction-content/archive/editorial/racism/BLICKWINKEL-2.jpg',
+                    '/projects/raw-fiction-content/archive/editorial/unity/BLICKWINKEL-2.jpg',
                 },
                 {
                   name: 'GARBAGE PLANET 2.0',
@@ -88,8 +88,8 @@ export const RawFictionCard: React.FC<ProjectProps> = ({ isActive: _isActive = t
                       return 'pride';
                     case 'PURE CHLORINE':
                       return 'pure-chlorine';
-                    case 'RACISM':
-                      return 'racism';
+                    case 'UNITY':
+                      return 'unity';
                     case 'GARBAGE PLANET 2.0':
                       return 'garbage-planet-2';
                     default:
@@ -120,7 +120,7 @@ export const RawFictionCard: React.FC<ProjectProps> = ({ isActive: _isActive = t
             </div>
 
             <div className="grid md:grid-cols-2 gap-8">
-              <div className="bg-zinc-900/50 border border-zinc-800/50 rounded-lg p-8">
+              <div className="bg-zinc-900/50 border border-zinc-800/50 rounded-lg p-8 text-center">
                 <h3 className="text-xl font-bold text-white mb-4">Brand Manifesto</h3>
                 <p className="text-sm text-gray-300 leading-relaxed">
                   It is a period of exploitation and overconsumption, potentially leading humanity
@@ -134,7 +134,7 @@ export const RawFictionCard: React.FC<ProjectProps> = ({ isActive: _isActive = t
                 </p>
               </div>
 
-              <div className="bg-zinc-900/50 border border-zinc-800/50 rounded-lg p-8">
+              <div className="bg-zinc-900/50 border border-zinc-800/50 rounded-lg p-8 text-center">
                 <h3 className="text-xl font-bold text-white mb-4">Digital Archives</h3>
                 <p className="text-sm text-gray-300 leading-relaxed">
                   Our extensive digital archives contain hundreds of high-resolution fashion images,
@@ -253,13 +253,13 @@ export const RawFictionCard: React.FC<ProjectProps> = ({ isActive: _isActive = t
       ),
     },
     {
-      id: 'racism',
-      title: 'Racism',
+      id: 'unity',
+      title: 'Unity',
       content: (
         <div className="h-full w-full p-8 overflow-y-auto">
           <div className="max-w-4xl mx-auto space-y-8">
             <div className="text-center">
-              <h2 className="text-3xl font-bold text-white mb-4">Racism Collection</h2>
+              <h2 className="text-3xl font-bold text-white mb-4">Unity Collection</h2>
               <p className="text-lg text-gray-300 mb-8">
                 Social Commentary • Awareness • Change Through Fashion
               </p>
@@ -267,9 +267,9 @@ export const RawFictionCard: React.FC<ProjectProps> = ({ isActive: _isActive = t
                 <h3 className="text-lg font-semibold text-white mb-3">Collection Story</h3>
                 <p className="text-sm text-gray-300 leading-relaxed">
                   This collection addresses one of the most persistent social issues of our time.
-                  Through powerful statement pieces, we challenge racism and promote equality in all
+                  Through powerful statement pieces, we challenge unity and promote equality in all
                   its forms. Each garment is ethically produced with 100% organic cotton and
-                  supports ENAR (European Network Against Racism) through direct donations. From
+                  supports ENAR (European Network Against Unity) through direct donations. From
                   accessible shirts to premium handcrafted pieces, this collection embodies our
                   commitment to social justice while planting a tree for every piece sold. Fashion
                   becomes a tool for change, awareness, and progress toward a more equitable world.
@@ -277,9 +277,9 @@ export const RawFictionCard: React.FC<ProjectProps> = ({ isActive: _isActive = t
               </div>
             </div>
             <ImageGallery
-              componentId="raw-fiction-racism"
-              collectionId="racism"
-              title="Racism Collection"
+              componentId="raw-fiction-unity"
+              collectionId="unity"
+              title="Unity Collection"
               mode="collection"
             />
           </div>
