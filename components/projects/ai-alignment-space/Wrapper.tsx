@@ -1,10 +1,10 @@
 import React, { useState, useCallback } from 'react';
 import { EmbeddedWebsiteFrame } from '../../shared/EmbeddedWebsiteFrame';
-import type { SiteConfig } from '../../shared/types';
+import type { TabItem } from '../../shared/types';
 
 interface EmbeddedWrapperProps {
   id: string;
-  siteConfig: SiteConfig;
+  tabs: TabItem[];
   className?: string;
   style?: React.CSSProperties;
   fallbackContent?: React.ReactNode;
@@ -14,37 +14,34 @@ interface EmbeddedWrapperProps {
 
 export const EmbeddedWrapper: React.FC<EmbeddedWrapperProps> = ({
   id,
-  siteConfig,
+  tabs,
   className = '',
   style,
   fallbackContent,
-  onError,
+  onError: _onError,
   onSuccess,
 }) => {
+  const [activeTab, setActiveTab] = useState<string>(tabs[0]?.id || '');
   const [hasError, setHasError] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
 
-  const handleIframeLoad = useCallback(() => {
-    setHasError(false);
-    onSuccess?.();
-  }, [onSuccess]);
-
-  const handleIframeError = useCallback(
-    (error: string) => {
-      setHasError(true);
-      setErrorMessage(error);
-      onError?.(error);
-    },
-    [onError]
+  // Find the website tab (assumed to be the first tab with EmbeddedWebsiteFrame)
+  const websiteTab = tabs.find(
+    tab => React.isValidElement(tab.content) && tab.content.type === EmbeddedWebsiteFrame
   );
+
+  const handleTabChange = (tabId: string) => {
+    setActiveTab(tabId);
+    onSuccess?.();
+  };
 
   const retryLoad = useCallback(() => {
     setHasError(false);
     setErrorMessage('');
   }, []);
 
-  // Show error state
-  if (hasError) {
+  // Show error state only for website tab
+  if (hasError && activeTab === websiteTab?.id) {
     return (
       <div id={id} className={`relative ${className}`} style={style}>
         <div className="absolute inset-0 bg-gray-900 border border-yellow-600 flex items-center justify-center">
@@ -67,7 +64,7 @@ export const EmbeddedWrapper: React.FC<EmbeddedWrapperProps> = ({
                   Retry
                 </button>
                 <a
-                  href={siteConfig.url}
+                  href="https://ai-alignment-space.org"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded"
@@ -82,16 +79,26 @@ export const EmbeddedWrapper: React.FC<EmbeddedWrapperProps> = ({
     );
   }
 
-  // Show the iframe directly - no persistent loading screen
   return (
     <div id={id} className={`relative ${className}`} style={style}>
-      <EmbeddedWebsiteFrame
-        url={siteConfig.url}
-        title={siteConfig.title}
-        onLoad={handleIframeLoad}
-        onError={handleIframeError}
-        siteConfig={siteConfig}
-      />
+      {/* Tab structure */}
+      <div className="tab-container h-full">
+        <div className="tab-header">
+          {tabs.map(tab => (
+            <button
+              key={tab.id}
+              className={`tab-button ${activeTab === tab.id ? 'active' : ''}`}
+              onClick={() => handleTabChange(tab.id)}
+            >
+              {tab.title}
+            </button>
+          ))}
+        </div>
+
+        <div className="tab-content content-area">
+          {tabs.find(tab => tab.id === activeTab)?.content}
+        </div>
+      </div>
     </div>
   );
 };

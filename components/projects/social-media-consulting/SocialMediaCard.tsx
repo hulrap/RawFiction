@@ -3,12 +3,12 @@ import { ContentWrapper } from './Wrapper';
 import type { ProjectProps, TabItem } from '../../shared/types';
 
 export const SocialMediaCard: React.FC<ProjectProps> = ({ isActive: _isActive = true }) => {
-  const handleError = useCallback((error: string, context: string) => {
-    console.error(`Social Media Consulting error [${context}]: ${error}`);
+  const handleError = useCallback((_error: string, _context: string) => {
+    // Error handler
   }, []);
 
-  const handleSuccess = useCallback((action: string) => {
-    console.info(`Social Media Consulting success: ${action}`);
+  const handleSuccess = useCallback((_action: string) => {
+    // Success handler
   }, []);
 
   const tabs: TabItem[] = [

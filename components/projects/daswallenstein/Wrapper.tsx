@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { EmbeddedWebsiteFrame } from '../../shared/EmbeddedWebsiteFrame';
 import { useEmbeddedLoading, EmbeddedLoadingIndicator } from './Loading';
-import type { SiteConfig } from '../../shared/types';
+import type { TabItem } from '../../shared/types';
 
 interface EmbeddedWrapperProps {
-  url: string;
-  title: string;
   id: string;
+  tabs: TabItem[];
   className?: string;
   style?: React.CSSProperties;
   fallbackContent?: React.ReactNode;
@@ -22,15 +21,15 @@ interface ErrorBoundaryState {
 }
 
 export const EmbeddedWrapper: React.FC<EmbeddedWrapperProps> = ({
-  url,
-  title,
   id,
+  tabs,
   className = '',
   style,
   fallbackContent,
   onError,
   onSuccess,
 }) => {
+  const [activeTab, setActiveTab] = useState<string>(tabs[0]?.id || '');
   const [errorState, setErrorState] = useState<ErrorBoundaryState>({
     hasError: false,
     errorId: '',
@@ -41,46 +40,23 @@ export const EmbeddedWrapper: React.FC<EmbeddedWrapperProps> = ({
   const errorTimeoutRef = useRef<NodeJS.Timeout>();
   const healthCheckRef = useRef<NodeJS.Timeout>();
 
+  // Find the website tab (assumed to be the first tab with EmbeddedWebsiteFrame)
+  const websiteTab = tabs.find(
+    tab => React.isValidElement(tab.content) && tab.content.type === EmbeddedWebsiteFrame
+  );
+
   const { state: loadingState, actions } = useEmbeddedLoading({
-    url,
-    title,
+    url: 'https://www.daswallenstein.wien/', // Default URL for loading states
+    title: 'Das Wallenstein',
     timeout: 25000, // European cultural sites may load slower
     maxRetries: 2, // Conservative for cultural venues
     preloadDelay: 250, // Refined delay for Austrian elegance
     enablePreconnect: true,
   });
 
-  // Site-specific configuration for secure sandbox
-  const siteConfig: SiteConfig = {
-    url,
-    title,
-    csp: {
-      frameAncestors: ['*'], // More permissive for cultural venues
-      bypassCSP: false,
-    },
-    loading: {
-      method: 'direct',
-      timeout: 30000, // Increased timeout for better success rate
-      retryCount: 3, // More retries for reliability
-      retryDelay: 3000,
-      enablePreconnect: true,
-      cacheBusting: false,
-      rateLimit: {
-        enabled: true,
-        delay: 2000,
-        backoff: 'linear',
-      },
-    },
-    sandbox: {
-      allowScripts: true,
-      allowSameOrigin: true, // Required for functionality
-      allowForms: true,
-      allowPopups: false,
-      allowDownloads: false,
-      allowModals: true,
-      allowTopNavigation: false,
-      strictMode: false,
-    },
+  const handleTabChange = (tabId: string) => {
+    setActiveTab(tabId);
+    onSuccess?.();
   };
 
   const handleRecovery = useCallback(() => {
@@ -138,7 +114,7 @@ export const EmbeddedWrapper: React.FC<EmbeddedWrapperProps> = ({
 
   // Periodic health monitoring
   useEffect(() => {
-    if (loadingState.isLoaded && !errorState.hasError) {
+    if (loadingState.isLoaded && !errorState.hasError && activeTab === websiteTab?.id) {
       healthCheckRef.current = setInterval(performHealthCheck, 40000); // Check every 40 seconds (respectful for cultural venues)
     }
 
@@ -147,26 +123,7 @@ export const EmbeddedWrapper: React.FC<EmbeddedWrapperProps> = ({
         clearInterval(healthCheckRef.current);
       }
     };
-  }, [loadingState.isLoaded, errorState.hasError, performHealthCheck]);
-
-  const handleLoadSuccess = useCallback(() => {
-    setErrorState({
-      hasError: false,
-      errorId: '',
-      retryCount: 0,
-    });
-
-    actions.handleLoadSuccess();
-    onSuccess?.();
-  }, [actions, onSuccess]);
-
-  const handleLoadError = useCallback(
-    (error: string) => {
-      handleComponentError('Load Error', new Error(error));
-      actions.handleLoadError(error);
-    },
-    [handleComponentError, actions]
-  );
+  }, [loadingState.isLoaded, errorState.hasError, activeTab, websiteTab?.id, performHealthCheck]);
 
   const manualRetry = useCallback(() => {
     if (errorTimeoutRef.current) {
@@ -209,7 +166,7 @@ export const EmbeddedWrapper: React.FC<EmbeddedWrapperProps> = ({
                   Reconnect
                 </button>
                 <a
-                  href={url}
+                  href="https://www.daswallenstein.wien/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-4 py-2 bg-red-700 hover:bg-red-800 text-white rounded transition-colors"
@@ -226,20 +183,40 @@ export const EmbeddedWrapper: React.FC<EmbeddedWrapperProps> = ({
 
   return (
     <div id={id} className={`relative ${className}`} style={style} ref={containerRef}>
-      <EmbeddedWebsiteFrame
-        url={url}
-        title={title}
-        onLoad={handleLoadSuccess}
-        onError={handleLoadError}
-        siteConfig={siteConfig}
-      />
-
-      <EmbeddedLoadingIndicator state={loadingState} title={title} onRetry={actions.manualRetry} />
-
-      {errorState.hasError && errorState.retryCount < 3 && (
-        <div className="absolute top-4 right-4 bg-red-600 text-white px-3 py-1 rounded text-sm z-20">
-          Reconnecting... ({errorState.retryCount}/3)
+      {/* Tab structure */}
+      <div className="tab-container h-full">
+        <div className="tab-header">
+          {tabs.map(tab => (
+            <button
+              key={tab.id}
+              className={`tab-button ${activeTab === tab.id ? 'active' : ''}`}
+              onClick={() => handleTabChange(tab.id)}
+            >
+              {tab.title}
+            </button>
+          ))}
         </div>
+
+        <div className="tab-content content-area">
+          {tabs.find(tab => tab.id === activeTab)?.content}
+        </div>
+      </div>
+
+      {/* Loading and error states only for website tab */}
+      {activeTab === websiteTab?.id && (
+        <>
+          <EmbeddedLoadingIndicator
+            state={loadingState}
+            title="Das Wallenstein"
+            onRetry={actions.manualRetry}
+          />
+
+          {errorState.hasError && errorState.retryCount < 3 && (
+            <div className="absolute top-4 right-4 bg-red-600 text-white px-3 py-1 rounded text-sm z-20">
+              Reconnecting... ({errorState.retryCount}/3)
+            </div>
+          )}
+        </>
       )}
     </div>
   );

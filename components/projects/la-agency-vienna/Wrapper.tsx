@@ -1,14 +1,13 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { EmbeddedWebsiteFrame } from '../../shared/EmbeddedWebsiteFrame';
 import { useEmbeddedLoading, EmbeddedLoadingIndicator } from './Loading';
+import type { TabItem } from '../../shared/types';
 
 interface EmbeddedWrapperProps {
-  url: string;
-  title: string;
   id: string;
+  tabs: TabItem[];
   className?: string;
   style?: React.CSSProperties;
-  fallbackContent?: React.ReactNode;
   onError?: (error: string) => void;
   onSuccess?: () => void;
 }
@@ -21,15 +20,14 @@ interface ErrorBoundaryState {
 }
 
 export const EmbeddedWrapper: React.FC<EmbeddedWrapperProps> = ({
-  url,
-  title,
   id,
+  tabs,
   className = '',
   style,
-  fallbackContent,
   onError,
   onSuccess,
 }) => {
+  const [activeTab, setActiveTab] = useState<string>(tabs[0]?.id || '');
   const [errorState, setErrorState] = useState<ErrorBoundaryState>({
     hasError: false,
     errorId: '',
@@ -40,14 +38,24 @@ export const EmbeddedWrapper: React.FC<EmbeddedWrapperProps> = ({
   const errorTimeoutRef = useRef<NodeJS.Timeout>();
   const healthCheckRef = useRef<NodeJS.Timeout>();
 
+  // Find the website tab (assumed to be the first tab with EmbeddedWebsiteFrame)
+  const websiteTab = tabs.find(
+    tab => React.isValidElement(tab.content) && tab.content.type === EmbeddedWebsiteFrame
+  );
+
   const { state: loadingState, actions } = useEmbeddedLoading({
-    url,
-    title,
+    url: 'https://la-agency-vienna.com/', // Default URL for loading states
+    title: 'L.A. Agency Vienna',
     timeout: 18000, // Creative agencies may have rich content
     maxRetries: 3, // Standard retries for business sites
     preloadDelay: 150, // Smooth delay for creative experience
     enablePreconnect: true,
   });
+
+  const handleTabChange = (tabId: string) => {
+    setActiveTab(tabId);
+    onSuccess?.();
+  };
 
   const handleRecovery = useCallback(() => {
     setErrorState({
@@ -104,7 +112,7 @@ export const EmbeddedWrapper: React.FC<EmbeddedWrapperProps> = ({
 
   // Periodic health monitoring
   useEffect(() => {
-    if (loadingState.isLoaded && !errorState.hasError) {
+    if (loadingState.isLoaded && !errorState.hasError && activeTab === websiteTab?.id) {
       healthCheckRef.current = setInterval(performHealthCheck, 25000); // Check every 25 seconds (active for creative sites)
     }
 
@@ -113,26 +121,7 @@ export const EmbeddedWrapper: React.FC<EmbeddedWrapperProps> = ({
         clearInterval(healthCheckRef.current);
       }
     };
-  }, [loadingState.isLoaded, errorState.hasError, performHealthCheck]);
-
-  const handleLoadSuccess = useCallback(() => {
-    setErrorState({
-      hasError: false,
-      errorId: '',
-      retryCount: 0,
-    });
-
-    actions.handleLoadSuccess();
-    onSuccess?.();
-  }, [actions, onSuccess]);
-
-  const handleLoadError = useCallback(
-    (error: string) => {
-      handleComponentError('Load Error', new Error(error));
-      actions.handleLoadError(error);
-    },
-    [handleComponentError, actions]
-  );
+  }, [loadingState.isLoaded, errorState.hasError, activeTab, websiteTab?.id, performHealthCheck]);
 
   const manualRetry = useCallback(() => {
     if (errorTimeoutRef.current) {
@@ -165,25 +154,23 @@ export const EmbeddedWrapper: React.FC<EmbeddedWrapperProps> = ({
               The creative agency platform has been protected due to connection issues
             </p>
             <p className="text-xs text-gray-500 mb-6">Error ID: {errorState.errorId}</p>
-            {fallbackContent || (
-              <div className="text-center">
-                <button
-                  onClick={manualRetry}
-                  className="px-4 py-2 text-white rounded mr-2 transition-colors"
-                  style={{ background: 'linear-gradient(45deg, #f97316, #fbbf24, #f97316)' }}
-                >
-                  Reconnect
-                </button>
-                <a
-                  href={url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded transition-colors"
-                >
-                  Visit LA Agency
-                </a>
-              </div>
-            )}
+            <div className="text-center">
+              <button
+                onClick={manualRetry}
+                className="px-4 py-2 text-white rounded mr-2 transition-colors"
+                style={{ background: 'linear-gradient(45deg, #f97316, #fbbf24, #f97316)' }}
+              >
+                Reconnect
+              </button>
+              <a
+                href="https://la-agency-vienna.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded transition-colors"
+              >
+                Visit LA Agency
+              </a>
+            </div>
           </div>
         </div>
       </div>
@@ -192,19 +179,40 @@ export const EmbeddedWrapper: React.FC<EmbeddedWrapperProps> = ({
 
   return (
     <div id={id} className={`relative ${className}`} style={style} ref={containerRef}>
-      <EmbeddedWebsiteFrame
-        url={url}
-        title={title}
-        onLoad={handleLoadSuccess}
-        onError={handleLoadError}
-      />
-
-      <EmbeddedLoadingIndicator state={loadingState} title={title} onRetry={actions.manualRetry} />
-
-      {errorState.hasError && errorState.retryCount < 3 && (
-        <div className="absolute top-4 right-4 bg-orange-600 text-white px-3 py-1 rounded text-sm z-20">
-          Reconnecting... ({errorState.retryCount}/3)
+      {/* Tab structure */}
+      <div className="tab-container h-full">
+        <div className="tab-header">
+          {tabs.map(tab => (
+            <button
+              key={tab.id}
+              className={`tab-button ${activeTab === tab.id ? 'active' : ''}`}
+              onClick={() => handleTabChange(tab.id)}
+            >
+              {tab.title}
+            </button>
+          ))}
         </div>
+
+        <div className="tab-content content-area">
+          {tabs.find(tab => tab.id === activeTab)?.content}
+        </div>
+      </div>
+
+      {/* Loading and error states only for website tab */}
+      {activeTab === websiteTab?.id && (
+        <>
+          <EmbeddedLoadingIndicator
+            state={loadingState}
+            title="L.A. Agency Vienna"
+            onRetry={actions.manualRetry}
+          />
+
+          {errorState.hasError && errorState.retryCount < 3 && (
+            <div className="absolute top-4 right-4 bg-orange-600 text-white px-3 py-1 rounded text-sm z-20">
+              Reconnecting... ({errorState.retryCount}/3)
+            </div>
+          )}
+        </>
       )}
     </div>
   );

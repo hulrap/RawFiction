@@ -930,6 +930,226 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
               </div>
             </div>
           )}
+
+        {/* Enhanced Editorial Image Modal for Archives */}
+        {selectedImage && (
+          <div
+            className="fixed inset-0 bg-black/95 backdrop-blur-sm z-50 overflow-y-auto"
+            onClick={() => {
+              setSelectedImage(null);
+              setCurrentVariantIndex(0);
+            }}
+          >
+            <div className="min-h-full flex items-center justify-center p-4">
+              <div
+                className="bg-zinc-950/95 border border-zinc-800/50 rounded-xl backdrop-blur-lg relative w-full max-w-7xl"
+                onClick={e => e.stopPropagation()}
+              >
+                {/* Close Button */}
+                <button
+                  className="absolute top-4 right-4 bg-black/80 hover:bg-black/90 text-white rounded-full w-10 h-10 flex items-center justify-center transition-colors z-20 shadow-lg"
+                  onClick={() => {
+                    setSelectedImage(null);
+                    setCurrentVariantIndex(0);
+                  }}
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <line
+                      x1="18"
+                      y1="6"
+                      x2="6"
+                      y2="18"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <line
+                      x1="6"
+                      y1="6"
+                      x2="18"
+                      y2="18"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+
+                <div className="p-6">
+                  <div className="flex flex-col lg:flex-row gap-8 h-full">
+                    {/* Main Image Section */}
+                    <div className="flex-1 flex flex-col justify-start min-h-0">
+                      <div className="relative group">
+                        <img
+                          src={selectedImage.src}
+                          alt={selectedImage.alt}
+                          className="w-full h-auto max-h-[80vh] object-contain rounded-lg shadow-2xl"
+                          loading="eager"
+                        />
+
+                        {/* Enhanced Navigation Arrows */}
+                        {getCurrentImages().length > 1 && (
+                          <>
+                            {currentImageIndex > 0 && (
+                              <button
+                                className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/80 hover:bg-black/90 text-white p-3 rounded-full transition-all duration-300 z-10 shadow-xl opacity-0 group-hover:opacity-100 hover:scale-110"
+                                onClick={e => {
+                                  e.stopPropagation();
+                                  navigateToImage('prev');
+                                }}
+                              >
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                  <path
+                                    d="M15 18L9 12L15 6"
+                                    stroke="currentColor"
+                                    strokeWidth="2.5"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                  />
+                                </svg>
+                              </button>
+                            )}
+                            {currentImageIndex < getCurrentImages().length - 1 && (
+                              <button
+                                className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/80 hover:bg-black/90 text-white p-3 rounded-full transition-all duration-300 z-10 shadow-xl opacity-0 group-hover:opacity-100 hover:scale-110"
+                                onClick={e => {
+                                  e.stopPropagation();
+                                  navigateToImage('next');
+                                }}
+                              >
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                  <path
+                                    d="M9 18L15 12L9 6"
+                                    stroke="currentColor"
+                                    strokeWidth="2.5"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                  />
+                                </svg>
+                              </button>
+                            )}
+                          </>
+                        )}
+
+                        {/* Image Counter */}
+                        <div className="absolute bottom-4 right-4 bg-black/80 text-white px-3 py-1 rounded-full text-sm font-medium">
+                          {currentImageIndex + 1} / {getCurrentImages().length}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Enhanced Info Panel */}
+                    <div className="lg:w-80 flex-shrink-0 space-y-6">
+                      {/* Header Info */}
+                      <div className="space-y-3">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 bg-gradient-to-br from-zinc-600 to-zinc-800 rounded-lg flex items-center justify-center">
+                            <svg
+                              width="20"
+                              height="20"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              className="text-white"
+                            >
+                              <path
+                                d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                              <circle
+                                cx="12"
+                                cy="13"
+                                r="4"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                          </div>
+                          <div>
+                            <h3 className="text-lg font-bold text-white">Editorial Image</h3>
+                            <p className="text-sm text-gray-400">{selectedImage.collection}</p>
+                          </div>
+                        </div>
+
+                        {selectedImage.description && (
+                          <div className="bg-gradient-to-r from-zinc-900/80 to-zinc-800/80 rounded-lg p-4 border border-zinc-700/50">
+                            <h4 className="text-sm font-semibold text-gray-300 mb-2">
+                              Photo Credits
+                            </h4>
+                            <p className="text-white font-medium">{selectedImage.description}</p>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Credits Section */}
+                      {'credits' in selectedImage && selectedImage.credits && (
+                        <div className="space-y-4">
+                          <div className="bg-gradient-to-br from-zinc-900/90 to-zinc-800/90 rounded-xl p-5 border border-zinc-700/50 backdrop-blur-sm">
+                            <div className="flex items-center mb-3">
+                              <svg
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                className="text-zinc-400 mr-2"
+                              >
+                                <path
+                                  d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
+                                <circle
+                                  cx="9"
+                                  cy="7"
+                                  r="4"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
+                                <path
+                                  d="M23 21v-2a4 4 0 0 0-3-3.87"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
+                                <path
+                                  d="M16 3.13a4 4 0 0 1 0 7.75"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
+                              </svg>
+                              <h4 className="font-semibold text-white">Models</h4>
+                            </div>
+                            <div className="space-y-2">
+                              {selectedImage.credits.models.map((model, index) => (
+                                <div key={index} className="flex items-center space-x-2">
+                                  <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+                                  <p className="text-gray-200 font-medium">{model}</p>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
