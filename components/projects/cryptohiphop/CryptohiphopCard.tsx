@@ -8,53 +8,103 @@ export const CryptohiphopCard: React.FC<ProjectProps> = ({ isActive: _isActive =
       id: 'overview',
       title: 'Overview',
       content: (
-        <div className="h-full w-full p-12 flex items-center justify-center">
-          <div className="max-w-5xl space-y-12">
-            <div className="text-center space-y-6">
-              <h1 className="heading-main mb-8">Crypto Hip Hop</h1>
-              <p className="text-xl opacity-90 leading-relaxed max-w-4xl mx-auto">
+        <div className="h-full w-full p-8 overflow-y-auto">
+          <div className="max-w-5xl mx-auto space-y-10">
+            <div className="text-center space-y-6 pt-8">
+              <h1 className="heading-main mb-6">Crypto Hip Hop</h1>
+              <p className="text-xl text-white opacity-100 leading-relaxed max-w-4xl mx-auto">
                 My ambitious vision for a revolutionary NFT collection that would kickstart a fair
                 music platform where blockchain meets beats, connecting artists, collectors, and
                 fans in a decentralized ecosystem.
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-10 mt-16">
-              <div className="card-glass p-8 space-y-6">
-                <h3 className="heading-card text-lg mb-6">The Journey</h3>
-                <div className="space-y-4 text-sm opacity-90 leading-relaxed">
-                  <p>Started with an NFT collection idea to revolutionize music distribution</p>
-                  <p>Quickly grew to a team of 8 passionate members</p>
-                  <p>Attracted VC interest and investment opportunities</p>
-                  <p>Built a Discord community of 1000+ members in just 2 weeks</p>
-                  <p>Hired lawyers to ensure FMA compliance</p>
+            <div className="grid md:grid-cols-2 gap-8">
+              <div className="card-glass p-8 space-y-4">
+                <h3 className="heading-card text-lg mb-4 text-center">The Journey</h3>
+                <div className="space-y-3 text-sm opacity-90 leading-relaxed">
+                  <div
+                    className="p-3 rounded-lg text-center"
+                    style={{ backgroundColor: 'var(--brand-anthracite)' }}
+                  >
+                    <p>Started with an NFT collection idea to revolutionize music distribution</p>
+                  </div>
+                  <div
+                    className="p-3 rounded-lg text-center"
+                    style={{ backgroundColor: 'var(--brand-anthracite)' }}
+                  >
+                    <p>Quickly grew to a team of 9 passionate members</p>
+                  </div>
+                  <div
+                    className="p-3 rounded-lg text-center"
+                    style={{ backgroundColor: 'var(--brand-anthracite)' }}
+                  >
+                    <p>Attracted VC interest and investment opportunities</p>
+                  </div>
+                  <div
+                    className="p-3 rounded-lg text-center"
+                    style={{ backgroundColor: 'var(--brand-anthracite)' }}
+                  >
+                    <p>Built a Discord community of 1000+ members in just 2 weeks</p>
+                  </div>
+                  <div
+                    className="p-3 rounded-lg text-center"
+                    style={{ backgroundColor: 'var(--brand-anthracite)' }}
+                  >
+                    <p>Hired lawyers to ensure FMA compliance</p>
+                  </div>
                 </div>
               </div>
 
-              <div className="card-glass p-8 space-y-6">
-                <h3 className="heading-card text-lg mb-6">The Learning</h3>
-                <div className="space-y-4 text-sm opacity-90 leading-relaxed">
-                  <p>Decided to drop the project despite early success</p>
-                  <p>Market timing wasn&apos;t right for the vision</p>
-                  <p>Team dynamics needed refinement</p>
-                  <p>Pre-AI development era made tech complexity challenging</p>
-                  <p>Learned invaluable lessons running a tech startup</p>
+              <div className="card-glass p-8 space-y-4">
+                <h3 className="heading-card text-lg mb-4 text-center">The Learning</h3>
+                <div className="space-y-3 text-sm opacity-90 leading-relaxed">
+                  <div
+                    className="p-3 rounded-lg text-center"
+                    style={{ backgroundColor: 'var(--brand-anthracite)' }}
+                  >
+                    <p>Decided to drop the project despite early success</p>
+                  </div>
+                  <div
+                    className="p-3 rounded-lg text-center"
+                    style={{ backgroundColor: 'var(--brand-anthracite)' }}
+                  >
+                    <p>Market timing wasn&apos;t right for the vision</p>
+                  </div>
+                  <div
+                    className="p-3 rounded-lg text-center"
+                    style={{ backgroundColor: 'var(--brand-anthracite)' }}
+                  >
+                    <p>Team dynamics needed refinement</p>
+                  </div>
+                  <div
+                    className="p-3 rounded-lg text-center"
+                    style={{ backgroundColor: 'var(--brand-anthracite)' }}
+                  >
+                    <p>Pre-AI development era made tech complexity challenging</p>
+                  </div>
+                  <div
+                    className="p-3 rounded-lg text-center"
+                    style={{ backgroundColor: 'var(--brand-anthracite)' }}
+                  >
+                    <p>Learned invaluable lessons running a tech startup</p>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div className="card-anthracite p-8 mt-12 space-y-6">
-              <h3 className="heading-card text-lg mb-6">Gratitude</h3>
-              <p className="text-sm opacity-90 mb-6 leading-relaxed">
+            <div className="card-anthracite p-8 space-y-4 text-center">
+              <h3 className="heading-card text-lg mb-4">Gratitude</h3>
+              <p className="text-sm opacity-90 mb-4 leading-relaxed">
                 Immensely grateful to everyone who joined this journey and contributed their passion
                 and expertise.
               </p>
               <div className="text-sm opacity-75">
-                <strong>Team Members:</strong> Ana, Kris, Noni, Luka, Jules, Rohan, Selim
+                <strong>Team Members:</strong> Ana, Kris, Noni, Corey, Luka, Jules, Rohan, Selim
               </div>
             </div>
 
-            <div className="text-center mt-12">
+            <div className="text-center mt-10 pb-8">
               <div className="inline-flex items-center space-x-3 px-6 py-3 border border-gray-600 rounded-lg">
                 <span className="text-sm font-medium">
                   Startup Experience • Tech Leadership • Blockchain Innovation
@@ -94,7 +144,10 @@ export const CryptohiphopCard: React.FC<ProjectProps> = ({ isActive: _isActive =
                   promotion while making digital music items collectible through
                   &quot;tokenization&quot;.
                 </p>
-                <div className="bg-gray-800 p-6 rounded-lg mt-6">
+                <div
+                  className="p-6 rounded-lg mt-6 text-center"
+                  style={{ backgroundColor: 'var(--brand-anthracite)' }}
+                >
                   <h4 className="font-semibold mb-3 text-base">CryptoRappers NFT Concept:</h4>
                   <p className="text-sm opacity-80 leading-relaxed">
                     Non-fungible tokens acting as membership cards to the CryptoHipHop space.
@@ -145,8 +198,18 @@ export const CryptohiphopCard: React.FC<ProjectProps> = ({ isActive: _isActive =
               <h3 className="heading-card text-xl mb-8">System Architecture</h3>
               <div className="grid md:grid-cols-3 gap-8">
                 <div className="text-center space-y-4">
-                  <div className="w-16 h-16 mx-auto bg-gray-700 rounded-lg flex items-center justify-center">
-                    <span className="text-2xl">🔗</span>
+                  <div
+                    className="w-16 h-16 mx-auto rounded-lg flex items-center justify-center"
+                    style={{ backgroundColor: 'var(--brand-anthracite)' }}
+                  >
+                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+                      />
+                    </svg>
                   </div>
                   <h4 className="font-semibold text-base">Ownership</h4>
                   <p className="text-sm opacity-80 leading-relaxed">
@@ -155,8 +218,18 @@ export const CryptohiphopCard: React.FC<ProjectProps> = ({ isActive: _isActive =
                   </p>
                 </div>
                 <div className="text-center space-y-4">
-                  <div className="w-16 h-16 mx-auto bg-gray-700 rounded-lg flex items-center justify-center">
-                    <span className="text-2xl">🤝</span>
+                  <div
+                    className="w-16 h-16 mx-auto rounded-lg flex items-center justify-center"
+                    style={{ backgroundColor: 'var(--brand-anthracite)' }}
+                  >
+                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                      />
+                    </svg>
                   </div>
                   <h4 className="font-semibold text-base">Matchmaking</h4>
                   <p className="text-sm opacity-80 leading-relaxed">
@@ -165,8 +238,18 @@ export const CryptohiphopCard: React.FC<ProjectProps> = ({ isActive: _isActive =
                   </p>
                 </div>
                 <div className="text-center space-y-4">
-                  <div className="w-16 h-16 mx-auto bg-gray-700 rounded-lg flex items-center justify-center">
-                    <span className="text-2xl">🌐</span>
+                  <div
+                    className="w-16 h-16 mx-auto rounded-lg flex items-center justify-center"
+                    style={{ backgroundColor: 'var(--brand-anthracite)' }}
+                  >
+                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"
+                      />
+                    </svg>
                   </div>
                   <h4 className="font-semibold text-base">Decentralization</h4>
                   <p className="text-sm opacity-80 leading-relaxed">
@@ -187,7 +270,10 @@ export const CryptohiphopCard: React.FC<ProjectProps> = ({ isActive: _isActive =
                   on Hip Hop culture as a tribute to the pioneers of NFT pixel art series.
                 </p>
 
-                <div className="bg-gray-800 p-6 rounded-lg">
+                <div
+                  className="p-6 rounded-lg text-center"
+                  style={{ backgroundColor: 'var(--brand-anthracite)' }}
+                >
                   <h4 className="font-semibold mb-4 text-base">Five Utility Features:</h4>
                   <div className="space-y-3 text-sm">
                     <div className="flex items-start gap-3">
@@ -232,7 +318,10 @@ export const CryptohiphopCard: React.FC<ProjectProps> = ({ isActive: _isActive =
             <div className="card-glass p-10 space-y-8">
               <h3 className="heading-card text-xl mb-8">Artdrop Mechanics</h3>
               <div className="space-y-8">
-                <div className="bg-gray-800 p-6 rounded-lg">
+                <div
+                  className="p-6 rounded-lg text-center"
+                  style={{ backgroundColor: 'var(--brand-anthracite)' }}
+                >
                   <h4 className="font-semibold mb-4 text-base">Claiming Process:</h4>
                   <p className="text-sm opacity-90 leading-relaxed">
                     Send CryptoRappers + small ADA amount to platform wallet → Receive back
@@ -240,7 +329,10 @@ export const CryptohiphopCard: React.FC<ProjectProps> = ({ isActive: _isActive =
                   </p>
                 </div>
 
-                <div className="bg-gray-800 p-6 rounded-lg">
+                <div
+                  className="p-6 rounded-lg text-center"
+                  style={{ backgroundColor: 'var(--brand-anthracite)' }}
+                >
                   <h4 className="font-semibold mb-4 text-base">Revenue Distribution:</h4>
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div className="flex items-center gap-2">
@@ -262,7 +354,10 @@ export const CryptohiphopCard: React.FC<ProjectProps> = ({ isActive: _isActive =
                   </div>
                 </div>
 
-                <div className="bg-gray-800 p-6 rounded-lg">
+                <div
+                  className="p-6 rounded-lg text-center"
+                  style={{ backgroundColor: 'var(--brand-anthracite)' }}
+                >
                   <h4 className="font-semibold mb-4 text-base">Regular Artdrop Tiers:</h4>
                   <div className="space-y-2 text-sm font-mono">
                     <div className="flex justify-between">
@@ -364,7 +459,7 @@ export const CryptohiphopCard: React.FC<ProjectProps> = ({ isActive: _isActive =
       id: 'artists',
       title: 'Artists',
       content: (
-        <div className="h-full w-full p-12">
+        <div className="h-full w-full px-12 pt-12 pb-20 overflow-y-auto">
           <div className="max-w-5xl mx-auto space-y-12">
             <div className="text-center space-y-4">
               <h2 className="heading-main text-2xl mb-6">For Artists</h2>
@@ -374,45 +469,39 @@ export const CryptohiphopCard: React.FC<ProjectProps> = ({ isActive: _isActive =
             </div>
 
             <div className="grid md:grid-cols-2 gap-10">
-              <div className="card-glass p-8 space-y-6">
+              <div className="card-glass p-8 space-y-6 text-center">
                 <h3 className="heading-card text-lg mb-6">Monetize Your Music</h3>
                 <p className="text-sm opacity-90 leading-relaxed mb-6">
                   Tokenize your tracks and connect directly with fans through NFTs and exclusive
                   releases. Keep more of your earnings with smart contract royalties.
                 </p>
                 <div className="space-y-3 text-sm opacity-75">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-gray-600 rounded-full"></div>
+                  <div className="flex items-center justify-center gap-2">
                     <span>Direct fan engagement</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-gray-600 rounded-full"></div>
+                  <div className="flex items-center justify-center gap-2">
                     <span>Smart contract royalties</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-gray-600 rounded-full"></div>
+                  <div className="flex items-center justify-center gap-2">
                     <span>Exclusive NFT drops</span>
                   </div>
                 </div>
               </div>
 
-              <div className="card-glass p-8 space-y-6">
+              <div className="card-glass p-8 space-y-6 text-center">
                 <h3 className="heading-card text-lg mb-6">Build Your Brand</h3>
                 <p className="text-sm opacity-90 leading-relaxed mb-6">
                   Create limited edition content, collaborate with other artists, and build a loyal
                   community around your music.
                 </p>
                 <div className="space-y-3 text-sm opacity-75">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-gray-600 rounded-full"></div>
+                  <div className="flex items-center justify-center gap-2">
                     <span>Limited edition releases</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-gray-600 rounded-full"></div>
+                  <div className="flex items-center justify-center gap-2">
                     <span>Artist collaborations</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-gray-600 rounded-full"></div>
+                  <div className="flex items-center justify-center gap-2">
                     <span>Community building tools</span>
                   </div>
                 </div>
@@ -423,22 +512,52 @@ export const CryptohiphopCard: React.FC<ProjectProps> = ({ isActive: _isActive =
               <h3 className="heading-card text-xl mb-8">Artist Tools</h3>
               <div className="grid md:grid-cols-3 gap-8">
                 <div className="text-center space-y-4">
-                  <div className="w-16 h-16 mx-auto bg-gray-700 rounded-lg flex items-center justify-center">
-                    <span className="text-2xl">🎚️</span>
+                  <div
+                    className="w-16 h-16 mx-auto rounded-lg flex items-center justify-center"
+                    style={{ backgroundColor: 'var(--brand-anthracite)' }}
+                  >
+                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2zM12 6v.01M12 10v.01M12 14v.01"
+                      />
+                    </svg>
                   </div>
                   <h4 className="heading-card text-base">Studio Integration</h4>
                   <p className="text-sm opacity-75">Upload directly from your DAW</p>
                 </div>
                 <div className="text-center space-y-4">
-                  <div className="w-16 h-16 mx-auto bg-gray-700 rounded-lg flex items-center justify-center">
-                    <span className="text-2xl">📊</span>
+                  <div
+                    className="w-16 h-16 mx-auto rounded-lg flex items-center justify-center"
+                    style={{ backgroundColor: 'var(--brand-anthracite)' }}
+                  >
+                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                      />
+                    </svg>
                   </div>
                   <h4 className="heading-card text-base">Analytics</h4>
                   <p className="text-sm opacity-75">Track performance & earnings</p>
                 </div>
                 <div className="text-center space-y-4">
-                  <div className="w-16 h-16 mx-auto bg-gray-700 rounded-lg flex items-center justify-center">
-                    <span className="text-2xl">🤝</span>
+                  <div
+                    className="w-16 h-16 mx-auto rounded-lg flex items-center justify-center"
+                    style={{ backgroundColor: 'var(--brand-anthracite)' }}
+                  >
+                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"
+                      />
+                    </svg>
                   </div>
                   <h4 className="heading-card text-base">Collaboration</h4>
                   <p className="text-sm opacity-75">Connect with other artists</p>
@@ -453,7 +572,7 @@ export const CryptohiphopCard: React.FC<ProjectProps> = ({ isActive: _isActive =
       id: 'collectors',
       title: 'Collectors',
       content: (
-        <div className="h-full w-full p-12">
+        <div className="h-full w-full px-12 pt-12 pb-20 overflow-y-auto">
           <div className="max-w-5xl mx-auto space-y-12">
             <div className="text-center space-y-4">
               <h2 className="heading-main text-2xl mb-6">For Collectors</h2>
@@ -463,45 +582,39 @@ export const CryptohiphopCard: React.FC<ProjectProps> = ({ isActive: _isActive =
             </div>
 
             <div className="grid md:grid-cols-2 gap-10">
-              <div className="card-glass p-8 space-y-6">
+              <div className="card-glass p-8 space-y-6 text-center">
                 <h3 className="heading-card text-lg mb-6">Rare Finds</h3>
                 <p className="text-sm opacity-90 leading-relaxed mb-6">
                   Discover unique musical NFTs, rare tracks, and exclusive artist collaborations on
                   the blockchain. Be the first to own limited drops.
                 </p>
                 <div className="space-y-3 text-sm opacity-75">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-gray-600 rounded-full"></div>
+                  <div className="flex items-center justify-center gap-2">
                     <span>Limited edition tracks</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-gray-600 rounded-full"></div>
+                  <div className="flex items-center justify-center gap-2">
                     <span>Artist collaborations</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-gray-600 rounded-full"></div>
+                  <div className="flex items-center justify-center gap-2">
                     <span>Exclusive content access</span>
                   </div>
                 </div>
               </div>
 
-              <div className="card-glass p-8 space-y-6">
+              <div className="card-glass p-8 space-y-6 text-center">
                 <h3 className="heading-card text-lg mb-6">Investment Potential</h3>
                 <p className="text-sm opacity-90 leading-relaxed mb-6">
                   Build a valuable collection of music NFTs. Support emerging artists and
                   potentially profit as their careers grow.
                 </p>
                 <div className="space-y-3 text-sm opacity-75">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-gray-600 rounded-full"></div>
+                  <div className="flex items-center justify-center gap-2">
                     <span>Portfolio tracking</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-gray-600 rounded-full"></div>
+                  <div className="flex items-center justify-center gap-2">
                     <span>Artist career support</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-gray-600 rounded-full"></div>
+                  <div className="flex items-center justify-center gap-2">
                     <span>Resale marketplace</span>
                   </div>
                 </div>
@@ -513,41 +626,103 @@ export const CryptohiphopCard: React.FC<ProjectProps> = ({ isActive: _isActive =
               <div className="space-y-6 text-sm opacity-90">
                 <div className="flex justify-between items-center border-b border-gray-700 pb-4">
                   <div className="flex items-center space-x-4">
-                    <div className="w-10 h-10 bg-gray-700 rounded-lg flex items-center justify-center">
-                      <span>🎵</span>
+                    <div
+                      className="w-10 h-10 rounded-lg flex items-center justify-center"
+                      style={{ backgroundColor: 'var(--brand-anthracite)' }}
+                    >
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"
+                        />
+                      </svg>
                     </div>
                     <div>
                       <div className="font-semibold">Music NFTs</div>
                       <div className="text-xs opacity-75">Original tracks & remixes</div>
                     </div>
                   </div>
-                  <span className="text-gray-400 px-3 py-1 bg-gray-800 rounded text-xs">
+                  <span
+                    className="text-gray-400 px-3 py-1 rounded text-xs"
+                    style={{ backgroundColor: 'var(--brand-anthracite)' }}
+                  >
                     Premium
                   </span>
                 </div>
                 <div className="flex justify-between items-center border-b border-gray-700 pb-4">
                   <div className="flex items-center space-x-4">
-                    <div className="w-10 h-10 bg-gray-700 rounded-lg flex items-center justify-center">
-                      <span>🎤</span>
+                    <div
+                      className="w-10 h-10 rounded-lg flex items-center justify-center"
+                      style={{ backgroundColor: 'var(--brand-anthracite)' }}
+                    >
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
+                        />
+                      </svg>
                     </div>
                     <div>
                       <div className="font-semibold">Live Recordings</div>
                       <div className="text-xs opacity-75">Exclusive concert captures</div>
                     </div>
                   </div>
-                  <span className="text-gray-400 px-3 py-1 bg-gray-800 rounded text-xs">Rare</span>
+                  <span
+                    className="text-gray-400 px-3 py-1 rounded text-xs"
+                    style={{ backgroundColor: 'var(--brand-anthracite)' }}
+                  >
+                    Rare
+                  </span>
                 </div>
                 <div className="flex justify-between items-center">
                   <div className="flex items-center space-x-4">
-                    <div className="w-10 h-10 bg-gray-700 rounded-lg flex items-center justify-center">
-                      <span>🎛️</span>
+                    <div
+                      className="w-10 h-10 rounded-lg flex items-center justify-center"
+                      style={{ backgroundColor: 'var(--brand-anthracite)' }}
+                    >
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                        />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                        />
+                      </svg>
                     </div>
                     <div>
                       <div className="font-semibold">Studio Sessions</div>
                       <div className="text-xs opacity-75">Behind-the-scenes content</div>
                     </div>
                   </div>
-                  <span className="text-gray-400 px-3 py-1 bg-gray-800 rounded text-xs">
+                  <span
+                    className="text-gray-400 px-3 py-1 rounded text-xs"
+                    style={{ backgroundColor: 'var(--brand-anthracite)' }}
+                  >
                     Limited
                   </span>
                 </div>
@@ -561,7 +736,7 @@ export const CryptohiphopCard: React.FC<ProjectProps> = ({ isActive: _isActive =
       id: 'community',
       title: 'Community',
       content: (
-        <div className="h-full w-full p-12">
+        <div className="h-full w-full px-12 pt-12 pb-20 overflow-y-auto">
           <div className="max-w-5xl mx-auto space-y-12">
             <div className="text-center space-y-4">
               <h2 className="heading-main text-2xl mb-6">Community</h2>
@@ -572,22 +747,52 @@ export const CryptohiphopCard: React.FC<ProjectProps> = ({ isActive: _isActive =
 
             <div className="grid md:grid-cols-3 gap-8">
               <div className="card-glass p-8 text-center space-y-4">
-                <div className="w-16 h-16 mx-auto bg-gray-700 rounded-lg flex items-center justify-center">
-                  <span className="text-2xl">🌍</span>
+                <div
+                  className="w-16 h-16 mx-auto rounded-lg flex items-center justify-center"
+                  style={{ backgroundColor: 'var(--brand-anthracite)' }}
+                >
+                  <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 919-9"
+                    />
+                  </svg>
                 </div>
                 <h4 className="heading-card text-base">Global Network</h4>
                 <p className="text-sm opacity-75">Hip hop enthusiasts worldwide</p>
               </div>
               <div className="card-glass p-8 text-center space-y-4">
-                <div className="w-16 h-16 mx-auto bg-gray-700 rounded-lg flex items-center justify-center">
-                  <span className="text-2xl">🎧</span>
+                <div
+                  className="w-16 h-16 mx-auto rounded-lg flex items-center justify-center"
+                  style={{ backgroundColor: 'var(--brand-anthracite)' }}
+                >
+                  <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
+                    />
+                  </svg>
                 </div>
                 <h4 className="heading-card text-base">Producers Hub</h4>
                 <p className="text-sm opacity-75">Beats, samples, and collaboration</p>
               </div>
               <div className="card-glass p-8 text-center space-y-4">
-                <div className="w-16 h-16 mx-auto bg-gray-700 rounded-lg flex items-center justify-center">
-                  <span className="text-2xl">⚡</span>
+                <div
+                  className="w-16 h-16 mx-auto rounded-lg flex items-center justify-center"
+                  style={{ backgroundColor: 'var(--brand-anthracite)' }}
+                >
+                  <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 10V3L4 14h7v7l9-11h-7z"
+                    />
+                  </svg>
                 </div>
                 <h4 className="heading-card text-base">Crypto Natives</h4>
                 <p className="text-sm opacity-75">Blockchain music pioneers</p>
@@ -595,7 +800,7 @@ export const CryptohiphopCard: React.FC<ProjectProps> = ({ isActive: _isActive =
             </div>
 
             <div className="card-anthracite p-10 space-y-8">
-              <h3 className="heading-card text-xl mb-8">Platform Features</h3>
+              <h3 className="heading-card text-xl mb-8 text-left">Platform Features</h3>
               <div className="grid md:grid-cols-2 gap-8">
                 <div className="space-y-4">
                   <div className="flex items-center gap-3">
@@ -624,18 +829,6 @@ export const CryptohiphopCard: React.FC<ProjectProps> = ({ isActive: _isActive =
                     <div className="w-2 h-2 bg-gray-600 rounded-full"></div>
                     <span className="text-sm">Blockchain Integration</span>
                   </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="text-center">
-              <div className="card-glass p-8 inline-block space-y-4">
-                <h4 className="heading-card text-base">Ready to Join?</h4>
-                <p className="text-sm opacity-75 max-w-sm mx-auto">
-                  Connect your wallet and start exploring the future of hip hop
-                </p>
-                <div className="flex items-center justify-center space-x-3 px-6 py-3 border border-gray-600 rounded-lg">
-                  <span className="text-sm font-medium">Launch the Beat Revolution</span>
                 </div>
               </div>
             </div>

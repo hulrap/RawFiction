@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { StandardLoadingScreen } from '../../shared/StandardLoadingScreen';
 
 export interface ContentLoadingState {
   tabsLoaded: Set<string>;
@@ -185,46 +186,9 @@ export const ContentLoadingIndicator: React.FC<{
   progress: number;
   type: 'tab' | 'gallery' | 'general';
   message?: string;
-}> = ({ isLoading, progress, type, message }) => {
+}> = ({ isLoading }) => {
   if (!isLoading) return null;
 
-  const getLoadingIcon = () => {
-    switch (type) {
-      case 'tab':
-        return 'RF';
-      case 'gallery':
-        return 'RF';
-      default:
-        return 'RF';
-    }
-  };
-
-  const getTypeLabel = () => {
-    switch (type) {
-      case 'tab':
-        return 'Collection';
-      case 'gallery':
-        return 'Gallery';
-      default:
-        return 'Content';
-    }
-  };
-
-  return (
-    <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10">
-      <div className="text-center bg-gray-800 rounded-lg p-4 border border-gray-700">
-        <div className="w-12 h-12 bg-gradient-to-br from-gray-600 to-gray-700 rounded-lg flex items-center justify-center mx-auto mb-3">
-          <span className="text-white font-semibold text-sm">{getLoadingIcon()}</span>
-        </div>
-        <div className="text-white text-sm mb-2">{message ?? `Loading ${getTypeLabel()}...`}</div>
-        <div className="w-32 bg-gray-700 rounded-full h-1">
-          <div
-            className="h-1 rounded-full transition-all duration-300 bg-gradient-to-r from-gray-400 to-gray-500"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-        <div className="text-xs text-gray-400 mt-1">{progress}%</div>
-      </div>
-    </div>
-  );
+  // Use standardized loading screen - no custom Raw Fiction branding, progress bars, or collection labels
+  return <StandardLoadingScreen />;
 };

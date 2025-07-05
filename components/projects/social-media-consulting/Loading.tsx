@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { StandardLoadingScreen } from '../../shared/StandardLoadingScreen';
 
 export interface ContentLoadingState {
   tabsLoaded: Set<string>;
@@ -327,49 +328,9 @@ export const ContentLoadingIndicator: React.FC<{
   progress: number;
   type: 'tab' | 'gallery' | 'general';
   message?: string;
-}> = ({ isLoading, progress, type, message }) => {
+}> = ({ isLoading }) => {
   if (!isLoading) return null;
 
-  const getSocialMediaIcon = () => {
-    switch (type) {
-      case 'tab':
-        return '📱'; // Mobile phone for social media content
-      case 'gallery':
-        return '📊'; // Chart for analytics content
-      default:
-        return '🚀'; // Rocket for growth/marketing
-    }
-  };
-
-  const getBusinessMessage = () => {
-    if (message) return message;
-
-    switch (type) {
-      case 'tab':
-        return 'Loading marketing insights...';
-      case 'gallery':
-        return 'Preparing analytics data...';
-      default:
-        return 'Optimizing content delivery...';
-    }
-  };
-
-  return (
-    <div className="absolute inset-0 bg-black bg-opacity-70 flex items-center justify-center z-10 backdrop-blur-sm">
-      <div className="text-center bg-gradient-to-br from-blue-900 to-cyan-900 border border-blue-400/50 rounded-xl p-6 shadow-2xl max-w-sm mx-4">
-        <div className="text-3xl mb-3 animate-bounce">{getSocialMediaIcon()}</div>
-        <div className="text-blue-100 text-sm font-medium mb-3">{getBusinessMessage()}</div>
-        <div className="w-40 bg-gradient-to-r from-blue-800 to-cyan-800 rounded-full h-2 overflow-hidden">
-          <div
-            className="bg-gradient-to-r from-blue-400 to-cyan-400 h-2 rounded-full transition-all duration-500 ease-out"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-        <div className="text-xs text-blue-300 mt-2 font-medium">{progress}% LOADED</div>
-        <div className="text-xs text-cyan-400 mt-1 opacity-75">
-          Social Media Consulting • Digital Growth
-        </div>
-      </div>
-    </div>
-  );
+  // Use standardized loading screen - no custom social media branding, progress bars, or business messages
+  return <StandardLoadingScreen />;
 };

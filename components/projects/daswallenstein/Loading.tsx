@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { StandardLoadingScreen } from '../../shared/StandardLoadingScreen';
 
 export interface EmbeddedLoadingState {
   isLoading: boolean;
@@ -201,7 +202,7 @@ export const EmbeddedLoadingIndicator: React.FC<{
   state: EmbeddedLoadingState;
   title: string;
   onRetry?: () => void;
-}> = ({ state, title, onRetry }) => {
+}> = ({ state, title: _title, onRetry }) => {
   if (state.isLoaded) return null;
 
   if (state.hasError) {
@@ -229,26 +230,8 @@ export const EmbeddedLoadingIndicator: React.FC<{
   }
 
   if (state.isLoading) {
-    return (
-      <div className="absolute inset-0 bg-black bg-opacity-75 flex items-center justify-center z-10">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-400 mx-auto mb-4"></div>
-          <h3 className="text-lg font-semibold text-white mb-2">Connecting to Vienna</h3>
-          <p className="text-sm text-gray-300 mb-3">{title}</p>
-          <div className="w-64 bg-gray-700 rounded-full h-2 mb-2">
-            <div
-              className="h-2 rounded-full transition-all duration-300"
-              style={{
-                width: `${state.loadingProgress}%`,
-                background: 'linear-gradient(90deg, #dc2626, #ffffff, #dc2626)',
-              }}
-            />
-          </div>
-          <p className="text-xs text-gray-400">{Math.round(state.loadingProgress)}%</p>
-          <p className="text-xs text-gray-500 mt-2">Accessing Vienna&apos;s cultural heritage...</p>
-        </div>
-      </div>
-    );
+    // Use standardized loading screen - no custom Vienna theming, progress bars, or messages
+    return <StandardLoadingScreen />;
   }
 
   return null;

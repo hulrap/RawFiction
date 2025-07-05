@@ -377,114 +377,114 @@ const EventBanner: React.FC<{ bannerImage: string; title: string }> = ({ bannerI
 );
 
 const EventContent: React.FC<{ event: RealEyesEventData }> = ({ event }) => (
-  <div className="space-y-8 h-full overflow-y-auto">
-    <EventBanner bannerImage={event.bannerImage} title={event.title} />
+  <div className="h-full w-full px-12 pt-12 pb-20 overflow-y-auto">
+    <div className="max-w-5xl mx-auto space-y-8">
+      <EventBanner bannerImage={event.bannerImage} title={event.title} />
 
-    <div className="text-center">
-      <h2 className="heading-section mb-2">{event.title}</h2>
-      {event.date && event.location && (
-        <div className="text-sm opacity-75 mb-4">
-          {event.date} • {event.location}
+      <div className="text-center">
+        <h2 className="heading-section mb-2">{event.title}</h2>
+        {event.date && event.location && (
+          <div className="text-sm opacity-75 mb-4">
+            {event.date} • {event.location}
+          </div>
+        )}
+        <p className="text-lg opacity-90 max-w-2xl mx-auto leading-relaxed mb-6 text-center">
+          {event.description}
+        </p>
+      </div>
+
+      {event.longDescription && (
+        <div className="card-glass p-6">
+          <div className="prose prose-invert max-w-none text-center">
+            <p className="text-sm opacity-90 leading-relaxed whitespace-pre-line">
+              {event.longDescription}
+            </p>
+          </div>
         </div>
       )}
-      <p className="text-lg opacity-90 max-w-2xl mx-auto leading-relaxed mb-6 text-center">
-        {event.description}
-      </p>
+
+      {event.lineup && event.lineup.length > 0 && (
+        <div className="card-anthracite p-6">
+          <h3 className="heading-card mb-4 text-center">Line-Up</h3>
+          <div className="space-y-2 text-center">
+            {event.lineup.map((artist, index) => (
+              <div key={index} className="text-center">
+                <span className="text-sm opacity-90">{artist}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {event.highlights && event.highlights.length > 0 && (
+        <div className="card-glass p-6">
+          <h3 className="heading-card mb-4 text-center">Highlights</h3>
+          <div className="space-y-2 text-center">
+            {event.highlights.map((highlight, index) => (
+              <div key={index} className="text-center">
+                <span className="text-sm opacity-90">{highlight}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {event.hardFacts && Object.keys(event.hardFacts).length > 0 && (
+        <div className="card-anthracite p-6">
+          <h3 className="heading-card mb-4 text-center">Details</h3>
+          <div className="grid md:grid-cols-2 gap-4">
+            {Object.entries(event.hardFacts).map(([key, value]) => (
+              <div key={key} className="flex flex-col text-center">
+                <span className="text-xs opacity-75 font-medium">{key}</span>
+                <span className="text-sm opacity-90">{value}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {event.links && event.links.length > 0 && (
+        <div className="card-glass p-6">
+          <h3 className="heading-card mb-4 text-center">Links</h3>
+          <div className="space-y-2 text-center">
+            {event.links.map((link, index) => (
+              <a
+                key={index}
+                href={link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block text-sm opacity-90 hover:opacity-100 hover:text-brand-accent transition-colors"
+              >
+                {link}
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Special Images for Real Eyes 9 */}
+      {event.specialImages && event.specialImages.length > 0 && (
+        <div>
+          <h3 className="heading-card mb-4 text-center">Impressions</h3>
+          <div className="grid grid-cols-2 gap-4 max-w-2xl mx-auto">
+            {event.specialImages.map((image, index) => (
+              <div
+                key={index}
+                className="card-glass p-0 overflow-hidden hover:scale-105 transition-transform duration-300"
+              >
+                <Image
+                  src={image}
+                  alt={`${event.title} - Impression ${index + 1}`}
+                  width={300}
+                  height={400}
+                  className="w-full h-auto object-cover"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
-
-    {event.longDescription && (
-      <div className="card-glass p-6">
-        <div className="prose prose-invert max-w-none">
-          <p className="text-sm opacity-90 leading-relaxed whitespace-pre-line">
-            {event.longDescription}
-          </p>
-        </div>
-      </div>
-    )}
-
-    {event.lineup && event.lineup.length > 0 && (
-      <div className="card-anthracite p-6">
-        <h3 className="heading-card mb-4 text-center">Line-Up</h3>
-        <div className="space-y-2">
-          {event.lineup.map((artist, index) => (
-            <div key={index} className="flex items-start gap-3 justify-center">
-              <div className="w-2 h-2 bg-gradient-to-r from-brand-accent to-brand-metallic rounded-full mt-2 flex-shrink-0" />
-              <span className="text-sm opacity-90">{artist}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-    )}
-
-    {event.highlights && event.highlights.length > 0 && (
-      <div className="card-glass p-6">
-        <h3 className="heading-card mb-4 text-center">Highlights</h3>
-        <div className="space-y-2">
-          {event.highlights.map((highlight, index) => (
-            <div key={index} className="flex items-start gap-3 justify-center">
-              <div className="w-2 h-2 bg-gradient-to-r from-brand-accent to-brand-metallic rounded-full mt-2 flex-shrink-0" />
-              <span className="text-sm opacity-90">{highlight}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-    )}
-
-    {event.hardFacts && Object.keys(event.hardFacts).length > 0 && (
-      <div className="card-anthracite p-6">
-        <h3 className="heading-card mb-4 text-center">Details</h3>
-        <div className="grid md:grid-cols-2 gap-4">
-          {Object.entries(event.hardFacts).map(([key, value]) => (
-            <div key={key} className="flex flex-col text-center">
-              <span className="text-xs opacity-75 font-medium">{key}</span>
-              <span className="text-sm opacity-90">{value}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-    )}
-
-    {event.links && event.links.length > 0 && (
-      <div className="card-glass p-6">
-        <h3 className="heading-card mb-4 text-center">Links</h3>
-        <div className="space-y-2 text-center">
-          {event.links.map((link, index) => (
-            <a
-              key={index}
-              href={link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block text-sm opacity-90 hover:opacity-100 hover:text-brand-accent transition-colors"
-            >
-              {link}
-            </a>
-          ))}
-        </div>
-      </div>
-    )}
-
-    {/* Special Images for Real Eyes 9 */}
-    {event.specialImages && event.specialImages.length > 0 && (
-      <div className="pb-8">
-        <h3 className="heading-card mb-4 text-center">Impressions</h3>
-        <div className="grid grid-cols-2 gap-4 max-w-2xl mx-auto">
-          {event.specialImages.map((image, index) => (
-            <div
-              key={index}
-              className="card-glass p-0 overflow-hidden hover:scale-105 transition-transform duration-300"
-            >
-              <Image
-                src={image}
-                alt={`${event.title} - Impression ${index + 1}`}
-                width={300}
-                height={400}
-                className="w-full h-auto object-cover"
-              />
-            </div>
-          ))}
-        </div>
-      </div>
-    )}
   </div>
 );
 
@@ -513,56 +513,62 @@ const Gallery: React.FC<{ eventId: string; eventTitle: string }> = ({ eventId, e
 
   if (galleryImages.length === 0) {
     return (
-      <div className="flex items-center justify-center h-64 text-center">
-        <div>
-          <div className="text-3xl mb-4">📸</div>
-          <h3 className="text-lg font-semibold mb-2">No Gallery Available</h3>
-          <p className="text-sm text-gray-600">Gallery images are not available for this event.</p>
+      <div className="h-full w-full px-12 pt-12 pb-20 overflow-y-auto">
+        <div className="max-w-5xl mx-auto flex items-center justify-center h-64 text-center">
+          <div>
+            <div className="text-3xl mb-4">📸</div>
+            <h3 className="text-lg font-semibold mb-2">No Gallery Available</h3>
+            <p className="text-sm text-gray-600">
+              Gallery images are not available for this event.
+            </p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 h-full overflow-y-auto">
-      <div className="text-center">
-        <h2 className="heading-section mb-4">Photo Gallery</h2>
-        <p className="text-sm opacity-75">Click on images to view them larger</p>
-      </div>
+    <div className="h-full w-full px-12 pt-12 pb-20 overflow-y-auto">
+      <div className="max-w-5xl mx-auto space-y-6">
+        <div className="text-center">
+          <h2 className="heading-section mb-4">Photo Gallery</h2>
+          <p className="text-sm opacity-75">Click on images to view them larger</p>
+        </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pb-8">
-        {galleryImages.map((image, index) => {
-          const thumbnailId = `thumb-${index}`;
-          const isPriority = priorityImages.has(image) || index < 8; // First 8 images get priority
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {galleryImages.map((image, index) => {
+            const thumbnailId = `thumb-${index}`;
+            const isPriority = priorityImages.has(image) || index < 8; // First 8 images get priority
 
-          return (
-            <div
-              key={index}
-              className="card-glass p-0 overflow-hidden cursor-pointer hover:scale-105 transition-transform duration-300 relative"
-              onClick={() => handleImageClick(image)}
-            >
-              <Image
-                src={image}
-                alt={`${eventTitle} - Photo ${index + 1}`}
-                width={200}
-                height={150}
-                className="w-full h-32 object-cover"
-                priority={isPriority}
-                loading={isPriority ? 'eager' : 'lazy'}
-                onLoad={() => handleImageLoad(thumbnailId)}
-                onError={() => handleImageError(thumbnailId)}
-                placeholder="blur"
-                blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R7Dw=="
-              />
+            return (
+              <div
+                key={index}
+                className="card-glass p-0 overflow-hidden cursor-pointer hover:scale-105 transition-transform duration-300 relative"
+                onClick={() => handleImageClick(image)}
+              >
+                <Image
+                  src={image}
+                  alt={`${eventTitle} - Photo ${index + 1}`}
+                  width={200}
+                  height={150}
+                  className="w-full h-32 object-cover"
+                  priority={isPriority}
+                  loading={isPriority ? 'eager' : 'lazy'}
+                  onLoad={() => handleImageLoad(thumbnailId)}
+                  onError={() => handleImageError(thumbnailId)}
+                  placeholder="blur"
+                  blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R7Dw=="
+                />
 
-              {loadingStates[thumbnailId] && (
-                <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                  <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                </div>
-              )}
-            </div>
-          );
-        })}
+                {loadingStates[thumbnailId] && (
+                  <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                    <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       {selectedImage && (
@@ -620,29 +626,31 @@ const VideoPlayer: React.FC<{ videoFile: string; eventTitle: string }> = ({
   videoFile,
   eventTitle,
 }) => (
-  <div className="space-y-6 h-full overflow-y-auto">
-    <div className="text-center">
-      <h2 className="heading-section mb-4">After Video</h2>
-      <p className="text-sm opacity-75">{eventTitle} - Event aftermovie</p>
-    </div>
-
-    <div className="card-glass p-6">
-      <div className="relative rounded-lg overflow-hidden">
-        <video
-          controls
-          className="w-full h-auto rounded-lg"
-          poster={`/projects/real-eyes-content/Real Eyes 2/banner.jpg`}
-          preload="metadata"
-        >
-          <source src={videoFile} type="video/mp4" />
-          Your browser does not support the video tag.
-        </video>
+  <div className="h-full w-full px-12 pt-12 pb-20 overflow-y-auto">
+    <div className="max-w-5xl mx-auto space-y-6">
+      <div className="text-center">
+        <h2 className="heading-section mb-4">After Video</h2>
+        <p className="text-sm opacity-75">{eventTitle} - Event aftermovie</p>
       </div>
 
-      <div className="mt-4 text-center">
-        <p className="text-xs opacity-60">
-          Click play to watch the official aftermovie from {eventTitle}
-        </p>
+      <div className="card-glass p-6 text-center">
+        <div className="relative rounded-lg overflow-hidden">
+          <video
+            controls
+            className="w-full h-auto rounded-lg"
+            poster={`/projects/real-eyes-content/Real Eyes 2/banner.jpg`}
+            preload="metadata"
+          >
+            <source src={videoFile} type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+        </div>
+
+        <div className="mt-4 text-center">
+          <p className="text-xs opacity-60">
+            Click play to watch the official aftermovie from {eventTitle}
+          </p>
+        </div>
       </div>
     </div>
   </div>
@@ -705,40 +713,43 @@ export const RealEyesCard: React.FC<ProjectProps> = ({ isActive: _isActive = tru
       id: 'overview',
       title: 'Overview',
       content: (
-        <div className="space-y-8 h-full overflow-y-auto">
-          <div className="text-center">
-            <h1 className="heading-main mb-6">Real Eyes</h1>
-            <p className="text-xl opacity-90 max-w-2xl mx-auto leading-relaxed">
-              Real Eyes is a transformative event series that explores the intersection of
-              technology, consciousness, and human experience through immersive hip-hop experiences.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-8 mt-12">
-            <div className="card-glass p-6">
-              <h3 className="heading-card mb-4">Our Mission</h3>
-              <p className="text-sm opacity-75 leading-relaxed">
-                Celebrating 90s hip hop culture while creating spaces where people can explore new
-                perspectives on reality, consciousness, and human potential through carefully
-                curated experiences.
+        <div className="h-full w-full px-12 pt-12 pb-20 overflow-y-auto">
+          <div className="max-w-5xl mx-auto space-y-8">
+            <div className="text-center">
+              <h1 className="heading-main mb-6">Real Eyes</h1>
+              <p className="text-xl opacity-90 max-w-2xl mx-auto leading-relaxed">
+                Real Eyes is a transformative event series that explores the intersection of
+                technology, consciousness, and human experience through immersive hip-hop
+                experiences.
               </p>
             </div>
 
-            <div className="card-glass p-6">
-              <h3 className="heading-card mb-4">Event Series</h3>
-              <p className="text-sm opacity-75 leading-relaxed">
-                Ten unique events spanning from 2017 to 2024, each exploring different aspects of
-                hip-hop culture and featuring international and local artists.
+            <div className="grid md:grid-cols-2 gap-8 mt-12">
+              <div className="card-glass p-6 text-center">
+                <h3 className="heading-card mb-4">Our Mission</h3>
+                <p className="text-sm opacity-75 leading-relaxed">
+                  Celebrating 90s hip hop culture while creating spaces where people can explore new
+                  perspectives on reality, consciousness, and human potential through carefully
+                  curated experiences.
+                </p>
+              </div>
+
+              <div className="card-glass p-6 text-center">
+                <h3 className="heading-card mb-4">Event Series</h3>
+                <p className="text-sm opacity-75 leading-relaxed">
+                  Ten unique events spanning from 2017 to 2024, each exploring different aspects of
+                  hip-hop culture and featuring international and local artists.
+                </p>
+              </div>
+            </div>
+
+            <div className="card-anthracite p-8 text-center">
+              <h3 className="heading-card mb-4">10 Events</h3>
+              <p className="text-sm opacity-75 mb-6">
+                Each event offers a unique journey into the realms of hip-hop culture, featuring
+                world-class artists and unforgettable experiences.
               </p>
             </div>
-          </div>
-
-          <div className="card-anthracite p-8 text-center mb-8">
-            <h3 className="heading-card mb-4">10 Events</h3>
-            <p className="text-sm opacity-75 mb-6">
-              Each event offers a unique journey into the realms of hip-hop culture, featuring
-              world-class artists and unforgettable experiences.
-            </p>
           </div>
         </div>
       ),

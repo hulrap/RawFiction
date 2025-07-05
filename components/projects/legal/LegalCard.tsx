@@ -160,7 +160,7 @@ export const LegalCard: React.FC<ProjectProps> = ({ isActive: _isActive = true }
               <h3 className="text-lg font-semibold text-metallic mb-3 mt-6">Contact Information</h3>
               <div className="space-y-2">
                 <p>
-                  <strong>Email:</strong> info@rawfiction.eu
+                  <strong>Email:</strong> why@rawfiction.me
                 </p>
                 <p>
                   <strong>Phone:</strong> +43 670 606 6149

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import type { SiteConfig } from '../../shared/types';
+import { StandardLoadingScreen } from '../../shared/StandardLoadingScreen';
 
 // Simplified loading state - only direct loading
 interface LoadingState {
@@ -82,12 +83,5 @@ export const Loading: React.FC<{
     };
   }, [config, onComplete, onError, state.retryCount]);
 
-  return (
-    <div className="h-full w-full flex items-center justify-center">
-      {/* Simple round loading spinner */}
-      <div className="relative">
-        <div className="w-12 h-12 border-4 border-[var(--brand-glass)] border-t-[var(--brand-accent)] rounded-full animate-spin"></div>
-      </div>
-    </div>
-  );
+  return <StandardLoadingScreen />;
 };

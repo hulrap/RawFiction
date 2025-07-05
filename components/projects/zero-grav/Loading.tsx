@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { StandardLoadingScreen } from '../../shared/StandardLoadingScreen';
 
 export interface EmbeddedLoadingState {
   isLoading: boolean;
@@ -202,13 +203,8 @@ export const EmbeddedLoadingIndicator: React.FC<{
   onRetry?: () => void;
 }> = ({ state }) => {
   if (state.isLoading) {
-    return (
-      <div className="absolute inset-0 bg-black bg-opacity-85 flex items-center justify-center z-10">
-        <div className="relative">
-          <div className="w-12 h-12 border-4 border-[var(--brand-glass)] border-t-[var(--brand-accent)] rounded-full animate-spin"></div>
-        </div>
-      </div>
-    );
+    // Use standardized loading screen - no custom space theming
+    return <StandardLoadingScreen />;
   }
 
   return null;

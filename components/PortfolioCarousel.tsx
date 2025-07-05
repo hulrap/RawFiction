@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, lazy, Suspense, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, lazy, Suspense, useMemo, useRef } from 'react';
 import { NavigationControls } from './NavigationControls';
 import { CardWithOverlay } from './CardWithOverlay';
 import { audioManager } from '@/lib/audioManager';
@@ -68,16 +68,17 @@ const PortfolioCard = React.memo<{
   readonly project: PortfolioProject;
   readonly style: React.CSSProperties & { carouselPosition: string };
   readonly isRevealed: boolean;
-  readonly needsImmediateOverlay: boolean;
   readonly onShatter: () => void;
   readonly onCardReady: () => void;
   readonly onClick: (e: React.MouseEvent) => void;
-}>(({ project, style, isRevealed, needsImmediateOverlay, onShatter, onCardReady, onClick }) => {
+}>(({ project, style, isRevealed, onShatter, onCardReady, onClick }) => {
   const Component = project.component;
+  const cardRef = useRef<HTMLDivElement>(null);
 
   return (
     <ErrorBoundary key={project.id} id={project.id}>
       <div
+        ref={cardRef}
         className={`portfolio-card space-card performance-optimized ${
           style.carouselPosition === 'center' ? 'active-card' : ''
         }`}
@@ -87,19 +88,13 @@ const PortfolioCard = React.memo<{
         <CardWithOverlay
           title={project.title}
           isRevealed={isRevealed}
-          needsImmediateOverlay={needsImmediateOverlay}
           onShatter={onShatter}
           carouselPosition={style.carouselPosition}
           onOverlayReady={onCardReady}
           forceHighQuality={style.carouselPosition !== 'hidden'}
+          cardRef={cardRef}
         >
-          <Suspense
-            fallback={
-              <div className="card-glass p-8 flex items-center justify-center opacity-50">
-                <div className="text-sm text-[var(--brand-accent)]">Loading...</div>
-              </div>
-            }
-          >
+          <Suspense fallback={null}>
             <Component id={project.id} />
           </Suspense>
         </CardWithOverlay>
@@ -603,8 +598,7 @@ export const PortfolioCarousel: React.FC<PortfolioCarouselProps> = React.memo(
               // A card is revealed ONLY if it's in the center AND has been clicked.
               const isRevealed = isCenter && shatteredCards.has(index);
 
-              // Non-center cards get immediate overlay for smooth transitions
-              const needsImmediateOverlay = !isCenter;
+              // All cards now use sealed box architecture with immediate overlay
 
               return (
                 <PortfolioCard
@@ -612,7 +606,6 @@ export const PortfolioCarousel: React.FC<PortfolioCarouselProps> = React.memo(
                   project={project}
                   style={style}
                   isRevealed={isRevealed}
-                  needsImmediateOverlay={needsImmediateOverlay}
                   onShatter={() => {
                     setShatteredCards(prev => new Set([...prev, index]));
                   }}

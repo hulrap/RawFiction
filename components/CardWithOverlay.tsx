@@ -10,12 +10,12 @@ import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeom
 interface CardWithOverlayProps {
   title: string;
   isRevealed: boolean;
-  needsImmediateOverlay?: boolean;
   onShatter: () => void;
   children: React.ReactNode;
   carouselPosition: string;
   forceHighQuality?: boolean;
   onOverlayReady?: () => void;
+  cardRef?: React.RefObject<HTMLDivElement>;
 }
 
 // Enhanced 3D Cube Field component
@@ -147,66 +147,55 @@ const CubeGrid: React.FC<{
 export const CardWithOverlay: React.FC<CardWithOverlayProps> = ({
   title,
   isRevealed,
-  needsImmediateOverlay = false,
   onShatter,
   children,
   carouselPosition,
   forceHighQuality = false,
   onOverlayReady,
+  cardRef,
 }) => {
   const [isFlowing, setIsFlowing] = useState(false);
   const [mouse, setMouse] = useState(new THREE.Vector2(0.5, 0.5));
   const [flowProgress, setFlowProgress] = useState(0);
 
-  // Loading synchronization
-  const [isContentReady, setIsContentReady] = useState(false);
-  const [isWebGLReady, setIsWebGLReady] = useState(false);
-  const [isAtomicReady, setIsAtomicReady] = useState(false);
+  // Overlay state simplified for sealed box architecture - no timing dependencies needed
 
   const overlayRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
-  // Initialize ALL overlays immediately - regardless of visibility
+  // Initialize overlay immediately for all cards (sealed box architecture)
   useEffect(() => {
-    if (!isRevealed && !isAtomicReady) {
-      if (needsImmediateOverlay) {
-        // Immediate overlay for non-center cards - no waiting
-        setIsAtomicReady(true);
-        invalidate();
-        onOverlayReady?.();
-      } else if (isContentReady && isWebGLReady) {
-        // Normal loading sequence for center cards
-        const timer = setTimeout(() => {
-          setIsAtomicReady(true);
-          invalidate();
-          onOverlayReady?.();
-        }, 50);
-        return () => clearTimeout(timer);
-      }
+    if (!isRevealed) {
+      invalidate();
+      onOverlayReady?.();
     }
-    return undefined;
-  }, [
-    isRevealed,
-    isContentReady,
-    isWebGLReady,
-    isAtomicReady,
-    onOverlayReady,
-    needsImmediateOverlay,
-  ]);
+  }, [isRevealed, onOverlayReady]);
+
+  // Synchronously add overlay-ready class to eliminate grey flash
+  useLayoutEffect(() => {
+    if (cardRef?.current && !isRevealed) {
+      // Add overlay-ready class before browser paint to show background + overlay together
+      cardRef.current.classList.add('overlay-ready');
+    } else if (cardRef?.current && isRevealed) {
+      // Keep background visible when card is revealed (content shows, no overlay)
+      cardRef.current.classList.add('overlay-ready');
+    }
+  }, [cardRef, isRevealed]);
 
   // Track when card becomes visible to force Canvas re-mount
   const [canvasKey, setCanvasKey] = useState(0);
   const prevPositionRef = useRef(carouselPosition);
 
   useEffect(() => {
-    // Only force Canvas re-mount when card transitions from hidden to visible (not on position changes)
+    // Only optimize Canvas for performance, never reset overlay state
     if (prevPositionRef.current === 'hidden' && carouselPosition !== 'hidden') {
-      setCanvasKey(prev => prev + 1);
-      setIsWebGLReady(false);
-      setIsAtomicReady(false);
+      setCanvasKey(prev => prev + 1); // Canvas optimization only
+      // ✅ REMOVED: Never reset isWebGLReady or isAtomicReady during navigation
     }
     prevPositionRef.current = carouselPosition;
-  }, [carouselPosition]);
+
+    // Sealed box architecture ensures overlay is always present for non-revealed cards
+  }, [carouselPosition, isRevealed]);
 
   // Reset overlay state when position changes to ensure clean transitions
   useEffect(() => {
@@ -214,27 +203,16 @@ export const CardWithOverlay: React.FC<CardWithOverlayProps> = ({
       // Immediately reset any flowing/shattered state for non-center cards
       setIsFlowing(false);
       setFlowProgress(0);
-      // Force immediate overlay readiness for non-center cards
-      if (!isRevealed) {
-        setIsAtomicReady(true);
-      }
+      // Sealed box architecture: overlay always ready for non-revealed cards
     }
   }, [carouselPosition, isRevealed]);
 
-  // Content ready detection
-  useEffect(() => {
-    if (contentRef.current && !isContentReady) {
-      const timer = requestAnimationFrame(() => {
-        setIsContentReady(true);
-      });
-      return () => cancelAnimationFrame(timer);
-    }
-    return undefined;
-  }, [isContentReady]);
+  // Content ready detection - removed for preemptive loading
+  // Content is now always ready to display
 
-  // WebGL ready callback
+  // WebGL ready callback - optimization only, doesn't affect overlay visibility
   const handleWebGLReady = useCallback(() => {
-    setIsWebGLReady(true);
+    // WebGL optimization happens in background - overlay already visible
   }, []);
 
   // Enhanced mouse tracking with better responsiveness
@@ -299,13 +277,13 @@ export const CardWithOverlay: React.FC<CardWithOverlayProps> = ({
           position: 'relative',
           width: '100%',
           height: '100%',
-          // Content is always loaded and rendered, but hidden behind overlay when needed
-          opacity: isRevealed ? 1 : 0, // Fade in when shattered
-          visibility: isRevealed ? 'visible' : 'hidden', // Hide when not shattered
-          zIndex: 1, // Always behind overlay until revealed
+          // Content hidden under the lid until explicitly revealed (sealed box metaphor)
+          opacity: isRevealed ? 1 : 0, // Hidden until revealed
+          visibility: isRevealed ? 'visible' : 'hidden', // Hidden until revealed
+          zIndex: isRevealed ? 10 : 1, // Above overlay when revealed, below when not
         }}
       >
-        {isRevealed && children}
+        {children}
       </div>
 
       {/* Enhanced 3D Cube Grid Overlay */}
@@ -314,10 +292,10 @@ export const CardWithOverlay: React.FC<CardWithOverlayProps> = ({
           <motion.div
             ref={overlayRef}
             className="glass-overlay-container"
-            initial={{ opacity: needsImmediateOverlay ? 1 : 0 }}
-            animate={{ opacity: needsImmediateOverlay ? 1 : isAtomicReady ? 1 : 0 }}
+            initial={{ opacity: 1 }}
+            animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: needsImmediateOverlay ? 0 : 0.3 }}
+            transition={{ duration: 0 }}
             style={{
               cursor: isFlowing ? 'default' : 'pointer',
               zIndex: 20, // Always above content to ensure proper coverage
@@ -410,7 +388,7 @@ export const CardWithOverlay: React.FC<CardWithOverlayProps> = ({
             </div>
 
             {/* Content overlay with enhanced styling */}
-            {!isFlowing && (needsImmediateOverlay ? true : isAtomicReady) && (
+            {!isFlowing && (
               <div className="glass-overlay-content">
                 <motion.h2
                   className="glass-overlay-title uppercase"
