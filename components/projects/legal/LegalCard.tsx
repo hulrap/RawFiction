@@ -59,15 +59,14 @@ export const LegalCard: React.FC<ProjectProps> = ({ isActive: _isActive = true }
             <div className="card-anthracite p-6 space-y-4 text-sm leading-relaxed">
               <h3 className="text-lg font-semibold text-metallic mb-3">Data Collection</h3>
               <p>
-                We collect information you provide directly to us, such as when you create an
-                account, make a purchase, or contact us for support.
+                I collect information you provide directly to me, f.e. when you reach out to me with a request.
               </p>
 
               <h3 className="text-lg font-semibold text-metallic mb-3 mt-6">
-                How We Use Your Information
+                How I Use Your Information
               </h3>
               <ul className="space-y-2 list-disc list-inside">
-                <li>To provide and maintain our services</li>
+                <li>To provide and maintain my services</li>
                 <li>To process transactions and send related information</li>
                 <li>To send you technical notices and support messages</li>
                 <li>To respond to your comments and questions</li>
@@ -75,14 +74,14 @@ export const LegalCard: React.FC<ProjectProps> = ({ isActive: _isActive = true }
 
               <h3 className="text-lg font-semibold text-metallic mb-3 mt-6">Information Sharing</h3>
               <p>
-                We do not sell, trade, or otherwise transfer your personal information to third
+                I do not sell, trade, or otherwise transfer your personal information to third
                 parties without your consent, except as described in this policy.
               </p>
 
               <h3 className="text-lg font-semibold text-metallic mb-3 mt-6">Contact</h3>
               <p>
-                If you have questions about this Privacy Policy, please contact us at
-                privacy@rawfiction.eu
+                If you have questions about this Privacy Policy, please contact me at
+                why@rawfiction.me
               </p>
             </div>
           </div>
@@ -111,7 +110,7 @@ export const LegalCard: React.FC<ProjectProps> = ({ isActive: _isActive = true }
                   function properly
                 </li>
                 <li>
-                  <strong>Analytics Cookies:</strong> These help us understand how visitors use our
+                  <strong>Analytics Cookies:</strong> These help me understand how visitors use my
                   website
                 </li>
                 <li>
@@ -128,8 +127,8 @@ export const LegalCard: React.FC<ProjectProps> = ({ isActive: _isActive = true }
 
               <h3 className="text-lg font-semibold text-metallic mb-3 mt-6">Contact</h3>
               <p>
-                If you have questions about our use of cookies, please contact us at
-                cookies@rawfiction.eu
+                If you have questions about my use of cookies, please contact me at
+                why@rawfiction.me
               </p>
             </div>
           </div>
@@ -188,7 +187,7 @@ export const LegalCard: React.FC<ProjectProps> = ({ isActive: _isActive = true }
               <h3 className="text-lg font-semibold text-metallic mb-3 mt-6">Disclaimer</h3>
               <p>
                 The information contained in this website is for general information purposes only.
-                While we endeavor to keep the information up to date and correct, we make no
+                While I endeavor to keep the information up to date and correct, I make no
                 representations or warranties of any kind about the completeness, accuracy,
                 reliability, or availability of the website or the information contained on the
                 website.

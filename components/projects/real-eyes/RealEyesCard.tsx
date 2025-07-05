@@ -718,9 +718,7 @@ export const RealEyesCard: React.FC<ProjectProps> = ({ isActive: _isActive = tru
             <div className="text-center">
               <h1 className="heading-main mb-6">Real Eyes</h1>
               <p className="text-xl opacity-90 max-w-2xl mx-auto leading-relaxed">
-                Real Eyes is a transformative event series that explores the intersection of
-                technology, consciousness, and human experience through immersive hip-hop
-                experiences.
+                Real Eyes is a hip hop concert series in Vienna, Austria, since 2017.
               </p>
             </div>
 
